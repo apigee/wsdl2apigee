@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -92,11 +93,16 @@ public class GenerateProxy {
 	private Map<String, KeyValue<String, String>> messageTemplates;
 
 	private StringWriter errors;
-
+	
 	static {
-		LOGGER.setLevel(Level.FINEST);
-		// PUBLISH this level
-		handler.setLevel(Level.FINEST);
+		LOGGER.setUseParentHandlers(false);
+		
+		Handler[] handlers = LOGGER.getHandlers();
+		for(Handler handler : handlers)
+		{
+	        if(handler.getClass() == ConsoleHandler.class)
+	            LOGGER.removeHandler(handler);
+		}
 		LOGGER.addHandler(handler);
 	}
 
@@ -994,7 +1000,6 @@ public class GenerateProxy {
 		opt.getSet().addOption("target", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		opt.getSet().addOption("desc", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		opt.getSet().addOption("soap", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		opt.getSet().addOption("option", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
 		opt.check();
@@ -1015,8 +1020,8 @@ public class GenerateProxy {
 		}
 
 		if (opt.getSet().isSet("passthru")) {
-			// React to option -target
-			PASSTHRU = Boolean.parseBoolean(opt.getSet().getOption("target").getResultValue(0));
+			// React to option -passthru
+			PASSTHRU = Boolean.parseBoolean(opt.getSet().getOption("passthru").getResultValue(0));
 		}
 
 		if (opt.getSet().isSet("desc")) {
@@ -1038,13 +1043,8 @@ public class GenerateProxy {
 			LOGGER.setLevel(Level.FINEST);
 			handler.setLevel(Level.FINEST);
 		} else {
-			LOGGER.setLevel(Level.FINEST);
-			handler.setLevel(Level.FINEST);
-		}
-		LOGGER.addHandler(handler);
-
-		if (opt.getSet().isSet("option")) {
-
+			LOGGER.setLevel(Level.INFO);
+			handler.setLevel(Level.INFO);
 		}
 
 		GenerateProxy genProxy = new GenerateProxy();
@@ -1056,9 +1056,6 @@ public class GenerateProxy {
 		// wsdlPath = "https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl";
 		// wsdlPath =
 		// "http://www.konakart.com/konakart/services/KKWebServiceEng?wsdl";
-		// wsdlPath =
-		// "http://es-workplace.sap.com/socoview(bD1lbiZjPTAwMSZkPW1pbg==)/get_wsdl.xml?packageid=E42EA5C4BC46A3F1BEA5005056A500B9&id=26887253974B11DC2B8D000F20FCB6A9_WSDL";
-		// wsdlPath = "/Users/srinandansridhar/Documents/KKWebServiceEng.wsdl";
 
 		genProxy.begin(proxyDescription, wsdlPath, targetFolder, soapVersion);
 
