@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ProxyEndpoint name="default">
+    <Description>SOAP proxy generated from undefined</Description>
+    <FaultRules/>
+    <PreFlow name="PreFlow">
+        <Request>
+            <Step>
+                <Name>Invalid-SOAP</Name>
+                <Condition>(request.header.Content-Type != "text/xml") OR (request.header.Content-Type != "application/xml") OR (request.header.Content-Type != "application/*+xml")</Condition>
+            </Step>
+            <Step>
+                <Name>Extract-Operation-Name</Name>
+            </Step>
+            <Step>
+                <Name>Invalid-SOAP</Name>
+				<Condition>(envelope != "Envelope") or (body != "Body")</Condition>
+            </Step>            
+        </Request>
+        <Response/>
+    </PreFlow>
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+    <Flows/>
+    <HTTPProxyConnection>
+        <BasePath>/default</BasePath>
+        <Properties/>
+        <VirtualHost>default</VirtualHost>
+    </HTTPProxyConnection>
+    <RouteRule name="default">
+        <TargetEndpoint>default</TargetEndpoint>
+    </RouteRule>
+</ProxyEndpoint>

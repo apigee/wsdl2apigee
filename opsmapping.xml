@@ -1,0 +1,24 @@
+<proxywriter>
+	<get>
+		<name location="beginsWith">get</name>
+		<name location="beginsWith">list</name>
+		<name location="beginsWith">inq</name>
+		<name location="beginsWith">search</name>
+		<name location="beginsWith">retrieve</name>
+	</get>
+	<post>
+		<name location="beginsWith">create</name>
+		<name location="beginsWith">add</name>
+	</post>
+	<put>
+		<name location="beginsWith">update</name>
+		<name location="beginsWith">change</name>
+		<name location="beginsWith">modify</name>
+		<name location="beginsWith">set</name>
+	</put>
+	<delete>
+		<name location="beginsWith">delete</name>
+		<name location="beginsWith">remove</name>
+		<name location="beginsWith">del</name>
+	</delete>
+</proxywriter>

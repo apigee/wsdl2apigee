@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault async="false" continueOnError="false" enabled="true" name="Invalid-SOAP">
+    <DisplayName>Invalid-SOAP</DisplayName>
+    <Properties/>
+    <FaultResponse>
+        <Set>
+            <Headers/>
+            <Payload contentType="application/xml">
+                <env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
+                    <env:Header/>
+                    <env:Body>
+                        <env:Fault>
+                            <env:Code>
+                                <env:Value>Error</env:Value>
+                            </env:Code>
+                            <env:Reason>
+                                <env:Text xml:lang="en-US">
+                                Invalid SOAP Message
+                                </env:Text>
+                            </env:Reason>
+                        </env:Fault>
+                    </env:Body>
+                </env:Envelope>
+            </Payload>
+            <StatusCode>500</StatusCode>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>

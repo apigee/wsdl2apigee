@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="test">
+    <ConfigurationVersion majorVersion="4" minorVersion="0"/>
+    <CreatedAt>1460129120146</CreatedAt>
+    <CreatedBy>ssridhar@apigee.com</CreatedBy>
+    <Description>Test proxy</Description>
+    <DisplayName>test</DisplayName>
+    <LastModifiedAt>1460129120146</LastModifiedAt>
+    <LastModifiedBy>ssridhar@apigee.com</LastModifiedBy>
+    <Policies>
+        <Policy>get-response-soap-body</Policy>
+        <Policy>save-message</Policy>
+        <Policy>restore-message</Policy>
+        <Policy>set-response-soap-body</Policy>
+        <Policy>set-target-url</Policy>
+        <Policy>unknown-resource</Policy>
+        <Policy>xml-to-json</Policy>    
+    </Policies>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <Resources/>
+    <TargetServers/>
+    <TargetEndpoints>
+        <TargetEndpoint>default</TargetEndpoint>
+    </TargetEndpoints>
+</APIProxy>

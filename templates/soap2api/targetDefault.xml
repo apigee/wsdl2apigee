@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="default">
+    <Description>SOAP target generated from undefined</Description>
+    <FaultRules/>
+    <PreFlow name="PreFlow">
+        <Request>
+            <Step>
+                <Name>set-target-url</Name>
+            </Step>
+        </Request>
+        <Response>
+            <Step>
+                <Name>restore-message</Name>
+            </Step>
+            <Step>
+                <Name>xml-to-json</Name>
+            </Step>
+            <Step>
+                <Name>get-response-soap-body</Name>
+            </Step>
+            <Step>
+                <Name>set-response-soap-body</Name>
+            </Step>
+        </Response>
+    </PreFlow>
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+    <Flows/>
+    <HTTPTargetConnection>
+        <Properties/>
+        <URL>https://example.com/</URL>
+    </HTTPTargetConnection>
+</TargetEndpoint>

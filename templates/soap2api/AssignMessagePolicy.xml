@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="true" enabled="true" name="AssignMessage-build-soap">
+    <DisplayName>AssignMessage Build SOAP</DisplayName>
+    <Add>
+        <Headers>
+            <Header name="SOAPAction"></Header>
+        </Headers>
+    </Add>
+    <Set>
+        <Headers>
+            <Header name="Content-Type">text&#x2F;xml; charset=utf-8</Header>
+        </Headers>
+        <Payload contentType="text&#x2F;xml"/>
+        <Verb>POST</Verb>
+    </Set>
+    <AssignVariable>
+        <Name>forward.target.url</Name>
+        <Value></Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

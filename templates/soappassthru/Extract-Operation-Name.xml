@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="false" enabled="true" name="Extract-Operation-Name">
+    <DisplayName>Extract Operation Name</DisplayName>
+    <Properties/>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <Source clearPayload="false">request</Source>
+    <XMLPayload stopPayloadProcessing="false">
+        <Variable name="envelope" type="String">
+            <XPath>local-name(/*)</XPath>
+        </Variable>
+        <Variable name="body" type="String">
+            <XPath>local-name(/*/*[local-name() = 'Body'])</XPath>
+        </Variable>
+        <Variable name="envelopeNamespace" type="String">
+            <XPath>namespace-uri(/*)</XPath>
+        </Variable>
+        <Variable name="operation" type="String">
+            <XPath>local-name(//*[local-name() = 'Body']/*[1])</XPath>
+        </Variable>
+    </XMLPayload>
+</ExtractVariables>

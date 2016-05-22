@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="1" name="test">
+    <ConfigurationVersion majorVersion="4" minorVersion="0"/>
+    <CreatedAt>1463854463653</CreatedAt>
+    <CreatedBy>ssridhar@apigee.com</CreatedBy>
+    <Description>Test Proxy</Description>
+    <DisplayName>test</DisplayName>
+    <LastModifiedAt>1463856358369</LastModifiedAt>
+    <LastModifiedBy>ssridhar@apigee.com</LastModifiedBy>
+    <Policies>
+        <Policy>Extract-Operation-Name</Policy>
+        <Policy>Invalid-SOAP</Policy>
+    </Policies>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <Resources/>
+    <TargetServers/>
+    <TargetEndpoints>
+        <TargetEndpoint>default</TargetEndpoint>
+    </TargetEndpoints>
+</APIProxy>
