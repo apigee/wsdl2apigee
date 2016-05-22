@@ -514,10 +514,10 @@ public class GenerateProxy {
 			Node payload = assignPolicyXML.getElementsByTagName("Payload").item(0);
 			NamedNodeMap payloadNodeMap = payload.getAttributes();
 			Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
-			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml(PAYLOAD_TYPE));
+			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(PAYLOAD_TYPE));
 
 			assignPolicyXML.getElementsByTagName("Header").item(1)
-					.setTextContent(StringEscapeUtils.escapeXml(CONTENT_TYPE));
+					.setTextContent(StringEscapeUtils.escapeXml10(CONTENT_TYPE));
 
 			KeyValue<String, String> keyValue = messageTemplates.get(operationName);
 			Document operationPayload = xmlUtils.getXMLFromString(keyValue.getKey());

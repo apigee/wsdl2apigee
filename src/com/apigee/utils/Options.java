@@ -135,7 +135,7 @@ public class Options {
   private Prefix                               prefix              = null;
   private Multiplicity                         defaultMultiplicity = null;
   private String[]                             arguments           = null;
-  private boolean                              ignoreUnmatched     = false;
+  //private boolean                              ignoreUnmatched     = false;
   private int                                  defaultMinData      = 0;
   private int                                  defaultMaxData      = 0;
   private StringBuffer                         checkErrors         = null;
@@ -634,6 +634,7 @@ public class Options {
         case ONCE:         if (optionData.getResultCount() != 1) err = true; break;
         case ONCE_OR_MORE: if (optionData.getResultCount() == 0) err = true; break;
         case ZERO_OR_ONE:  if (optionData.getResultCount() > 1)  err = true; break;
+        default: break;
       }
 
       if (err) {
