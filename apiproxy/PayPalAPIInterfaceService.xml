@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy name="PayPalAPIInterfaceService" revision="1">
+    <ConfigurationVersion majorVersion="4" minorVersion="0"/>
+    <CreatedAt>1464115541935</CreatedAt>
+    <CreatedBy>ssridhar@apigee.com</CreatedBy>
+    <Description>Generated SOAP to API proxy</Description>
+    <DisplayName>PayPalAPIInterfaceService</DisplayName>
+    <LastModifiedAt>1464115541935</LastModifiedAt>
+    <LastModifiedBy>ssridhar@apigee.com</LastModifiedBy>
+    <Policies>
+    	<Policy>remove-empty-nodes</Policy>
+        <Policy>get-response-soap-body</Policy>
+        <Policy>save-message</Policy>
+        <Policy>restore-message</Policy>
+        <Policy>set-response-soap-body</Policy>
+        <Policy>set-target-url</Policy>
+        <Policy>unknown-resource</Policy>
+        <Policy>xml-to-json</Policy>    
+    <Policy>RefundTransaction-extract-query-param</Policy>
+<Policy>RefundTransaction-build-soap</Policy>
+<Policy>InitiateRecoup-extract-query-param</Policy>
+<Policy>InitiateRecoup-build-soap</Policy>
+<Policy>CompleteRecoup-extract-query-param</Policy>
+<Policy>CompleteRecoup-build-soap</Policy>
+<Policy>CancelRecoup-extract-query-param</Policy>
+<Policy>CancelRecoup-build-soap</Policy>
+<Policy>GetTransactionDetails-extract-query-param</Policy>
+<Policy>GetTransactionDetails-build-soap</Policy>
+<Policy>BMCreateButton-extract-json-payload</Policy>
+<Policy>BMCreateButton-build-soap</Policy>
+<Policy>BMUpdateButton-extract-json-payload</Policy>
+<Policy>BMUpdateButton-build-soap</Policy>
+<Policy>BMManageButtonStatus-extract-query-param</Policy>
+<Policy>BMManageButtonStatus-build-soap</Policy>
+<Policy>BMGetButtonDetails-extract-query-param</Policy>
+<Policy>BMGetButtonDetails-build-soap</Policy>
+<Policy>BMSetInventory-extract-query-param</Policy>
+<Policy>BMSetInventory-build-soap</Policy>
+<Policy>BMGetInventory-extract-query-param</Policy>
+<Policy>BMGetInventory-build-soap</Policy>
+<Policy>BMButtonSearch-extract-query-param</Policy>
+<Policy>BMButtonSearch-build-soap</Policy>
+<Policy>BillUser-extract-query-param</Policy>
+<Policy>BillUser-build-soap</Policy>
+<Policy>TransactionSearch-extract-query-param</Policy>
+<Policy>TransactionSearch-build-soap</Policy>
+<Policy>MassPay-extract-query-param</Policy>
+<Policy>MassPay-build-soap</Policy>
+<Policy>BillAgreementUpdate-extract-json-payload</Policy>
+<Policy>BillAgreementUpdate-build-soap</Policy>
+<Policy>AddressVerify-extract-json-payload</Policy>
+<Policy>AddressVerify-build-soap</Policy>
+<Policy>EnterBoarding-extract-query-param</Policy>
+<Policy>EnterBoarding-build-soap</Policy>
+<Policy>GetBoardingDetails-extract-query-param</Policy>
+<Policy>GetBoardingDetails-build-soap</Policy>
+<Policy>CreateMobilePayment-extract-json-payload</Policy>
+<Policy>CreateMobilePayment-build-soap</Policy>
+<Policy>GetMobileStatus-extract-query-param</Policy>
+<Policy>GetMobileStatus-build-soap</Policy>
+<Policy>SetMobileCheckout-extract-json-payload</Policy>
+<Policy>SetMobileCheckout-build-soap</Policy>
+<Policy>DoMobileCheckoutPayment-extract-query-param</Policy>
+<Policy>DoMobileCheckoutPayment-build-soap</Policy>
+<Policy>GetBalance-extract-query-param</Policy>
+<Policy>GetBalance-build-soap</Policy>
+<Policy>GetPalDetails-extract-query-param</Policy>
+<Policy>GetPalDetails-build-soap</Policy>
+<Policy>DoExpressCheckoutPayment-extract-query-param</Policy>
+<Policy>DoExpressCheckoutPayment-build-soap</Policy>
+<Policy>DoUATPExpressCheckoutPayment-extract-query-param</Policy>
+<Policy>DoUATPExpressCheckoutPayment-build-soap</Policy>
+<Policy>SetAuthFlowParam-extract-json-payload</Policy>
+<Policy>SetAuthFlowParam-build-soap</Policy>
+<Policy>GetAuthDetails-extract-query-param</Policy>
+<Policy>GetAuthDetails-build-soap</Policy>
+<Policy>SetAccessPermissions-extract-json-payload</Policy>
+<Policy>SetAccessPermissions-build-soap</Policy>
+<Policy>UpdateAccessPermissions-extract-json-payload</Policy>
+<Policy>UpdateAccessPermissions-build-soap</Policy>
+<Policy>GetAccessPermissionDetails-extract-query-param</Policy>
+<Policy>GetAccessPermissionDetails-build-soap</Policy>
+<Policy>GetIncentiveEvaluation-extract-query-param</Policy>
+<Policy>GetIncentiveEvaluation-build-soap</Policy>
+<Policy>SetExpressCheckout-extract-json-payload</Policy>
+<Policy>SetExpressCheckout-build-soap</Policy>
+<Policy>ExecuteCheckoutOperations-extract-query-param</Policy>
+<Policy>ExecuteCheckoutOperations-build-soap</Policy>
+<Policy>GetExpressCheckoutDetails-extract-query-param</Policy>
+<Policy>GetExpressCheckoutDetails-build-soap</Policy>
+<Policy>DoDirectPayment-extract-query-param</Policy>
+<Policy>DoDirectPayment-build-soap</Policy>
+<Policy>ManagePendingTransactionStatus-extract-query-param</Policy>
+<Policy>ManagePendingTransactionStatus-build-soap</Policy>
+<Policy>DoCancel-extract-query-param</Policy>
+<Policy>DoCancel-build-soap</Policy>
+<Policy>DoCapture-extract-query-param</Policy>
+<Policy>DoCapture-build-soap</Policy>
+<Policy>DoReauthorization-extract-query-param</Policy>
+<Policy>DoReauthorization-build-soap</Policy>
+<Policy>DoVoid-extract-query-param</Policy>
+<Policy>DoVoid-build-soap</Policy>
+<Policy>DoAuthorization-extract-query-param</Policy>
+<Policy>DoAuthorization-build-soap</Policy>
+<Policy>UpdateAuthorization-extract-json-payload</Policy>
+<Policy>UpdateAuthorization-build-soap</Policy>
+<Policy>SetCustomerBillingAgreement-extract-json-payload</Policy>
+<Policy>SetCustomerBillingAgreement-build-soap</Policy>
+<Policy>GetBillingAgreementCustomerDetails-extract-query-param</Policy>
+<Policy>GetBillingAgreementCustomerDetails-build-soap</Policy>
+<Policy>CreateBillingAgreement-extract-json-payload</Policy>
+<Policy>CreateBillingAgreement-build-soap</Policy>
+<Policy>DoReferenceTransaction-extract-query-param</Policy>
+<Policy>DoReferenceTransaction-build-soap</Policy>
+<Policy>DoNonReferencedCredit-extract-query-param</Policy>
+<Policy>DoNonReferencedCredit-build-soap</Policy>
+<Policy>DoUATPAuthorization-extract-query-param</Policy>
+<Policy>DoUATPAuthorization-build-soap</Policy>
+<Policy>CreateRecurringPaymentsProfile-extract-json-payload</Policy>
+<Policy>CreateRecurringPaymentsProfile-build-soap</Policy>
+<Policy>GetRecurringPaymentsProfileDetails-extract-query-param</Policy>
+<Policy>GetRecurringPaymentsProfileDetails-build-soap</Policy>
+<Policy>ManageRecurringPaymentsProfileStatus-extract-query-param</Policy>
+<Policy>ManageRecurringPaymentsProfileStatus-build-soap</Policy>
+<Policy>BillOutstandingAmount-extract-query-param</Policy>
+<Policy>BillOutstandingAmount-build-soap</Policy>
+<Policy>UpdateRecurringPaymentsProfile-extract-json-payload</Policy>
+<Policy>UpdateRecurringPaymentsProfile-build-soap</Policy>
+<Policy>ReverseTransaction-extract-query-param</Policy>
+<Policy>ReverseTransaction-build-soap</Policy>
+<Policy>ExternalRememberMeOptOut-extract-query-param</Policy>
+<Policy>ExternalRememberMeOptOut-build-soap</Policy>
+</Policies>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <Resources/>
+    <TargetServers/>
+    <TargetEndpoints>
+        <TargetEndpoint>default</TargetEndpoint>
+    </TargetEndpoints>
+</APIProxy>

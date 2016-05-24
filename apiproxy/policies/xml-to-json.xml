@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XMLToJSON async="false" continueOnError="false" enabled="true" name="xml-to-json">
+    <DisplayName>XML to JSON</DisplayName>
+    <Format>yahoo</Format>
+    <OutputVariable>response</OutputVariable>
+    <Source>response</Source>
+</XMLToJSON>

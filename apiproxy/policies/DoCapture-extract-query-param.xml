@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="true" enabled="true" name="DoCapture-extract-query-param">
+    <DisplayName>DoCapture Extract Query Param</DisplayName>
+    <Source>request</Source>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+<QueryParam name="ns:eBayAuthToken">
+<Pattern ignoreCase="true">{ns:eBayAuthToken}</Pattern>
+</QueryParam>
+<QueryParam name="ns:HardExpirationWarning">
+<Pattern ignoreCase="true">{ns:HardExpirationWarning}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AppId">
+<Pattern ignoreCase="true">{ns:AppId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DevId">
+<Pattern ignoreCase="true">{ns:DevId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AuthCert">
+<Pattern ignoreCase="true">{ns:AuthCert}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Username">
+<Pattern ignoreCase="true">{ns:Username}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Password">
+<Pattern ignoreCase="true">{ns:Password}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Signature">
+<Pattern ignoreCase="true">{ns:Signature}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Subject">
+<Pattern ignoreCase="true">{ns:Subject}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AuthToken">
+<Pattern ignoreCase="true">{ns:AuthToken}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DetailLevel">
+<Pattern ignoreCase="true">{ns:DetailLevel}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ErrorLanguage">
+<Pattern ignoreCase="true">{ns:ErrorLanguage}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Version">
+<Pattern ignoreCase="true">{ns:Version}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AuthorizationID">
+<Pattern ignoreCase="true">{ns:AuthorizationID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Amount">
+<Pattern ignoreCase="true">{ns:Amount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CompleteType">
+<Pattern ignoreCase="true">{ns:CompleteType}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Note">
+<Pattern ignoreCase="true">{ns:Note}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InvoiceID">
+<Pattern ignoreCase="true">{ns:InvoiceID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PassengerName">
+<Pattern ignoreCase="true">{ns:PassengerName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:IssueDate">
+<Pattern ignoreCase="true">{ns:IssueDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TravelAgencyName">
+<Pattern ignoreCase="true">{ns:TravelAgencyName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TravelAgencyCode">
+<Pattern ignoreCase="true">{ns:TravelAgencyCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TicketNumber">
+<Pattern ignoreCase="true">{ns:TicketNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:IssuingCarrierCode">
+<Pattern ignoreCase="true">{ns:IssuingCarrierCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CustomerCode">
+<Pattern ignoreCase="true">{ns:CustomerCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TotalFare">
+<Pattern ignoreCase="true">{ns:TotalFare}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TotalTaxes">
+<Pattern ignoreCase="true">{ns:TotalTaxes}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TotalFee">
+<Pattern ignoreCase="true">{ns:TotalFee}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:RestrictedTicket">
+<Pattern ignoreCase="true">{ns:RestrictedTicket}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ClearingSequence">
+<Pattern ignoreCase="true">{ns:ClearingSequence}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ClearingCount">
+<Pattern ignoreCase="true">{ns:ClearingCount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ConjuctionTicket">
+<Pattern ignoreCase="true">{ns:ConjuctionTicket}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ExchangeTicket">
+<Pattern ignoreCase="true">{ns:ExchangeTicket}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CouponNumber">
+<Pattern ignoreCase="true">{ns:CouponNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ServiceClass">
+<Pattern ignoreCase="true">{ns:ServiceClass}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TravelDate">
+<Pattern ignoreCase="true">{ns:TravelDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CarrierCode">
+<Pattern ignoreCase="true">{ns:CarrierCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:StopOverPermitted">
+<Pattern ignoreCase="true">{ns:StopOverPermitted}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DepartureAirport">
+<Pattern ignoreCase="true">{ns:DepartureAirport}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ArrivalAirport">
+<Pattern ignoreCase="true">{ns:ArrivalAirport}</Pattern>
+</QueryParam>
+<QueryParam name="ns:FlightNumber">
+<Pattern ignoreCase="true">{ns:FlightNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DepartureTime">
+<Pattern ignoreCase="true">{ns:DepartureTime}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ArrivalTime">
+<Pattern ignoreCase="true">{ns:ArrivalTime}</Pattern>
+</QueryParam>
+<QueryParam name="ns:FareBasisCode">
+<Pattern ignoreCase="true">{ns:FareBasisCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Fare">
+<Pattern ignoreCase="true">{ns:Fare}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Taxes">
+<Pattern ignoreCase="true">{ns:Taxes}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Fee">
+<Pattern ignoreCase="true">{ns:Fee}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:EndorsementOrRestrictions">
+<Pattern ignoreCase="true">{ns:EndorsementOrRestrictions}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Descriptor">
+<Pattern ignoreCase="true">{ns:Descriptor}</Pattern>
+</QueryParam>
+<QueryParam name="ns:StoreID">
+<Pattern ignoreCase="true">{ns:StoreID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TerminalID">
+<Pattern ignoreCase="true">{ns:TerminalID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:MsgSubID">
+<Pattern ignoreCase="true">{ns:MsgSubID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Key">
+<Pattern ignoreCase="true">{ns:Key}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Value">
+<Pattern ignoreCase="true">{ns:Value}</Pattern>
+</QueryParam>
+</ExtractVariables>

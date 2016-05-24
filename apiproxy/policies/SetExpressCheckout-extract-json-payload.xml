@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="true" enabled="true" name="SetExpressCheckout-extract-json-payload">
+    <DisplayName>SetExpressCheckout Extract Query Param</DisplayName>
+    <Source>request</Source>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+<JSONPayload>
+<Variable name="ns:OrderTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:OrderTotal</JSONPath>
+</Variable>
+<Variable name="ns:TaxTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:TaxTotal</JSONPath>
+</Variable>
+<Variable name="ns:MaxAmount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:MaxAmount</JSONPath>
+</Variable>
+<Variable name="ns:DetailLevel" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:DetailLevel</JSONPath>
+</Variable>
+<Variable name="ns:ItemHeight" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:PaymentDetailsItem.ns:ItemHeight</JSONPath>
+</Variable>
+<Variable name="ns:ShippingTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:ShippingTotal</JSONPath>
+</Variable>
+<Variable name="ns:ShippingDiscount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:ShippingDiscount</JSONPath>
+</Variable>
+<Variable name="ns:HandlingTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:HandlingTotal</JSONPath>
+</Variable>
+<Variable name="ns:ItemLength" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:PaymentDetailsItem.ns:ItemLength</JSONPath>
+</Variable>
+<Variable name="ns:InsuranceTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:InsuranceTotal</JSONPath>
+</Variable>
+<Variable name="ns:ItemWidth" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:PaymentDetailsItem.ns:ItemWidth</JSONPath>
+</Variable>
+<Variable name="ns:Amount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:RedeemedOffers.ns:Amount</JSONPath>
+</Variable>
+<Variable name="ns:ErrorLanguage" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:ErrorLanguage</JSONPath>
+</Variable>
+<Variable name="ns:OrderTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:OrderTotal</JSONPath>
+</Variable>
+<Variable name="ns:ItemTotal" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:ItemTotal</JSONPath>
+</Variable>
+<Variable name="ns:GiftWrapAmount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:GiftWrapAmount</JSONPath>
+</Variable>
+<Variable name="ns:Version" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:Version</JSONPath>
+</Variable>
+<Variable name="ns:ShippingOptionAmount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:FlatRateShippingOptions.ns:ShippingOptionAmount</JSONPath>
+</Variable>
+<Variable name="ns:Amount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:PaymentDetailsItem.ns:Amount</JSONPath>
+</Variable>
+<Variable name="ns:Tax" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:PaymentDetailsItem.ns:Tax</JSONPath>
+</Variable>
+<Variable name="ns:ItemWeight" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:PaymentDetailsItem.ns:ItemWeight</JSONPath>
+</Variable>
+<Variable name="ns:Amount" type="string">
+<JSONPath>$.ns:SetExpressCheckoutReq.ns:SetExpressCheckoutRequest.ns:SetExpressCheckoutRequestDetails.ns:PaymentDetails.ns:CummulativePoints.ns:Amount</JSONPath>
+</Variable>
+</JSONPayload>
+</ExtractVariables>

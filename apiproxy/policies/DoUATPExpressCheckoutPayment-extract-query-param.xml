@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="true" enabled="true" name="DoUATPExpressCheckoutPayment-extract-query-param">
+    <DisplayName>DoUATPExpressCheckoutPayment Extract Query Param</DisplayName>
+    <Source>request</Source>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+<QueryParam name="ns:eBayAuthToken">
+<Pattern ignoreCase="true">{ns:eBayAuthToken}</Pattern>
+</QueryParam>
+<QueryParam name="ns:HardExpirationWarning">
+<Pattern ignoreCase="true">{ns:HardExpirationWarning}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AppId">
+<Pattern ignoreCase="true">{ns:AppId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DevId">
+<Pattern ignoreCase="true">{ns:DevId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AuthCert">
+<Pattern ignoreCase="true">{ns:AuthCert}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Username">
+<Pattern ignoreCase="true">{ns:Username}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Password">
+<Pattern ignoreCase="true">{ns:Password}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Signature">
+<Pattern ignoreCase="true">{ns:Signature}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Subject">
+<Pattern ignoreCase="true">{ns:Subject}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AuthToken">
+<Pattern ignoreCase="true">{ns:AuthToken}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DetailLevel">
+<Pattern ignoreCase="true">{ns:DetailLevel}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ErrorLanguage">
+<Pattern ignoreCase="true">{ns:ErrorLanguage}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Version">
+<Pattern ignoreCase="true">{ns:Version}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PaymentAction">
+<Pattern ignoreCase="true">{ns:PaymentAction}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Token">
+<Pattern ignoreCase="true">{ns:Token}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PayerID">
+<Pattern ignoreCase="true">{ns:PayerID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OrderURL">
+<Pattern ignoreCase="true">{ns:OrderURL}</Pattern>
+</QueryParam>
+<QueryParam name="ns:MsgSubID">
+<Pattern ignoreCase="true">{ns:MsgSubID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OrderTotal">
+<Pattern ignoreCase="true">{ns:OrderTotal}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemTotal">
+<Pattern ignoreCase="true">{ns:ItemTotal}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingTotal">
+<Pattern ignoreCase="true">{ns:ShippingTotal}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:HandlingTotal">
+<Pattern ignoreCase="true">{ns:HandlingTotal}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TaxTotal">
+<Pattern ignoreCase="true">{ns:TaxTotal}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OrderDescription">
+<Pattern ignoreCase="true">{ns:OrderDescription}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Custom">
+<Pattern ignoreCase="true">{ns:Custom}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InvoiceID">
+<Pattern ignoreCase="true">{ns:InvoiceID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ButtonSource">
+<Pattern ignoreCase="true">{ns:ButtonSource}</Pattern>
+</QueryParam>
+<QueryParam name="ns:NotifyURL">
+<Pattern ignoreCase="true">{ns:NotifyURL}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Name">
+<Pattern ignoreCase="true">{ns:Name}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Street1">
+<Pattern ignoreCase="true">{ns:Street1}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Street2">
+<Pattern ignoreCase="true">{ns:Street2}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CityName">
+<Pattern ignoreCase="true">{ns:CityName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:StateOrProvince">
+<Pattern ignoreCase="true">{ns:StateOrProvince}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Country">
+<Pattern ignoreCase="true">{ns:Country}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CountryName">
+<Pattern ignoreCase="true">{ns:CountryName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Phone">
+<Pattern ignoreCase="true">{ns:Phone}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PostalCode">
+<Pattern ignoreCase="true">{ns:PostalCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressID">
+<Pattern ignoreCase="true">{ns:AddressID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressOwner">
+<Pattern ignoreCase="true">{ns:AddressOwner}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ExternalAddressID">
+<Pattern ignoreCase="true">{ns:ExternalAddressID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InternationalName">
+<Pattern ignoreCase="true">{ns:InternationalName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InternationalStateAndCity">
+<Pattern ignoreCase="true">{ns:InternationalStateAndCity}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InternationalStreet">
+<Pattern ignoreCase="true">{ns:InternationalStreet}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressStatus">
+<Pattern ignoreCase="true">{ns:AddressStatus}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressNormalizationStatus">
+<Pattern ignoreCase="true">{ns:AddressNormalizationStatus}</Pattern>
+</QueryParam>
+<QueryParam name="ns:MultiShipping">
+<Pattern ignoreCase="true">{ns:MultiShipping}</Pattern>
+</QueryParam>
+<QueryParam name="ns:FulfillmentReferenceNumber">
+<Pattern ignoreCase="true">{ns:FulfillmentReferenceNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Name">
+<Pattern ignoreCase="true">{ns:Name}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Street1">
+<Pattern ignoreCase="true">{ns:Street1}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Street2">
+<Pattern ignoreCase="true">{ns:Street2}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CityName">
+<Pattern ignoreCase="true">{ns:CityName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:StateOrProvince">
+<Pattern ignoreCase="true">{ns:StateOrProvince}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Country">
+<Pattern ignoreCase="true">{ns:Country}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CountryName">
+<Pattern ignoreCase="true">{ns:CountryName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Phone">
+<Pattern ignoreCase="true">{ns:Phone}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PostalCode">
+<Pattern ignoreCase="true">{ns:PostalCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressID">
+<Pattern ignoreCase="true">{ns:AddressID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressOwner">
+<Pattern ignoreCase="true">{ns:AddressOwner}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ExternalAddressID">
+<Pattern ignoreCase="true">{ns:ExternalAddressID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InternationalName">
+<Pattern ignoreCase="true">{ns:InternationalName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InternationalStateAndCity">
+<Pattern ignoreCase="true">{ns:InternationalStateAndCity}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InternationalStreet">
+<Pattern ignoreCase="true">{ns:InternationalStreet}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressStatus">
+<Pattern ignoreCase="true">{ns:AddressStatus}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AddressNormalizationStatus">
+<Pattern ignoreCase="true">{ns:AddressNormalizationStatus}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PaymentCategoryType">
+<Pattern ignoreCase="true">{ns:PaymentCategoryType}</Pattern>
+</QueryParam>
+<QueryParam name="ns:LocationType">
+<Pattern ignoreCase="true">{ns:LocationType}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingMethod">
+<Pattern ignoreCase="true">{ns:ShippingMethod}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ProfileAddressChangeDate">
+<Pattern ignoreCase="true">{ns:ProfileAddressChangeDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Name">
+<Pattern ignoreCase="true">{ns:Name}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Number">
+<Pattern ignoreCase="true">{ns:Number}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Quantity">
+<Pattern ignoreCase="true">{ns:Quantity}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Tax">
+<Pattern ignoreCase="true">{ns:Tax}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Amount">
+<Pattern ignoreCase="true">{ns:Amount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemNumber">
+<Pattern ignoreCase="true">{ns:ItemNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AuctionTransactionId">
+<Pattern ignoreCase="true">{ns:AuctionTransactionId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OrderId">
+<Pattern ignoreCase="true">{ns:OrderId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CartID">
+<Pattern ignoreCase="true">{ns:CartID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PromoCode">
+<Pattern ignoreCase="true">{ns:PromoCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ProductCategory">
+<Pattern ignoreCase="true">{ns:ProductCategory}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Description">
+<Pattern ignoreCase="true">{ns:Description}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemWeight">
+<Pattern ignoreCase="true">{ns:ItemWeight}</Pattern>
+</QueryParam>
+<QueryParam name="ns:unit">
+<Pattern ignoreCase="true">{ns:unit}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemLength">
+<Pattern ignoreCase="true">{ns:ItemLength}</Pattern>
+</QueryParam>
+<QueryParam name="ns:unit">
+<Pattern ignoreCase="true">{ns:unit}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemWidth">
+<Pattern ignoreCase="true">{ns:ItemWidth}</Pattern>
+</QueryParam>
+<QueryParam name="ns:unit">
+<Pattern ignoreCase="true">{ns:unit}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemHeight">
+<Pattern ignoreCase="true">{ns:ItemHeight}</Pattern>
+</QueryParam>
+<QueryParam name="ns:unit">
+<Pattern ignoreCase="true">{ns:unit}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemURL">
+<Pattern ignoreCase="true">{ns:ItemURL}</Pattern>
+</QueryParam>
+<QueryParam name="ns:EnhancedItemData">
+<Pattern ignoreCase="true">{ns:EnhancedItemData}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ItemCategory">
+<Pattern ignoreCase="true">{ns:ItemCategory}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InsuranceTotal">
+<Pattern ignoreCase="true">{ns:InsuranceTotal}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingDiscount">
+<Pattern ignoreCase="true">{ns:ShippingDiscount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InsuranceOptionOffered">
+<Pattern ignoreCase="true">{ns:InsuranceOptionOffered}</Pattern>
+</QueryParam>
+<QueryParam name="ns:AllowedPaymentMethod">
+<Pattern ignoreCase="true">{ns:AllowedPaymentMethod}</Pattern>
+</QueryParam>
+<QueryParam name="ns:EnhancedPaymentData">
+<Pattern ignoreCase="true">{ns:EnhancedPaymentData}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SellerId">
+<Pattern ignoreCase="true">{ns:SellerId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SellerUserName">
+<Pattern ignoreCase="true">{ns:SellerUserName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SellerRegistrationDate">
+<Pattern ignoreCase="true">{ns:SellerRegistrationDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PayPalAccountID">
+<Pattern ignoreCase="true">{ns:PayPalAccountID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SecureMerchantAccountID">
+<Pattern ignoreCase="true">{ns:SecureMerchantAccountID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:NoteText">
+<Pattern ignoreCase="true">{ns:NoteText}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TransactionId">
+<Pattern ignoreCase="true">{ns:TransactionId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PaymentAction">
+<Pattern ignoreCase="true">{ns:PaymentAction}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PaymentRequestID">
+<Pattern ignoreCase="true">{ns:PaymentRequestID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OrderURL">
+<Pattern ignoreCase="true">{ns:OrderURL}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SoftDescriptor">
+<Pattern ignoreCase="true">{ns:SoftDescriptor}</Pattern>
+</QueryParam>
+<QueryParam name="ns:BranchLevel">
+<Pattern ignoreCase="true">{ns:BranchLevel}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OfferCode">
+<Pattern ignoreCase="true">{ns:OfferCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:OfferTrackingID">
+<Pattern ignoreCase="true">{ns:OfferTrackingID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Recurring">
+<Pattern ignoreCase="true">{ns:Recurring}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PaymentReason">
+<Pattern ignoreCase="true">{ns:PaymentReason}</Pattern>
+</QueryParam>
+<QueryParam name="ns:LocationID">
+<Pattern ignoreCase="true">{ns:LocationID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Name">
+<Pattern ignoreCase="true">{ns:Name}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Description">
+<Pattern ignoreCase="true">{ns:Description}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Amount">
+<Pattern ignoreCase="true">{ns:Amount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:RedeemedOfferType">
+<Pattern ignoreCase="true">{ns:RedeemedOfferType}</Pattern>
+</QueryParam>
+<QueryParam name="ns:RedeemedOfferId">
+<Pattern ignoreCase="true">{ns:RedeemedOfferId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PointsAccrued">
+<Pattern ignoreCase="true">{ns:PointsAccrued}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Name">
+<Pattern ignoreCase="true">{ns:Name}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Description">
+<Pattern ignoreCase="true">{ns:Description}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Amount">
+<Pattern ignoreCase="true">{ns:Amount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:RedeemedOfferType">
+<Pattern ignoreCase="true">{ns:RedeemedOfferType}</Pattern>
+</QueryParam>
+<QueryParam name="ns:RedeemedOfferId">
+<Pattern ignoreCase="true">{ns:RedeemedOfferId}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PointsAccrued">
+<Pattern ignoreCase="true">{ns:PointsAccrued}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Key">
+<Pattern ignoreCase="true">{ns:Key}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Value">
+<Pattern ignoreCase="true">{ns:Value}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PromoOverrideFlag">
+<Pattern ignoreCase="true">{ns:PromoOverrideFlag}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PromoCode">
+<Pattern ignoreCase="true">{ns:PromoCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PassengerName">
+<Pattern ignoreCase="true">{ns:PassengerName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:IssueDate">
+<Pattern ignoreCase="true">{ns:IssueDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TravelAgencyName">
+<Pattern ignoreCase="true">{ns:TravelAgencyName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TravelAgencyCode">
+<Pattern ignoreCase="true">{ns:TravelAgencyCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TicketNumber">
+<Pattern ignoreCase="true">{ns:TicketNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:IssuingCarrierCode">
+<Pattern ignoreCase="true">{ns:IssuingCarrierCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CustomerCode">
+<Pattern ignoreCase="true">{ns:CustomerCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TotalFare">
+<Pattern ignoreCase="true">{ns:TotalFare}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TotalTaxes">
+<Pattern ignoreCase="true">{ns:TotalTaxes}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TotalFee">
+<Pattern ignoreCase="true">{ns:TotalFee}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:RestrictedTicket">
+<Pattern ignoreCase="true">{ns:RestrictedTicket}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ClearingSequence">
+<Pattern ignoreCase="true">{ns:ClearingSequence}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ClearingCount">
+<Pattern ignoreCase="true">{ns:ClearingCount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ConjuctionTicket">
+<Pattern ignoreCase="true">{ns:ConjuctionTicket}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ExchangeTicket">
+<Pattern ignoreCase="true">{ns:ExchangeTicket}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CouponNumber">
+<Pattern ignoreCase="true">{ns:CouponNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ServiceClass">
+<Pattern ignoreCase="true">{ns:ServiceClass}</Pattern>
+</QueryParam>
+<QueryParam name="ns:TravelDate">
+<Pattern ignoreCase="true">{ns:TravelDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CarrierCode">
+<Pattern ignoreCase="true">{ns:CarrierCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:StopOverPermitted">
+<Pattern ignoreCase="true">{ns:StopOverPermitted}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DepartureAirport">
+<Pattern ignoreCase="true">{ns:DepartureAirport}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ArrivalAirport">
+<Pattern ignoreCase="true">{ns:ArrivalAirport}</Pattern>
+</QueryParam>
+<QueryParam name="ns:FlightNumber">
+<Pattern ignoreCase="true">{ns:FlightNumber}</Pattern>
+</QueryParam>
+<QueryParam name="ns:DepartureTime">
+<Pattern ignoreCase="true">{ns:DepartureTime}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ArrivalTime">
+<Pattern ignoreCase="true">{ns:ArrivalTime}</Pattern>
+</QueryParam>
+<QueryParam name="ns:FareBasisCode">
+<Pattern ignoreCase="true">{ns:FareBasisCode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Fare">
+<Pattern ignoreCase="true">{ns:Fare}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Taxes">
+<Pattern ignoreCase="true">{ns:Taxes}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:Fee">
+<Pattern ignoreCase="true">{ns:Fee}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:EndorsementOrRestrictions">
+<Pattern ignoreCase="true">{ns:EndorsementOrRestrictions}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SoftDescriptor">
+<Pattern ignoreCase="true">{ns:SoftDescriptor}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingCalculationMode">
+<Pattern ignoreCase="true">{ns:ShippingCalculationMode}</Pattern>
+</QueryParam>
+<QueryParam name="ns:InsuranceOptionSelected">
+<Pattern ignoreCase="true">{ns:InsuranceOptionSelected}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingOptionIsDefault">
+<Pattern ignoreCase="true">{ns:ShippingOptionIsDefault}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingOptionAmount">
+<Pattern ignoreCase="true">{ns:ShippingOptionAmount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ShippingOptionName">
+<Pattern ignoreCase="true">{ns:ShippingOptionName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ScheduledShippingDate">
+<Pattern ignoreCase="true">{ns:ScheduledShippingDate}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ScheduledShippingPeriod">
+<Pattern ignoreCase="true">{ns:ScheduledShippingPeriod}</Pattern>
+</QueryParam>
+<QueryParam name="ns:GiftMessage">
+<Pattern ignoreCase="true">{ns:GiftMessage}</Pattern>
+</QueryParam>
+<QueryParam name="ns:GiftReceiptEnable">
+<Pattern ignoreCase="true">{ns:GiftReceiptEnable}</Pattern>
+</QueryParam>
+<QueryParam name="ns:GiftWrapName">
+<Pattern ignoreCase="true">{ns:GiftWrapName}</Pattern>
+</QueryParam>
+<QueryParam name="ns:GiftWrapAmount">
+<Pattern ignoreCase="true">{ns:GiftWrapAmount}</Pattern>
+</QueryParam>
+<QueryParam name="ns:currencyID">
+<Pattern ignoreCase="true">{ns:currencyID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:BuyerMarketingEmail">
+<Pattern ignoreCase="true">{ns:BuyerMarketingEmail}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SurveyQuestion">
+<Pattern ignoreCase="true">{ns:SurveyQuestion}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SurveyChoiceSelected">
+<Pattern ignoreCase="true">{ns:SurveyChoiceSelected}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ButtonSource">
+<Pattern ignoreCase="true">{ns:ButtonSource}</Pattern>
+</QueryParam>
+<QueryParam name="ns:SkipBACreation">
+<Pattern ignoreCase="true">{ns:SkipBACreation}</Pattern>
+</QueryParam>
+<QueryParam name="ns:UseSessionPaymentDetails">
+<Pattern ignoreCase="true">{ns:UseSessionPaymentDetails}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CoupleType">
+<Pattern ignoreCase="true">{ns:CoupleType}</Pattern>
+</QueryParam>
+<QueryParam name="ns:CoupledPaymentRequestID">
+<Pattern ignoreCase="true">{ns:CoupledPaymentRequestID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:PaymentRequestID">
+<Pattern ignoreCase="true">{ns:PaymentRequestID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ClientID">
+<Pattern ignoreCase="true">{ns:ClientID}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ProductLine">
+<Pattern ignoreCase="true">{ns:ProductLine}</Pattern>
+</QueryParam>
+<QueryParam name="ns:ReturnFMFDetails">
+<Pattern ignoreCase="true">{ns:ReturnFMFDetails}</Pattern>
+</QueryParam>
+</ExtractVariables>

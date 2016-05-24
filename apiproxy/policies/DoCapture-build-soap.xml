@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="true" enabled="true" name="DoCapture-build-soap">
+    <DisplayName>DoCapture Build SOAP</DisplayName>
+    <Add>
+        <Headers>
+            <Header name="SOAPAction"/>
+        </Headers>
+    </Add>
+    <Set>
+        <Headers>
+            <Header name="Content-Type">text/xml; charset=utf-8</Header>
+        </Headers>
+        <Payload contentType="text/xml">
+<s11:Envelope xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/">  <s11:Header>    <ns:RequesterCredentials xmlns:ns="urn:ebay:api:PayPalAPI">
+<!-- optional -->      <ns:eBayAuthToken xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:eBayAuthToken}</ns:eBayAuthToken>
+<!-- optional -->      <ns:HardExpirationWarning xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:HardExpirationWarning}</ns:HardExpirationWarning>
+<!-- optional -->      <ns:Credentials xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->        <ns:AppId>{ns:AppId}</ns:AppId>
+<!-- optional -->        <ns:DevId>{ns:DevId}</ns:DevId>
+<!-- optional -->        <ns:AuthCert>{ns:AuthCert}</ns:AuthCert>        <ns:Username>{ns:Username}</ns:Username>        <ns:Password>{ns:Password}</ns:Password>
+<!-- optional -->        <ns:Signature>{ns:Signature}</ns:Signature>
+<!-- optional -->        <ns:Subject>{ns:Subject}</ns:Subject>
+<!-- optional -->        <ns:AuthToken>{ns:AuthToken}</ns:AuthToken>      </ns:Credentials>    </ns:RequesterCredentials>  </s11:Header>  <s11:Body>    <ns:DoCaptureReq xmlns:ns="urn:ebay:api:PayPalAPI">      <ns:DoCaptureRequest>
+<!-- from 0 to unbounded -->
+<!-- possible value: ReturnAll, possible value: ItemReturnDescription, possible value: ItemReturnAttributes -->        <ns:DetailLevel xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:DetailLevel}</ns:DetailLevel>
+<!-- optional -->        <ns:ErrorLanguage xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:ErrorLanguage}</ns:ErrorLanguage>        <ns:Version xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Version}</ns:Version>
+<!-- This element can be extended by any element from ##local namespace -->        <ns:AuthorizationID>{ns:AuthorizationID}</ns:AuthorizationID>        <ns:Amount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Amount}</ns:Amount>
+<!-- possible value: NotComplete, possible value: Complete -->        <ns:CompleteType>{ns:CompleteType}</ns:CompleteType>
+<!-- optional -->        <ns:Note>{ns:Note}</ns:Note>
+<!-- optional -->        <ns:InvoiceID>{ns:InvoiceID}</ns:InvoiceID>
+<!-- optional -->        <ns:EnhancedData xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->          <ns:AirlineItinerary>
+<!-- optional -->            <ns:PassengerName>{ns:PassengerName}</ns:PassengerName>
+<!-- optional -->            <ns:IssueDate>{ns:IssueDate}</ns:IssueDate>
+<!-- optional -->            <ns:TravelAgencyName>{ns:TravelAgencyName}</ns:TravelAgencyName>
+<!-- optional -->            <ns:TravelAgencyCode>{ns:TravelAgencyCode}</ns:TravelAgencyCode>
+<!-- optional -->            <ns:TicketNumber>{ns:TicketNumber}</ns:TicketNumber>
+<!-- optional -->            <ns:IssuingCarrierCode>{ns:IssuingCarrierCode}</ns:IssuingCarrierCode>
+<!-- optional -->            <ns:CustomerCode>{ns:CustomerCode}</ns:CustomerCode>
+<!-- optional -->            <ns:TotalFare xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:TotalFare}</ns:TotalFare>
+<!-- optional -->            <ns:TotalTaxes xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:TotalTaxes}</ns:TotalTaxes>
+<!-- optional -->            <ns:TotalFee xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:TotalFee}</ns:TotalFee>
+<!-- optional -->            <ns:RestrictedTicket>{ns:RestrictedTicket}</ns:RestrictedTicket>
+<!-- optional -->            <ns:ClearingSequence>{ns:ClearingSequence}</ns:ClearingSequence>
+<!-- optional -->            <ns:ClearingCount>{ns:ClearingCount}</ns:ClearingCount>
+<!-- from 0 to unbounded -->            <ns:FlightDetails>
+<!-- optional -->              <ns:ConjuctionTicket>{ns:ConjuctionTicket}</ns:ConjuctionTicket>
+<!-- optional -->              <ns:ExchangeTicket>{ns:ExchangeTicket}</ns:ExchangeTicket>
+<!-- optional -->              <ns:CouponNumber>{ns:CouponNumber}</ns:CouponNumber>
+<!-- optional -->              <ns:ServiceClass>{ns:ServiceClass}</ns:ServiceClass>
+<!-- optional -->              <ns:TravelDate>{ns:TravelDate}</ns:TravelDate>
+<!-- optional -->              <ns:CarrierCode>{ns:CarrierCode}</ns:CarrierCode>
+<!-- optional -->              <ns:StopOverPermitted>{ns:StopOverPermitted}</ns:StopOverPermitted>
+<!-- optional -->              <ns:DepartureAirport>{ns:DepartureAirport}</ns:DepartureAirport>
+<!-- optional -->              <ns:ArrivalAirport>{ns:ArrivalAirport}</ns:ArrivalAirport>
+<!-- optional -->              <ns:FlightNumber>{ns:FlightNumber}</ns:FlightNumber>
+<!-- optional -->              <ns:DepartureTime>{ns:DepartureTime}</ns:DepartureTime>
+<!-- optional -->              <ns:ArrivalTime>{ns:ArrivalTime}</ns:ArrivalTime>
+<!-- optional -->              <ns:FareBasisCode>{ns:FareBasisCode}</ns:FareBasisCode>
+<!-- optional -->              <ns:Fare xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Fare}</ns:Fare>
+<!-- optional -->              <ns:Taxes xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Taxes}</ns:Taxes>
+<!-- optional -->              <ns:Fee xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Fee}</ns:Fee>
+<!-- optional -->              <ns:EndorsementOrRestrictions>{ns:EndorsementOrRestrictions}</ns:EndorsementOrRestrictions>            </ns:FlightDetails>          </ns:AirlineItinerary>        </ns:EnhancedData>
+<!-- optional -->        <ns:Descriptor>{ns:Descriptor}</ns:Descriptor>
+<!-- optional -->        <ns:MerchantStoreDetails xmlns:ns="urn:ebay:apis:eBLBaseComponents">          <ns:StoreID>{ns:StoreID}</ns:StoreID>
+<!-- optional -->          <ns:TerminalID>{ns:TerminalID}</ns:TerminalID>        </ns:MerchantStoreDetails>
+<!-- optional -->        <ns:MsgSubID>{ns:MsgSubID}</ns:MsgSubID>
+<!-- optional -->        <ns:MerchantData xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- from 0 to 16 -->          <ns:MerchantDataTuple>            <ns:Key>{ns:Key}</ns:Key>            <ns:Value>{ns:Value}</ns:Value>          </ns:MerchantDataTuple>        </ns:MerchantData>      </ns:DoCaptureRequest>    </ns:DoCaptureReq>  </s11:Body>
+</s11:Envelope>
+</Payload>
+        <Verb>POST</Verb>
+    </Set>
+    <AssignVariable>
+        <Name>forward.target.url</Name>
+        <Value>https://api.sandbox.paypal.com/2.0/</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

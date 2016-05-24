@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="true" enabled="true" name="TransactionSearch-build-soap">
+    <DisplayName>TransactionSearch Build SOAP</DisplayName>
+    <Add>
+        <Headers>
+            <Header name="SOAPAction"/>
+        </Headers>
+    </Add>
+    <Set>
+        <Headers>
+            <Header name="Content-Type">text/xml; charset=utf-8</Header>
+        </Headers>
+        <Payload contentType="text/xml">
+<s11:Envelope xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/">  <s11:Header>    <ns:RequesterCredentials xmlns:ns="urn:ebay:api:PayPalAPI">
+<!-- optional -->      <ns:eBayAuthToken xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:eBayAuthToken}</ns:eBayAuthToken>
+<!-- optional -->      <ns:HardExpirationWarning xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:HardExpirationWarning}</ns:HardExpirationWarning>
+<!-- optional -->      <ns:Credentials xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->        <ns:AppId>{ns:AppId}</ns:AppId>
+<!-- optional -->        <ns:DevId>{ns:DevId}</ns:DevId>
+<!-- optional -->        <ns:AuthCert>{ns:AuthCert}</ns:AuthCert>        <ns:Username>{ns:Username}</ns:Username>        <ns:Password>{ns:Password}</ns:Password>
+<!-- optional -->        <ns:Signature>{ns:Signature}</ns:Signature>
+<!-- optional -->        <ns:Subject>{ns:Subject}</ns:Subject>
+<!-- optional -->        <ns:AuthToken>{ns:AuthToken}</ns:AuthToken>      </ns:Credentials>    </ns:RequesterCredentials>  </s11:Header>  <s11:Body>    <ns:TransactionSearchReq xmlns:ns="urn:ebay:api:PayPalAPI">      <ns:TransactionSearchRequest>
+<!-- from 0 to unbounded -->
+<!-- possible value: ReturnAll, possible value: ItemReturnDescription, possible value: ItemReturnAttributes -->        <ns:DetailLevel xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:DetailLevel}</ns:DetailLevel>
+<!-- optional -->        <ns:ErrorLanguage xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:ErrorLanguage}</ns:ErrorLanguage>        <ns:Version xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Version}</ns:Version>
+<!-- This element can be extended by any element from ##local namespace -->
+<!--dateTime-->        <ns:StartDate>{ns:StartDate}</ns:StartDate>
+<!-- optional -->
+<!--dateTime-->        <ns:EndDate>{ns:EndDate}</ns:EndDate>
+<!-- optional -->        <ns:Payer>{ns:Payer}</ns:Payer>
+<!-- optional -->        <ns:Receiver>{ns:Receiver}</ns:Receiver>
+<!-- optional -->        <ns:ReceiptID>{ns:ReceiptID}</ns:ReceiptID>
+<!-- optional -->        <ns:TransactionID>{ns:TransactionID}</ns:TransactionID>
+<!-- optional -->        <ns:ProfileID>{ns:ProfileID}</ns:ProfileID>
+<!-- optional -->        <ns:PayerName>
+<!-- optional -->
+<!-- Max Length: 20 -->          <ns:Salutation xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Salutation}</ns:Salutation>
+<!-- optional -->
+<!-- Max Length: 25 -->          <ns:FirstName xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:FirstName}</ns:FirstName>
+<!-- optional -->
+<!-- Max Length: 25 -->          <ns:MiddleName xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:MiddleName}</ns:MiddleName>
+<!-- optional -->
+<!-- Max Length: 25 -->          <ns:LastName xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:LastName}</ns:LastName>
+<!-- optional -->
+<!-- Max Length: 12 -->          <ns:Suffix xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Suffix}</ns:Suffix>        </ns:PayerName>
+<!-- optional -->        <ns:AuctionItemNumber>{ns:AuctionItemNumber}</ns:AuctionItemNumber>
+<!-- optional -->        <ns:InvoiceID>{ns:InvoiceID}</ns:InvoiceID>
+<!-- optional -->        <ns:CardNumber>{ns:CardNumber}</ns:CardNumber>
+<!-- optional -->
+<!-- possible value: All, possible value: Sent, possible value: Received, possible value: MassPay, possible value: MoneyRequest, possible value: FundsAdded, possible value: FundsWithdrawn, possible value: PayPalDebitCard, possible value: Referral, possible value: Fee, possible value: Subscription, possible value: Dividend, possible value: Billpay, possible value: Refund, possible value: CurrencyConversions, possible value: BalanceTransfer, possible value: Reversal, possible value: Shipping, possible value: BalanceAffecting, possible value: ECheck, possible value: ForcedPostTransaction, possible value: NonReferencedRefunds -->        <ns:TransactionClass>{ns:TransactionClass}</ns:TransactionClass>
+<!-- optional -->        <ns:Amount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Amount}</ns:Amount>
+<!-- optional -->
+<!-- possible value: AFA, possible value: ALL, possible value: DZD, possible value: ADP, possible value: AOA, possible value: ARS, possible value: AMD, possible value: AWG, possible value: AZM, possible value: BSD, possible value: BHD, possible value: BDT, possible value: BBD, possible value: BYR, possible value: BZD, possible value: BMD, possible value: BTN, possible value: INR, possible value: BOV, possible value: BOB, possible value: BAM, possible value: BWP, possible value: BRL, possible value: BND, possible value: BGL, possible value: BGN, possible value: BIF, possible value: KHR, possible value: CAD, possible value: CVE, possible value: KYD, possible value: XAF, possible value: CLF, possible value: CLP, possible value: CNY, possible value: COP, possible value: KMF, possible value: CDF, possible value: CRC, possible value: HRK, possible value: CUP, possible value: CYP, possible value: CZK, possible value: DKK, possible value: DJF, possible value: DOP, possible value: TPE, possible value: ECV, possible value: ECS, possible value: EGP, possible value: SVC, possible value: ERN, possible value: EEK, possible value: ETB, possible value: FKP, possible value: FJD, possible value: GMD, possible value: GEL, possible value: GHC, possible value: GIP, possible value: GTQ, possible value: GNF, possible value: GWP, possible value: GYD, possible value: HTG, possible value: HNL, possible value: HKD, possible value: HUF, possible value: ISK, possible value: IDR, possible value: IRR, possible value: IQD, possible value: ILS, possible value: JMD, possible value: JPY, possible value: JOD, possible value: KZT, possible value: KES, possible value: AUD, possible value: KPW, possible value: KRW, possible value: KWD, possible value: KGS, possible value: LAK, possible value: LVL, possible value: LBP, possible value: LSL, possible value: LRD, possible value: LYD, possible value: CHF, possible value: LTL, possible value: MOP, possible value: MKD, possible value: MGF, possible value: MWK, possible value: MYR, possible value: MVR, possible value: MTL, possible value: EUR, possible value: MRO, possible value: MUR, possible value: MXN, possible value: MXV, possible value: MDL, possible value: MNT, possible value: XCD, possible value: MZM, possible value: MMK, possible value: ZAR, possible value: NAD, possible value: NPR, possible value: ANG, possible value: XPF, possible value: NZD, possible value: NIO, possible value: NGN, possible value: NOK, possible value: OMR, possible value: PKR, possible value: PAB, possible value: PGK, possible value: PYG, possible value: PEN, possible value: PHP, possible value: PLN, possible value: USD, possible value: QAR, possible value: ROL, possible value: RUB, possible value: RUR, possible value: RWF, possible value: SHP, possible value: WST, possible value: STD, possible value: SAR, possible value: SCR, possible value: SLL, possible value: SGD, possible value: SKK, possible value: SIT, possible value: SBD, possible value: SOS, possible value: LKR, possible value: SDD, possible value: SRG, possible value: SZL, possible value: SEK, possible value: SYP, possible value: TWD, possible value: TJS, possible value: TZS, possible value: THB, possible value: XOF, possible value: TOP, possible value: TTD, possible value: TND, possible value: TRY, possible value: TMM, possible value: UGX, possible value: UAH, possible value: AED, possible value: GBP, possible value: USS, possible value: USN, possible value: UYU, possible value: UZS, possible value: VUV, possible value: VEB, possible value: VND, possible value: MAD, possible value: YER, possible value: YUM, possible value: ZMK, possible value: ZWD, possible value: CustomCode -->        <ns:CurrencyCode>{ns:CurrencyCode}</ns:CurrencyCode>
+<!-- optional -->
+<!-- possible value: Pending, possible value: Processing, possible value: Success, possible value: Denied, possible value: Reversed -->        <ns:Status>{ns:Status}</ns:Status>      </ns:TransactionSearchRequest>    </ns:TransactionSearchReq>  </s11:Body>
+</s11:Envelope>
+</Payload>
+        <Verb>POST</Verb>
+    </Set>
+    <AssignVariable>
+        <Name>forward.target.url</Name>
+        <Value>https://api.sandbox.paypal.com/2.0/</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

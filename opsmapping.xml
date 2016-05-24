@@ -7,12 +7,12 @@
 		<name location="beginsWith">retrieve</name>
 	</get>
 	<post>
-		<name location="beginsWith">create</name>
+		<name location="contains">create</name>
 		<name location="beginsWith">add</name>
 	</post>
 	<put>
-		<name location="beginsWith">update</name>
-		<name location="beginsWith">change</name>
+		<name location="contains">update</name>
+		<name location="contains">change</name>
 		<name location="beginsWith">modify</name>
 		<name location="beginsWith">set</name>
 	</put>

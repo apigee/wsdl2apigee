@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="true" enabled="true" name="RefundTransaction-build-soap">
+    <DisplayName>RefundTransaction Build SOAP</DisplayName>
+    <Add>
+        <Headers>
+            <Header name="SOAPAction"/>
+        </Headers>
+    </Add>
+    <Set>
+        <Headers>
+            <Header name="Content-Type">text/xml; charset=utf-8</Header>
+        </Headers>
+        <Payload contentType="text/xml">
+<s11:Envelope xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/">  <s11:Header>    <ns:RequesterCredentials xmlns:ns="urn:ebay:api:PayPalAPI">
+<!-- optional -->      <ns:eBayAuthToken xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:eBayAuthToken}</ns:eBayAuthToken>
+<!-- optional -->      <ns:HardExpirationWarning xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:HardExpirationWarning}</ns:HardExpirationWarning>
+<!-- optional -->      <ns:Credentials xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->        <ns:AppId>{ns:AppId}</ns:AppId>
+<!-- optional -->        <ns:DevId>{ns:DevId}</ns:DevId>
+<!-- optional -->        <ns:AuthCert>{ns:AuthCert}</ns:AuthCert>        <ns:Username>{ns:Username}</ns:Username>        <ns:Password>{ns:Password}</ns:Password>
+<!-- optional -->        <ns:Signature>{ns:Signature}</ns:Signature>
+<!-- optional -->        <ns:Subject>{ns:Subject}</ns:Subject>
+<!-- optional -->        <ns:AuthToken>{ns:AuthToken}</ns:AuthToken>      </ns:Credentials>    </ns:RequesterCredentials>  </s11:Header>  <s11:Body>    <ns:RefundTransactionReq xmlns:ns="urn:ebay:api:PayPalAPI">      <ns:RefundTransactionRequest>
+<!-- from 0 to unbounded -->
+<!-- possible value: ReturnAll, possible value: ItemReturnDescription, possible value: ItemReturnAttributes -->        <ns:DetailLevel xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:DetailLevel}</ns:DetailLevel>
+<!-- optional -->        <ns:ErrorLanguage xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:ErrorLanguage}</ns:ErrorLanguage>        <ns:Version xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Version}</ns:Version>
+<!-- This element can be extended by any element from ##local namespace -->
+<!-- optional -->        <ns:TransactionID>{ns:TransactionID}</ns:TransactionID>
+<!-- optional -->
+<!-- Max Length: 127 -->        <ns:PayerID>{ns:PayerID}</ns:PayerID>
+<!-- optional -->        <ns:InvoiceID>{ns:InvoiceID}</ns:InvoiceID>
+<!-- optional -->
+<!-- possible value: Other, possible value: Full, possible value: Partial, possible value: ExternalDispute -->        <ns:RefundType>{ns:RefundType}</ns:RefundType>
+<!-- optional -->        <ns:Amount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Amount}</ns:Amount>
+<!-- optional -->        <ns:ShippingAmount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:ShippingAmount}</ns:ShippingAmount>
+<!-- optional -->        <ns:TaxAmount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:TaxAmount}</ns:TaxAmount>
+<!-- optional -->        <ns:Memo>{ns:Memo}</ns:Memo>
+<!-- optional -->
+<!--dateTime-->        <ns:RetryUntil>{ns:RetryUntil}</ns:RetryUntil>
+<!-- optional -->
+<!-- possible value: any, possible value: default, possible value: instant, possible value: echeck -->        <ns:RefundSource>{ns:RefundSource}</ns:RefundSource>
+<!-- optional -->        <ns:RefundAdvice>{ns:RefundAdvice}</ns:RefundAdvice>
+<!-- optional -->        <ns:MerchantStoreDetails xmlns:ns="urn:ebay:apis:eBLBaseComponents">          <ns:StoreID>{ns:StoreID}</ns:StoreID>
+<!-- optional -->          <ns:TerminalID>{ns:TerminalID}</ns:TerminalID>        </ns:MerchantStoreDetails>
+<!-- from 0 to unbounded -->        <ns:RefundItemDetails xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->          <ns:Name>{ns:Name}</ns:Name>
+<!-- optional -->          <ns:Description>{ns:Description}</ns:Description>
+<!-- optional -->          <ns:EAN>{ns:EAN}</ns:EAN>
+<!-- optional -->          <ns:SKU>{ns:SKU}</ns:SKU>
+<!-- optional -->          <ns:ReturnPolicyIdentifier>{ns:ReturnPolicyIdentifier}</ns:ReturnPolicyIdentifier>
+<!-- optional -->          <ns:Price xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Price}</ns:Price>
+<!-- optional -->          <ns:ItemPrice xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:ItemPrice}</ns:ItemPrice>
+<!-- optional -->          <ns:ItemCount>{ns:ItemCount}</ns:ItemCount>
+<!-- optional -->
+<!-- possible value: EA, possible value: Hours, possible value: Days, possible value: Seconds, possible value: CrateOf12, possible value: 6Pack, possible value: GLI, possible value: GLL, possible value: LTR, possible value: INH, possible value: FOT, possible value: MMT, possible value: CMQ, possible value: MTR, possible value: MTK, possible value: MTQ, possible value: GRM, possible value: KGM, possible value: KG, possible value: LBR, possible value: ANN, possible value: CEL, possible value: FAH, possible value: RESERVED -->          <ns:ItemCountUnit>{ns:ItemCountUnit}</ns:ItemCountUnit>
+<!-- from 0 to unbounded -->          <ns:Discount>
+<!-- optional -->            <ns:Name>{ns:Name}</ns:Name>
+<!-- optional -->            <ns:Description>{ns:Description}</ns:Description>            <ns:Amount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Amount}</ns:Amount>
+<!-- optional -->
+<!-- possible value: MERCHANT_COUPON, possible value: LOYALTY_CARD, possible value: MANUFACTURER_COUPON, possible value: RESERVED -->            <ns:RedeemedOfferType>{ns:RedeemedOfferType}</ns:RedeemedOfferType>
+<!-- optional -->            <ns:RedeemedOfferID>{ns:RedeemedOfferID}</ns:RedeemedOfferID>          </ns:Discount>
+<!-- optional -->          <ns:Taxable>{ns:Taxable}</ns:Taxable>
+<!-- optional -->          <ns:TaxRate>{ns:TaxRate}</ns:TaxRate>
+<!-- from 0 to unbounded -->          <ns:AdditionalFees>
+<!-- optional -->            <ns:Type>{ns:Type}</ns:Type>
+<!-- optional -->            <ns:Amount xmlns:ns="urn:ebay:apis:CoreComponentTypes" ns:currencyID="{ns:currencyID}">{ns:Amount}</ns:Amount>          </ns:AdditionalFees>
+<!-- optional -->          <ns:Reimbursable>{ns:Reimbursable}</ns:Reimbursable>
+<!-- optional -->          <ns:MPN>{ns:MPN}</ns:MPN>
+<!-- optional -->          <ns:ISBN>{ns:ISBN}</ns:ISBN>
+<!-- optional -->          <ns:PLU>{ns:PLU}</ns:PLU>
+<!-- optional -->          <ns:ModelNumber>{ns:ModelNumber}</ns:ModelNumber>
+<!-- optional -->          <ns:StyleNumber>{ns:StyleNumber}</ns:StyleNumber>        </ns:RefundItemDetails>
+<!-- optional -->        <ns:MsgSubID>{ns:MsgSubID}</ns:MsgSubID>
+<!-- optional -->        <ns:MerchantData xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- from 0 to 16 -->          <ns:MerchantDataTuple>            <ns:Key>{ns:Key}</ns:Key>            <ns:Value>{ns:Value}</ns:Value>          </ns:MerchantDataTuple>        </ns:MerchantData>      </ns:RefundTransactionRequest>    </ns:RefundTransactionReq>  </s11:Body>
+</s11:Envelope>
+</Payload>
+        <Verb>POST</Verb>
+    </Set>
+    <AssignVariable>
+        <Name>forward.target.url</Name>
+        <Value>https://api.sandbox.paypal.com/2.0/</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="true" enabled="true" name="SetCustomerBillingAgreement-build-soap">
+    <DisplayName>SetCustomerBillingAgreement Build SOAP</DisplayName>
+    <Add>
+        <Headers>
+            <Header name="SOAPAction"/>
+        </Headers>
+    </Add>
+    <Set>
+        <Headers>
+            <Header name="Content-Type">text/xml; charset=utf-8</Header>
+        </Headers>
+        <Payload contentType="text/xml">
+<s11:Envelope xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/">  <s11:Header>    <ns:RequesterCredentials xmlns:ns="urn:ebay:api:PayPalAPI">
+<!-- optional -->      <ns:eBayAuthToken xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:eBayAuthToken}</ns:eBayAuthToken>
+<!-- optional -->      <ns:HardExpirationWarning xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:HardExpirationWarning}</ns:HardExpirationWarning>
+<!-- optional -->      <ns:Credentials xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->        <ns:AppId>{ns:AppId}</ns:AppId>
+<!-- optional -->        <ns:DevId>{ns:DevId}</ns:DevId>
+<!-- optional -->        <ns:AuthCert>{ns:AuthCert}</ns:AuthCert>        <ns:Username>{ns:Username}</ns:Username>        <ns:Password>{ns:Password}</ns:Password>
+<!-- optional -->        <ns:Signature>{ns:Signature}</ns:Signature>
+<!-- optional -->        <ns:Subject>{ns:Subject}</ns:Subject>
+<!-- optional -->        <ns:AuthToken>{ns:AuthToken}</ns:AuthToken>      </ns:Credentials>    </ns:RequesterCredentials>  </s11:Header>  <s11:Body>    <ns:SetCustomerBillingAgreementReq xmlns:ns="urn:ebay:api:PayPalAPI">      <ns:SetCustomerBillingAgreementRequest>
+<!-- from 0 to unbounded -->
+<!-- possible value: ReturnAll, possible value: ItemReturnDescription, possible value: ItemReturnAttributes -->        <ns:DetailLevel xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:DetailLevel}</ns:DetailLevel>
+<!-- optional -->        <ns:ErrorLanguage xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:ErrorLanguage}</ns:ErrorLanguage>        <ns:Version xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Version}</ns:Version>
+<!-- This element can be extended by any element from ##local namespace -->        <ns:SetCustomerBillingAgreementRequestDetails xmlns:ns="urn:ebay:apis:eBLBaseComponents">          <ns:BillingAgreementDetails>
+<!-- possible value: None, possible value: MerchantInitiatedBilling, possible value: RecurringPayments, possible value: MerchantInitiatedBillingSingleAgreement, possible value: ChannelInitiatedBilling -->            <ns:BillingType>{ns:BillingType}</ns:BillingType>
+<!-- optional -->            <ns:BillingAgreementDescription>{ns:BillingAgreementDescription}</ns:BillingAgreementDescription>
+<!-- optional -->
+<!-- possible value: Any, possible value: InstantOnly, possible value: EcheckOnly -->            <ns:PaymentType>{ns:PaymentType}</ns:PaymentType>
+<!-- optional -->            <ns:BillingAgreementCustom>{ns:BillingAgreementCustom}</ns:BillingAgreementCustom>          </ns:BillingAgreementDetails>          <ns:ReturnURL>{ns:ReturnURL}</ns:ReturnURL>          <ns:CancelURL>{ns:CancelURL}</ns:CancelURL>
+<!-- optional -->          <ns:LocaleCode>{ns:LocaleCode}</ns:LocaleCode>
+<!-- optional -->          <ns:PageStyle>{ns:PageStyle}</ns:PageStyle>
+<!-- optional -->          <ns:cpp-header-image>{ns:cpp-header-image}</ns:cpp-header-image>
+<!-- optional -->          <ns:cpp-header-border-color>{ns:cpp-header-border-color}</ns:cpp-header-border-color>
+<!-- optional -->          <ns:cpp-header-back-color>{ns:cpp-header-back-color}</ns:cpp-header-back-color>
+<!-- optional -->          <ns:cpp-payflow-color>{ns:cpp-payflow-color}</ns:cpp-payflow-color>
+<!-- optional -->          <ns:BuyerEmail>{ns:BuyerEmail}</ns:BuyerEmail>
+<!-- optional -->          <ns:ReqBillingAddress>{ns:ReqBillingAddress}</ns:ReqBillingAddress>        </ns:SetCustomerBillingAgreementRequestDetails>      </ns:SetCustomerBillingAgreementRequest>    </ns:SetCustomerBillingAgreementReq>  </s11:Body>
+</s11:Envelope>
+</Payload>
+        <Verb>POST</Verb>
+    </Set>
+    <AssignVariable>
+        <Name>forward.target.url</Name>
+        <Value>https://api.sandbox.paypal.com/2.0/</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

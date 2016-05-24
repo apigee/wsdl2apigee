@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="true" enabled="true" name="SetAuthFlowParam-extract-json-payload">
+    <DisplayName>SetAuthFlowParam Extract Query Param</DisplayName>
+    <Source>request</Source>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+<JSONPayload>
+<Variable name="ns:DetailLevel" type="string">
+<JSONPath>$.ns:SetAuthFlowParamReq.ns:SetAuthFlowParamRequest.ns:DetailLevel</JSONPath>
+</Variable>
+<Variable name="ns:ErrorLanguage" type="string">
+<JSONPath>$.ns:SetAuthFlowParamReq.ns:SetAuthFlowParamRequest.ns:ErrorLanguage</JSONPath>
+</Variable>
+<Variable name="ns:Version" type="string">
+<JSONPath>$.ns:SetAuthFlowParamReq.ns:SetAuthFlowParamRequest.ns:Version</JSONPath>
+</Variable>
+</JSONPayload>
+</ExtractVariables>

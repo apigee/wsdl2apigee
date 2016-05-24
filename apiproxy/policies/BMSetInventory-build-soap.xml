@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="true" enabled="true" name="BMSetInventory-build-soap">
+    <DisplayName>BMSetInventory Build SOAP</DisplayName>
+    <Add>
+        <Headers>
+            <Header name="SOAPAction"/>
+        </Headers>
+    </Add>
+    <Set>
+        <Headers>
+            <Header name="Content-Type">text/xml; charset=utf-8</Header>
+        </Headers>
+        <Payload contentType="text/xml">
+<s11:Envelope xmlns:s11="http://schemas.xmlsoap.org/soap/envelope/">  <s11:Header>    <ns:RequesterCredentials xmlns:ns="urn:ebay:api:PayPalAPI">
+<!-- optional -->      <ns:eBayAuthToken xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:eBayAuthToken}</ns:eBayAuthToken>
+<!-- optional -->      <ns:HardExpirationWarning xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:HardExpirationWarning}</ns:HardExpirationWarning>
+<!-- optional -->      <ns:Credentials xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->        <ns:AppId>{ns:AppId}</ns:AppId>
+<!-- optional -->        <ns:DevId>{ns:DevId}</ns:DevId>
+<!-- optional -->        <ns:AuthCert>{ns:AuthCert}</ns:AuthCert>        <ns:Username>{ns:Username}</ns:Username>        <ns:Password>{ns:Password}</ns:Password>
+<!-- optional -->        <ns:Signature>{ns:Signature}</ns:Signature>
+<!-- optional -->        <ns:Subject>{ns:Subject}</ns:Subject>
+<!-- optional -->        <ns:AuthToken>{ns:AuthToken}</ns:AuthToken>      </ns:Credentials>    </ns:RequesterCredentials>  </s11:Header>  <s11:Body>    <ns:BMSetInventoryReq xmlns:ns="urn:ebay:api:PayPalAPI">      <ns:BMSetInventoryRequest>
+<!-- from 0 to unbounded -->
+<!-- possible value: ReturnAll, possible value: ItemReturnDescription, possible value: ItemReturnAttributes -->        <ns:DetailLevel xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:DetailLevel}</ns:DetailLevel>
+<!-- optional -->        <ns:ErrorLanguage xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:ErrorLanguage}</ns:ErrorLanguage>        <ns:Version xmlns:ns="urn:ebay:apis:eBLBaseComponents">{ns:Version}</ns:Version>
+<!-- This element can be extended by any element from ##local namespace -->        <ns:HostedButtonID>{ns:HostedButtonID}</ns:HostedButtonID>        <ns:TrackInv>{ns:TrackInv}</ns:TrackInv>        <ns:TrackPnl>{ns:TrackPnl}</ns:TrackPnl>
+<!-- optional -->        <ns:ItemTrackingDetails xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->          <ns:ItemNumber>{ns:ItemNumber}</ns:ItemNumber>
+<!-- optional -->          <ns:ItemQty>{ns:ItemQty}</ns:ItemQty>
+<!-- optional -->          <ns:ItemQtyDelta>{ns:ItemQtyDelta}</ns:ItemQtyDelta>
+<!-- optional -->          <ns:ItemAlert>{ns:ItemAlert}</ns:ItemAlert>
+<!-- optional -->          <ns:ItemCost>{ns:ItemCost}</ns:ItemCost>        </ns:ItemTrackingDetails>
+<!-- optional -->        <ns:OptionIndex>{ns:OptionIndex}</ns:OptionIndex>
+<!-- from 0 to 10 -->        <ns:OptionTrackingDetails xmlns:ns="urn:ebay:apis:eBLBaseComponents">
+<!-- optional -->          <ns:OptionNumber>{ns:OptionNumber}</ns:OptionNumber>
+<!-- optional -->          <ns:OptionQty>{ns:OptionQty}</ns:OptionQty>
+<!-- optional -->          <ns:OptionSelect>{ns:OptionSelect}</ns:OptionSelect>
+<!-- optional -->          <ns:OptionQtyDelta>{ns:OptionQtyDelta}</ns:OptionQtyDelta>
+<!-- optional -->          <ns:OptionAlert>{ns:OptionAlert}</ns:OptionAlert>
+<!-- optional -->          <ns:OptionCost>{ns:OptionCost}</ns:OptionCost>        </ns:OptionTrackingDetails>
+<!-- optional -->        <ns:SoldoutURL>{ns:SoldoutURL}</ns:SoldoutURL>
+<!-- optional -->        <ns:ReuseDigitalDownloadKeys>{ns:ReuseDigitalDownloadKeys}</ns:ReuseDigitalDownloadKeys>
+<!-- optional -->        <ns:AppendDigitalDownloadKeys>{ns:AppendDigitalDownloadKeys}</ns:AppendDigitalDownloadKeys>
+<!-- from 0 to 1000 -->        <ns:DigitalDownloadKeys>{ns:DigitalDownloadKeys}</ns:DigitalDownloadKeys>      </ns:BMSetInventoryRequest>    </ns:BMSetInventoryReq>  </s11:Body>
+</s11:Envelope>
+</Payload>
+        <Verb>POST</Verb>
+    </Set>
+    <AssignVariable>
+        <Name>forward.target.url</Name>
+        <Value>https://api.sandbox.paypal.com/2.0/</Value>
+    </AssignVariable>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>

@@ -24,9 +24,9 @@ public class GenerateBundle {
 	
 	static {
 		fileList = new ArrayList<String>();
-		LOGGER.setLevel(Level.FINE);		
+		LOGGER.setLevel(Level.WARNING);		
 		// PUBLISH this level
-		handler.setLevel(Level.FINE);
+		handler.setLevel(Level.WARNING);
 		LOGGER.addHandler(handler);
 	}	
 	
