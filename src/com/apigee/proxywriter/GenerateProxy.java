@@ -1,8 +1,6 @@
 package com.apigee.proxywriter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -14,11 +12,10 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.JSONObject;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -29,6 +26,7 @@ import com.apigee.policywriter.ExtractPolicy;
 import com.apigee.proxywriter.exception.BindingNotFoundException;
 import com.apigee.proxywriter.exception.NoServicesFoundException;
 import com.apigee.proxywriter.exception.TargetFolderException;
+
 import com.apigee.utils.JSONPathGenerator;
 import com.apigee.utils.KeyValue;
 import com.apigee.utils.OpsMap;
@@ -37,6 +35,7 @@ import com.apigee.utils.Options.Multiplicity;
 import com.apigee.utils.Options.Separator;
 import com.apigee.utils.StringUtils;
 import com.apigee.utils.XMLUtils;
+
 import com.predic8.wsdl.Binding;
 import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Operation;
@@ -53,8 +52,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class GenerateProxy {
-
-	private List<String> fileList;
 
 	private static final Logger LOGGER = Logger.getLogger(GenerateProxy.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
@@ -85,114 +82,31 @@ public class GenerateProxy {
 	private static final String SOAP11 = "http://schemas.xmlsoap.org/soap/envelope/";
 	private static final String SOAP12 = "http://www.w3.org/2003/05/soap-envelope";
 
-	private static final int BUFFER = 2048;
-	private static boolean PASSTHRU = false;
+	private boolean PASSTHRU;
 
 	private List<ExtractPolicy> extractList;
 	private Map<String, String> buildSOAPList;
 	private Map<String, KeyValue<String, String>> messageTemplates;
 
-	private StringWriter errors;
-	
 	static {
 		LOGGER.setUseParentHandlers(false);
-		
+
 		Handler[] handlers = LOGGER.getHandlers();
-		for(Handler handler : handlers)
-		{
-	        if(handler.getClass() == ConsoleHandler.class)
-	            LOGGER.removeHandler(handler);
+		for (Handler handler : handlers) {
+			if (handler.getClass() == ConsoleHandler.class)
+				LOGGER.removeHandler(handler);
 		}
 		LOGGER.addHandler(handler);
 	}
 
-	private void zipIt(String zipFile, String targetFolder) {
-		byte[] buffer = new byte[BUFFER];
-		String source = "";
-		File f = new File(zipFile);
-		FileOutputStream fos = null;
-		ZipOutputStream zos = null;
-		try {
-			try {
-				source = targetFolder.substring(targetFolder.lastIndexOf(File.separator), targetFolder.length());
-			} catch (Exception e) {
-				source = targetFolder;
-			}
-
-			if (f.exists()) {
-				File newFile = new File(f.getParent(),
-						zipFile.substring(0, zipFile.lastIndexOf(".")) + java.lang.System.currentTimeMillis() + ".zip");
-				Files.move(f.toPath(), newFile.toPath());
-			}
-
-			fos = new FileOutputStream(zipFile);
-			zos = new ZipOutputStream(fos);
-
-			LOGGER.fine("Output to Zip : " + zipFile);
-
-			FileInputStream in = null;
-
-			for (String file : this.fileList) {
-				LOGGER.fine("File Added : " + file);
-				ZipEntry ze = new ZipEntry(source + File.separator + file);
-				zos.putNextEntry(ze);
-				try {
-					in = new FileInputStream(targetFolder + File.separator + file);
-					int len;
-					while ((len = in.read(buffer)) > 0) {
-						zos.write(buffer, 0, len);
-					}
-				} finally {
-					in.close();
-				}
-			}
-
-			zos.closeEntry();
-			LOGGER.fine("Folder successfully compressed");
-
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		} finally {
-			try {
-				zos.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private void generateFileList(File node, String targetFolder) {
-
-		// add file only
-		if (node.isFile()) {
-			fileList.add(generateZipEntry(node.toString(), targetFolder));
-
-		}
-
-		if (node.isDirectory()) {
-			String[] subNote = node.list();
-			for (String filename : subNote) {
-				generateFileList(new File(node, filename), targetFolder);
-			}
-		}
-	}
-
-	private String generateZipEntry(String file, String targetFolder) {
-		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-		LOGGER.fine("File: " + file + " File Length: " + file.length());
-		LOGGER.fine("Target Folder: " + targetFolder + " Target Folder length: " + targetFolder.length());
-		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-		return file.substring(targetFolder.length() + 1, file.length());
-	}
-
-	private GenerateProxy() {
-		fileList = new ArrayList<String>();
-		extractList = new ArrayList<ExtractPolicy>();
-		buildSOAPList = new HashMap<String, String>();
+	public GenerateProxy() {
 		messageTemplates = new HashMap<String, KeyValue<String, String>>();
-		errors = new StringWriter();
+		buildSOAPList = new HashMap<String, String>();
+		extractList = new ArrayList<ExtractPolicy>();
+	}
+
+	public void setPassThru(boolean pass) {
+		PASSTHRU = pass;
 	}
 
 	private void writeAPIProxy(String APIPROXY_TEMPLATE, String proxyName, String proxyDescription, String targetFolder)
@@ -428,7 +342,9 @@ public class GenerateProxy {
 
 					rootElement.appendChild(jsonPayload);
 				} catch (Exception e) {
+					LOGGER.severe(e.getMessage());
 					e.printStackTrace();
+					throw e;
 				}
 			}
 
@@ -560,58 +476,52 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeSOAPPassThruStdPolicies(String targetFolder) throws Exception {
+	private void writeStdPolicies(String targetFolder) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		try {
-			String sourcePath = "." + File.separator + "templates" + File.separator + "soappassthru" + File.separator;
+			String sourcePath = "." + File.separator + "templates" + File.separator;
 			String targetPath = targetFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator;
+			String xslResourcePath = targetFolder + File.separator + "apiproxy" + File.separator + "resources"
+					+ File.separator + "xsl" + File.separator;
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
-
-			Files.copy(Paths.get(sourcePath + "Extract-Operation-Name.xml"),
-					Paths.get(targetPath + "Extract-Operation-Name.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), Paths.get(targetPath + "Invalid-SOAP.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			if (PASSTHRU) {
+				sourcePath += "soappassthru" + File.separator;
+				Files.copy(Paths.get(sourcePath + "Extract-Operation-Name.xml"),
+						Paths.get(targetPath + "Extract-Operation-Name.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), Paths.get(targetPath + "Invalid-SOAP.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			} else {
+				sourcePath += "soap2api" + File.separator;
+				Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), Paths.get(targetPath + "xml-to-json.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "set-response-soap-body.xml"),
+						Paths.get(targetPath + "set-response-soap-body.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "get-response-soap-body.xml"),
+						Paths.get(targetPath + "get-response-soap-body.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "set-target-url.xml"), Paths.get(targetPath + "set-target-url.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "restore-message.xml"), Paths.get(targetPath + "restore-message.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "save-message.xml"), Paths.get(targetPath + "save-message.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "unknown-resource.xml"),
+						Paths.get(targetPath + "unknown-resource.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "remove-empty-nodes.xml"), Paths.get(targetPath + "remove-empty-nodes.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "remove-empty-nodes.xslt"), Paths.get(xslResourcePath + "remove-empty-nodes.xslt"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);				
+			}
 		} catch (IOException e) {
-			LOGGER.severe(errors.toString());
-			throw new IOException(e);
-		}
-		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-	}
-
-	private void writeSOAP2APIStdPolicies(String targetFolder) throws Exception {
-		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-		try {
-			String sourcePath = "." + File.separator + "templates" + File.separator + "soap2api" + File.separator;
-			String targetPath = targetFolder + File.separator + "apiproxy" + File.separator + "policies"
-					+ File.separator;
-			LOGGER.fine("Source Path: " + sourcePath);
-			LOGGER.fine("Target Path: " + targetPath);
-
-			Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), Paths.get(targetPath + "xml-to-json.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "set-response-soap-body.xml"),
-					Paths.get(targetPath + "set-response-soap-body.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "get-response-soap-body.xml"),
-					Paths.get(targetPath + "get-response-soap-body.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "set-target-url.xml"), Paths.get(targetPath + "set-target-url.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "restore-message.xml"), Paths.get(targetPath + "restore-message.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "save-message.xml"), Paths.get(targetPath + "save-message.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(Paths.get(sourcePath + "unknown-resource.xml"), Paths.get(targetPath + "unknown-resource.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e) {
-			LOGGER.severe(errors.toString());
-			throw new IOException(e);
+			LOGGER.severe(e.getMessage());
+			e.printStackTrace();
+			throw e;
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -809,6 +719,10 @@ public class GenerateProxy {
 				LOGGER.fine("created proxies folder");
 				new File(apiproxy.getAbsolutePath() + File.separator + "targets").mkdirs();
 				LOGGER.fine("created targets folder");
+				if (!PASSTHRU) {
+					new File(apiproxy.getAbsolutePath() + File.separator + "resources" + File.separator + "xsl").mkdirs();
+					LOGGER.fine("created resources folder");
+				}
 				LOGGER.info("Target proxy folder setup complete");
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
@@ -947,7 +861,7 @@ public class GenerateProxy {
 					LOGGER.info("Generated SOAP Message Templates.");
 					writeSOAP2APIProxyEndpoint(proxyName, basePath, wsdl, targetFolder);
 					LOGGER.info("Generated proxies XML.");
-					writeSOAP2APIStdPolicies(targetFolder);
+					writeStdPolicies(targetFolder);
 					LOGGER.info("Copied standard policies.");
 					writeTargetEndpoint(SOAP2API_TARGET_TEMPLATE, targetEndpoint, targetFolder);
 					LOGGER.info("Generated target XML.");
@@ -956,15 +870,14 @@ public class GenerateProxy {
 					writeSOAP2APIAssignMessagePolicies(targetEndpoint, targetFolder);
 					LOGGER.info("Generated Assign Message Policies.");
 				} else {
-					writeSOAPPassThruStdPolicies(targetFolder);
+					writeStdPolicies(targetFolder);
 					LOGGER.info("Copied standard policies.");
 					writeTargetEndpoint(SOAPPASSTHRU_TARGET_TEMPLATE, targetEndpoint, targetFolder);
 					LOGGER.info("Generated target XML.");
 					writeSOAPPassThruProxyEndpointConditions(basePath, wsdl, targetFolder, soapVersion);
 				}
 
-				generateFileList(new File(zipFolder), zipFolder);
-				zipIt(proxyName + ".zip", zipFolder);
+				GenerateBundle.build(zipFolder, proxyName);
 				LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
 				removeBuildFolder(new File(zipFolder));
 				LOGGER.info("Cleaned up temp folder");
@@ -989,13 +902,17 @@ public class GenerateProxy {
 
 	public static void main(String[] args) throws Exception {
 
+		GenerateProxy genProxy = new GenerateProxy();
+
 		String wsdlPath = "";
 		String targetFolder = "";
 		String proxyDescription = "";
 		String soapVersion = "";
 
 		Options opt = new Options(args, 1);
+		//the wsdl param contains the URL or FilePath to a WSDL document
 		opt.getSet().addOption("wsdl", Separator.EQUALS, Multiplicity.ONCE);
+		//if this flag it set, the generate a passthru proxy
 		opt.getSet().addOption("passthru", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		opt.getSet().addOption("target", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		opt.getSet().addOption("desc", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
@@ -1021,7 +938,9 @@ public class GenerateProxy {
 
 		if (opt.getSet().isSet("passthru")) {
 			// React to option -passthru
-			PASSTHRU = Boolean.parseBoolean(opt.getSet().getOption("passthru").getResultValue(0));
+			genProxy.setPassThru(Boolean.parseBoolean(opt.getSet().getOption("passthru").getResultValue(0)));
+		} else {
+			genProxy.setPassThru(false);
 		}
 
 		if (opt.getSet().isSet("desc")) {
@@ -1043,11 +962,9 @@ public class GenerateProxy {
 			LOGGER.setLevel(Level.FINEST);
 			handler.setLevel(Level.FINEST);
 		} else {
-			LOGGER.setLevel(Level.INFO);
-			handler.setLevel(Level.INFO);
+			LOGGER.setLevel(Level.FINEST);
+			handler.setLevel(Level.FINEST);
 		}
-
-		GenerateProxy genProxy = new GenerateProxy();
 
 		// wsdlPath =
 		// "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
