@@ -28,6 +28,17 @@
         <Response/>
     </PostFlow>
     <Flows/>
+    <DefaultFaultRule name="fault-rule">
+        <Step>
+            <Name>remove-soap-envelope</Name>
+        </Step>
+        <Step>
+            <Name>xml-fault-to-json</Name>
+        </Step>
+        <Step>
+            <Name>return-generic-error</Name>
+        </Step>
+    </DefaultFaultRule>    
     <HTTPTargetConnection>
         <Properties/>
         <URL>https://example.com/</URL>

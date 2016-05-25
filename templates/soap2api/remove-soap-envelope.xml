@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XSL async="false" continueOnError="false" enabled="true" name="remove-soap-envelope">
+    <DisplayName>Remove SOAP Envelope</DisplayName>
+    <Properties/>
+    <Source>response</Source>
+    <ResourceURL>xsl://remove-envelope.xslt</ResourceURL>
+    <Parameters ignoreUnresolvedVariables="true"/>
+    <OutputVariable>xmlfault</OutputVariable>
+</XSL>

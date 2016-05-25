@@ -124,6 +124,15 @@ public class XMLUtils {
 			throw e;
 		}
 	}
+	
+	private String extractElement (String fullElementName) {
+		if (fullElementName.indexOf(":") != -1) {
+			String elements [] = fullElementName.split(":");
+			return elements[1];
+		} else {
+			return fullElementName;
+		}
+	}
 
 	public List<String> getElementList(String xml) throws Exception {
 
@@ -136,10 +145,11 @@ public class XMLUtils {
 
 			XPathFactory xpf = XPathFactory.newInstance();
 			XPath xp = xpf.newXPath();
+
 			NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]", doc, XPathConstants.NODESET);
 
 			for (int i = 0, len = nodes.getLength(); i < len; i++) {
-				elementList.add(nodes.item(i).getNodeName());
+				elementList.add(extractElement(nodes.item(i).getNodeName()));
 			}
 			return elementList;
 		} catch (SAXException e) {
@@ -169,7 +179,7 @@ public class XMLUtils {
 
 			for (int i = 0, len = nodes.getLength(); i < len; i++) {
 				Node item = nodes.item(i);
-				item.setTextContent("{" + item.getNodeName() + "}");
+				item.setTextContent("{" + extractElement(item.getNodeName()) + "}");
 			}
 
 			Node envelope = doc.getDocumentElement();

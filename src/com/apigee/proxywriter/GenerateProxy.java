@@ -32,7 +32,6 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -100,9 +99,12 @@ public class GenerateProxy {
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "." + File.separator + "templates" + File.separator
 			+ "soappassthru" + File.separator + "targetDefault.xml";
 
-	private static final String CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml;
-																			// charset=utf-8";
-	private static final String PAYLOAD_TYPE = "text/xml";// "text&#x2F;xml";
+	private static final String SOAP11_CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml; charset=utf-8";
+	private static final String SOAP12_CONTENT_TYPE = "application/soap+xml";
+	
+	private static final String SOAP11_PAYLOAD_TYPE = "text/xml";// "text&#x2F;xml";
+	private static final String SOAP12_PAYLOAD_TYPE = "application/soap+xml";
+	
 	private static final String SOAP11 = "http://schemas.xmlsoap.org/soap/envelope/";
 	private static final String SOAP12 = "http://www.w3.org/2003/05/soap-envelope";
 
@@ -110,6 +112,8 @@ public class GenerateProxy {
 	private boolean PASSTHRU;
 
 	private String targetEndpoint;
+	
+	private String soapVersion;
 
 	// default target folder is ./build
 	private String targetFolder;
@@ -138,6 +142,7 @@ public class GenerateProxy {
 	public GenerateProxy() {
 		messageTemplates = new HashMap<String, KeyValue<String, String>>();
 		targetFolder = "." + File.separator + "build";
+		soapVersion = "SOAP12";
 	}
 
 	public void setTargetFolder(String folder) {
@@ -146,6 +151,10 @@ public class GenerateProxy {
 
 	public void setPassThru(boolean pass) {
 		PASSTHRU = pass;
+	}
+	
+	public void setSOAPVersion(String version) {
+		soapVersion = version;
 	}
 
 	private void writeAPIProxy(String proxyName, String proxyDescription) throws Exception {
@@ -361,11 +370,10 @@ public class GenerateProxy {
 			String jsonBody = keyValue.getValue();
 			JSONPathGenerator jsonPathGen = new JSONPathGenerator();
 			JSONObject json = new JSONObject(jsonBody);
-			Map<String, String> out = new HashMap<String, String>();
 
 			try {
-				jsonPathGen.parse(json, out);
-				Set<String> jsonPaths = jsonPathGen.getJsonPath();
+				jsonPathGen.traverse(json);
+				List<String> jsonPaths = jsonPathGen.getJsonPath();
 
 				Node jsonPayload = extractPolicyXML.createElement("JSONPayload");
 
@@ -414,10 +422,18 @@ public class GenerateProxy {
 		Node payload = assignPolicyXML.getElementsByTagName("Payload").item(0);
 		NamedNodeMap payloadNodeMap = payload.getAttributes();
 		Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
-		payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(PAYLOAD_TYPE));
+		
+		if (soapVersion.equalsIgnoreCase("SOAP12")) {
+			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP12_PAYLOAD_TYPE));
 
-		assignPolicyXML.getElementsByTagName("Header").item(1)
-				.setTextContent(StringEscapeUtils.escapeXml10(CONTENT_TYPE));
+			assignPolicyXML.getElementsByTagName("Header").item(1)
+					.setTextContent(StringEscapeUtils.escapeXml10(SOAP12_CONTENT_TYPE));
+		} else {
+			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP11_PAYLOAD_TYPE));
+
+			assignPolicyXML.getElementsByTagName("Header").item(1)
+					.setTextContent(StringEscapeUtils.escapeXml10(SOAP11_CONTENT_TYPE));
+		}
 
 		KeyValue<String, String> keyValue = messageTemplates.get(operationName);
 		Document operationPayload = xmlUtils.getXMLFromString(keyValue.getKey());
@@ -482,11 +498,13 @@ public class GenerateProxy {
 				Files.copy(Paths.get(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), Paths.get(targetPath + "Invalid-SOAP.xml"),
+				Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), 
+						Paths.get(targetPath + "Invalid-SOAP.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} else {
 				sourcePath += "soap2api" + File.separator;
-				Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), Paths.get(targetPath + "xml-to-json.xml"),
+				Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), 
+						Paths.get(targetPath + "xml-to-json.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(Paths.get(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
@@ -494,11 +512,14 @@ public class GenerateProxy {
 				Files.copy(Paths.get(sourcePath + "get-response-soap-body.xml"),
 						Paths.get(targetPath + "get-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "set-target-url.xml"), Paths.get(targetPath + "set-target-url.xml"),
+				Files.copy(Paths.get(sourcePath + "set-target-url.xml"), 
+						Paths.get(targetPath + "set-target-url.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "restore-message.xml"), Paths.get(targetPath + "restore-message.xml"),
+				Files.copy(Paths.get(sourcePath + "restore-message.xml"), 
+						Paths.get(targetPath + "restore-message.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "save-message.xml"), Paths.get(targetPath + "save-message.xml"),
+				Files.copy(Paths.get(sourcePath + "save-message.xml"), 
+						Paths.get(targetPath + "save-message.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(Paths.get(sourcePath + "unknown-resource.xml"),
 						Paths.get(targetPath + "unknown-resource.xml"),
@@ -509,6 +530,20 @@ public class GenerateProxy {
 				Files.copy(Paths.get(sourcePath + "remove-empty-nodes.xslt"),
 						Paths.get(xslResourcePath + "remove-empty-nodes.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "remove-envelope.xslt"),
+						Paths.get(xslResourcePath + "remove-envelope.xslt"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "remove-soap-envelope.xml"),
+						Paths.get(targetPath + "remove-soap-envelope.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "return-generic-error.xml"),
+						Paths.get(targetPath + "return-generic-error.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "xml-fault-to-json.xml"),
+						Paths.get(targetPath + "xml-fault-to-json.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				
+				
 			}
 		} catch (IOException e) {
 			LOGGER.severe(e.getMessage());
@@ -519,7 +554,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeSOAPPassThruProxyEndpointConditions(String basePath, String soapVersion) throws Exception {
+	private void writeSOAPPassThruProxyEndpointConditions(String basePath) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
@@ -656,7 +691,7 @@ public class GenerateProxy {
 		return map;
 	}
 
-	private void storeMessages(String soapVersion) throws Exception {
+	private void storeMessages() throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		XMLUtils xmlUtils = new XMLUtils();
@@ -762,7 +797,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	public void begin(String proxyDescription, String wsdlPath, String soapVersion) {
+	public void begin(String proxyDescription, String wsdlPath) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -803,7 +838,7 @@ public class GenerateProxy {
 
 				if (!PASSTHRU) {
 					// produce SOAP Requests for each operation in the WSDL
-					storeMessages(soapVersion);
+					storeMessages();
 					LOGGER.info("Generated SOAP Message Templates.");
 					writeSOAP2APIProxyEndpoint(proxyName, basePath);
 					LOGGER.info("Generated proxies XML.");
@@ -816,7 +851,7 @@ public class GenerateProxy {
 					LOGGER.info("Copied standard policies.");
 					writeTargetEndpoint();
 					LOGGER.info("Generated target XML.");
-					writeSOAPPassThruProxyEndpointConditions(basePath, soapVersion);
+					writeSOAPPassThruProxyEndpointConditions(basePath);
 				}
 
 				GenerateBundle.build(zipFolder, proxyName);
@@ -848,7 +883,6 @@ public class GenerateProxy {
 
 		String wsdlPath = "";
 		String proxyDescription = "";
-		String soapVersion = "";
 
 		Options opt = new Options(args, 1);
 		// the wsdl param contains the URL or FilePath to a WSDL document
@@ -895,10 +929,8 @@ public class GenerateProxy {
 
 		if (opt.getSet().isSet("soap")) {
 			// React to option -soap
-			soapVersion = opt.getSet().getOption("soap").getResultValue(0);
-		} else {
-			soapVersion = "SOAP12";
-		}
+			genProxy.setSOAPVersion(opt.getSet().getOption("soap").getResultValue(0));
+		} 
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
@@ -917,7 +949,9 @@ public class GenerateProxy {
 		// wsdlPath =
 		// "http://www.konakart.com/konakart/services/KKWebServiceEng?wsdl";
 
-		genProxy.begin(proxyDescription, wsdlPath, soapVersion);
+		genProxy.begin(proxyDescription, wsdlPath);
+		
+		//TODO: in the fault rules, if the response is not a soap fault, handle it as xml...
 
 	}
 }

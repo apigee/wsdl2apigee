@@ -8,6 +8,9 @@
     <LastModifiedAt>1460129120146</LastModifiedAt>
     <LastModifiedBy>ssridhar@apigee.com</LastModifiedBy>
     <Policies>
+        <Policy>remove-soap-envelope</Policy>
+        <Policy>return-generic-error</Policy>
+        <Policy>xml-fault-to-JSON</Policy>    
     	<Policy>remove-empty-nodes</Policy>
         <Policy>get-response-soap-body</Policy>
         <Policy>save-message</Policy>
