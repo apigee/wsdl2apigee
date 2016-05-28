@@ -9,6 +9,7 @@
 	<post>
 		<name location="contains">create</name>
 		<name location="beginsWith">add</name>
+		<name location="beginsWith">process</name>
 	</post>
 	<put>
 		<name location="contains">update</name>

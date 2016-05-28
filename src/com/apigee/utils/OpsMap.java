@@ -33,7 +33,6 @@ public class OpsMap {
 	
 	public static String getOpsMap(String operationName) {
 		String lcOperationName = operationName.toLowerCase();
-		
 		for (Operation o : opsMap) {
 			//found key in the operation name
 			if (lcOperationName.contains(o.getName())) {
@@ -58,7 +57,8 @@ public class OpsMap {
 		String resourcePath = operationName;
 		
 		for (Operation o : opsMap) {
-			if (operationName.toLowerCase().startsWith(o.getName()) && !operationName.toLowerCase().startsWith("address")) {
+			if (operationName.toLowerCase().startsWith(o.getName()) && !operationName.toLowerCase().startsWith("address") 
+					&& !operationName.equalsIgnoreCase(o.getName())) { //don't replace the entire resource
 				resourcePath = operationName.toLowerCase().replaceFirst(o.getName(), "");
 				LOGGER.fine("Replacing " + operationName + " with " + resourcePath.toLowerCase());
 				return "/" + resourcePath.toLowerCase();
