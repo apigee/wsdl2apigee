@@ -4,9 +4,7 @@
     <Properties/>
     <FaultResponse>
         <Set>
-            <Payload contentType="application/json" variablePrefix="@" variableSuffix="#">
-                    @jsonfault#
-            </Payload>
+            <Payload contentType="application/json">{soapresponse.body}</Payload>
             <StatusCode>500</StatusCode>
             <ReasonPhrase>Server Error</ReasonPhrase>
         </Set>

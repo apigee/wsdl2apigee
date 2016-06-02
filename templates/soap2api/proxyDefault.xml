@@ -3,11 +3,7 @@
     <Description>SOAP proxy generated from undefined</Description>
     <FaultRules/>
     <PreFlow name="PreFlow">
-        <Request>
-            <Step>
-                <Name>save-message</Name>
-            </Step>
-        </Request>
+        <Request/>
         <Response/>
     </PreFlow>
     <PostFlow name="PostFlow">

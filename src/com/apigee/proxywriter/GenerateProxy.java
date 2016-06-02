@@ -249,6 +249,8 @@ public class GenerateProxy {
 			String buildSOAPPolicy = operationName + "-build-soap";
 			String extractPolicyName = operationName + "-extract-query-param";
 			String jsonToXML = "json-to-xml";
+			String soap12 = "add-soap12";
+			String soap11 = "add-soap11";
 
 			String httpVerb = apiMap.getVerb();
 			String resourcePath = apiMap.getResourcePath();
@@ -269,6 +271,9 @@ public class GenerateProxy {
 			step1 = proxyDefault.createElement("Step");
 			name1 = proxyDefault.createElement("Name");
 
+			step2 = proxyDefault.createElement("Step");
+			name2 = proxyDefault.createElement("Name");
+			
 			if (httpVerb.equalsIgnoreCase("get")) {
 				name1.setTextContent(extractPolicyName);
 				step1.appendChild(name1);
@@ -287,6 +292,15 @@ public class GenerateProxy {
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
 				request.appendChild(step1);
+				if (soapVersion.equalsIgnoreCase("SOAP12")) {
+					name2.setTextContent(soap12);
+					step2.appendChild(name2);
+					request.appendChild(step2);
+				} else {
+					name2.setTextContent(soap11);
+					step2.appendChild(name2);
+					request.appendChild(step2);
+				}
 			}
 
 			LOGGER.fine("Condition: " + Condition);
@@ -314,6 +328,13 @@ public class GenerateProxy {
 				if (!addJsonToXMLPolicy) {
 					Node policy1 = apiTemplateDocument.createElement("Policy");
 					policy1.setTextContent(jsonToXML);
+
+					Node policy2 = apiTemplateDocument.createElement("Policy");
+					if (soapVersion.equalsIgnoreCase("SOAP12")){
+						policy2.setTextContent(soap12);
+					} else {
+						policy2.setTextContent(soap11);
+					}
 					// this will ensure the file is only copied once for all
 					// non-get operations
 					addJsonToXMLPolicy = true;
@@ -480,10 +501,30 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		try {
 			String sourcePath = "." + File.separator + "templates" + File.separator + "soap2api" + File.separator;
+			String xslResourcePath = targetFolder + File.separator + "apiproxy" + File.separator + "resources"
+					+ File.separator + "xsl" + File.separator;
 			String targetPath = targetFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator;
-			Files.copy(Paths.get(sourcePath + "json-to-xml.xml"), Paths.get(targetPath + "json-to-xml.xml"),
+			Files.copy(Paths.get(sourcePath + "json-to-xml.xml"), 
+					Paths.get(targetPath + "json-to-xml.xml"),
 					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			
+			if (soapVersion.equalsIgnoreCase("SOAP12")) {
+				Files.copy(Paths.get(sourcePath + "add-soap12.xml"), 
+						Paths.get(targetPath + "add-soap12.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "add-soap12.xslt"), 
+						Paths.get(xslResourcePath + "add-soap12.xslt"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);				
+			} else {
+				Files.copy(Paths.get(sourcePath + "add-soap11.xml"), 
+						Paths.get(targetPath + "add-soap11.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(Paths.get(sourcePath + "add-soap11.xslt"), 
+						Paths.get(xslResourcePath + "add-soap11.xslt"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);				
+			}
+			
 		} catch (IOException e) {
 			LOGGER.severe(e.getMessage());
 			e.printStackTrace();
@@ -510,11 +551,13 @@ public class GenerateProxy {
 				Files.copy(Paths.get(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), Paths.get(targetPath + "Invalid-SOAP.xml"),
+				Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), 
+						Paths.get(targetPath + "Invalid-SOAP.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} else {
 				sourcePath += "soap2api" + File.separator;
-				Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), Paths.get(targetPath + "xml-to-json.xml"),
+				Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), 
+						Paths.get(targetPath + "xml-to-json.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(Paths.get(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
@@ -522,11 +565,8 @@ public class GenerateProxy {
 				Files.copy(Paths.get(sourcePath + "get-response-soap-body.xml"),
 						Paths.get(targetPath + "get-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "set-target-url.xml"), Paths.get(targetPath + "set-target-url.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "restore-message.xml"), Paths.get(targetPath + "restore-message.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "save-message.xml"), Paths.get(targetPath + "save-message.xml"),
+				Files.copy(Paths.get(sourcePath + "set-target-url.xml"), 
+						Paths.get(targetPath + "set-target-url.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(Paths.get(sourcePath + "unknown-resource.xml"),
 						Paths.get(targetPath + "unknown-resource.xml"),
@@ -537,17 +577,8 @@ public class GenerateProxy {
 				Files.copy(Paths.get(sourcePath + "remove-empty-nodes.xslt"),
 						Paths.get(xslResourcePath + "remove-empty-nodes.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "remove-envelope.xslt"),
-						Paths.get(xslResourcePath + "remove-envelope.xslt"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "remove-soap-envelope.xml"),
-						Paths.get(targetPath + "remove-soap-envelope.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(Paths.get(sourcePath + "return-generic-error.xml"),
 						Paths.get(targetPath + "return-generic-error.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "xml-fault-to-json.xml"),
-						Paths.get(targetPath + "xml-fault-to-json.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (IOException e) {
@@ -976,18 +1007,12 @@ public class GenerateProxy {
 			LOGGER.setLevel(Level.FINEST);
 			handler.setLevel(Level.FINEST);
 		} else {
-			LOGGER.setLevel(Level.FINE);
-			handler.setLevel(Level.FINE);
+			LOGGER.setLevel(Level.INFO);
+			handler.setLevel(Level.INFO);
 		}
 
-		// wsdlPath =
-		// "/Users/srinandansridhar/Downloads/FoxEDFEmailEBO/FoxEDFEventProducer_BPEL_Client_ep.wsdl";
-		// wsdlPath =
-		// "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
 
-		genProxy.PASSTHRU = false;
-		// wsdlPath = "https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl";
-		// wsdlPath =
+		//genProxy.PASSTHRU = true;
 		// "http://www.konakart.com/konakart/services/KKWebServiceEng?wsdl";
 
 		genProxy.begin(proxyDescription, wsdlPath);
@@ -995,5 +1020,12 @@ public class GenerateProxy {
 		// TODO: in the fault rules, if the response is not a soap fault, handle
 		// it as xml...
 		// TODO: deal with soap action
+		
+		//TODO: expose this feature as an API
+		//TODO: use [xslts] to convert JSON to XML to SOAP
+		
+		//TODO: unit tests
+		//TODO: return WSDL information
+		//TODO: opsmapping API
 	}
 }

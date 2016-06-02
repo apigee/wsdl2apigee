@@ -10,9 +10,6 @@
         </Request>
         <Response>
             <Step>
-                <Name>restore-message</Name>
-            </Step>
-            <Step>
                 <Name>xml-to-json</Name>
             </Step>
             <Step>
@@ -30,14 +27,15 @@
     <Flows/>
     <DefaultFaultRule name="fault-rule">
         <Step>
-            <Name>remove-soap-envelope</Name>
+            <Name>xml-to-json</Name>
         </Step>
         <Step>
-            <Name>xml-fault-to-json</Name>
+            <Name>get-response-soap-body</Name>
         </Step>
         <Step>
             <Name>return-generic-error</Name>
         </Step>
+        
     </DefaultFaultRule>    
     <HTTPTargetConnection>
         <Properties/>
