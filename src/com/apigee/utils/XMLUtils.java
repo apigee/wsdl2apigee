@@ -1,5 +1,7 @@
 package com.apigee.utils;
 
+import javax.xml.XMLConstants;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,9 +21,12 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import com.apigee.proxywriter.GenerateProxy;
+
 import org.json.XML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -31,7 +36,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +59,16 @@ public class XMLUtils {
 	}
 
 	private DocumentBuilder builder;
+	
+	private static final Set<String> blacklist = new HashSet<String>(Arrays.asList(
+		     new String[] {"http://schemas.xmlsoap.org/wsdl/soap/",
+		    		 "http://schemas.xmlsoap.org/wsdl/", 
+		    		 "http://schemas.xmlsoap.org/ws/2003/05/partner-link/",
+		    		 "http://www.w3.org/2001/XMLSchema",
+		    		 "http://schemas.xmlsoap.org/soap/encoding/"}
+		));	
+
+	private static String elementName = ":{local-name()}";
 
 	public XMLUtils() throws Exception {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -258,5 +278,62 @@ public class XMLUtils {
 		Document clonedDoc = builder.newDocument();
 		clonedDoc.appendChild(clonedDoc.importNode(doc.getDocumentElement(), true));
 		return clonedDoc;
+	}
+	
+	
+	public void generateXSLT(String xsltTemplate, String target, String operationName, String prefix, String namespaceUri) throws Exception{
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		docBuilderFactory.setNamespaceAware(true);
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		Document document = docBuilder.parse(new File(xsltTemplate));
+		
+		Node stylesheet = document.getDocumentElement();
+		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (!blacklist.contains(value)) {
+				((Element) stylesheet).setAttribute("xmlns:"+key, value);
+			}
+		}
+		
+		XPathFactory xpf = XPathFactory.newInstance();
+		XPath xp = xpf.newXPath();
+		// there's no default implementation for NamespaceContext
+		xp.setNamespaceContext(new NamespaceContext() {
+			
+			@Override
+			public Iterator getPrefixes(String namespaceURI) {
+		        throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public String getPrefix(String namespaceURI) {
+		        throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public String getNamespaceURI(String prefix) {
+		        if (prefix == null) throw new NullPointerException("Null prefix");
+		        else if ("xsl".equals(prefix)) return "http://www.w3.org/1999/XSL/Transform";
+		        else if ("xml".equals(prefix)) return XMLConstants.XML_NS_URI;
+		        return XMLConstants.NULL_NS_URI;
+			}
+		});		
+
+		NodeList nodes = (NodeList) xp.evaluate("/xsl:stylesheet/xsl:template/xsl:element", document, XPathConstants.NODESET);
+		Node element = nodes.item(0);
+
+		NamedNodeMap attr = element.getAttributes();
+		Node nodeAttr = attr.getNamedItem("name");
+		nodeAttr.setNodeValue(prefix+elementName);
+		
+		Node nspace = document.createElementNS("http://www.w3.org/1999/XSL/Transform", "xsl:namespace");
+		((Element) nspace).setAttribute("name", prefix);
+		((Element) nspace).setAttribute("select", "'"+namespaceUri+"'");
+		
+		element.insertBefore(nspace, element.getFirstChild());
+		
+		writeXML(document, target+operationName+"-add-namespace.xslt");
+		
 	}
 }
