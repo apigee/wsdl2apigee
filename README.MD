@@ -9,9 +9,8 @@ java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl <wsdl URL o
 
 ### Other Options
 ```
-java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl <wsdl URL or Path> -passthru=<true|false> -desc=<description> -soap=<SOAP11|SOAP12>
+java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl <wsdl URL or Path> -passthru=<true|false> -desc=<description>
 
 Defaults:
 passthru=false
-soap=SOAP12
 ``` 
