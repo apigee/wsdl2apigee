@@ -2,12 +2,7 @@ package com.apigee.proxywriter;
 
 import java.io.File;
 import java.io.StringWriter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
@@ -17,6 +12,8 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import com.predic8.schema.*;
+import groovy.xml.QName;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -24,24 +21,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.apigee.utils.XMLUtils;
-import com.predic8.schema.Attribute;
-import com.predic8.schema.Choice;
-import com.predic8.schema.ComplexContent;
-import com.predic8.schema.ComplexType;
-import com.predic8.schema.Schema;
-import com.predic8.schema.SchemaComponent;
-import com.predic8.schema.Sequence;
-import com.predic8.schema.SimpleType;
-import com.predic8.schema.TypeDefinition;
-import com.predic8.soamodel.XMLElement;
-import com.predic8.wadl.creator.JsonCreatorContext;
 import com.predic8.wsdl.*;
-import com.predic8.wstool.creator.RPCRequestTemplateCreator;
-import com.predic8.wstool.creator.RequestTemplateCreator;
 import com.predic8.wstool.creator.SOARequestCreator;
-
-import groovy.xml.MarkupBuilder;
-import groovy.xml.QName;
 
 public class XSLGenerator {
 
@@ -65,6 +46,7 @@ public class XSLGenerator {
 		
 		Definitions defs = //parser.parse("/Users/srinandansridhar/Documents/Accounts/Prudential/annuities-wsdl/ContractInformation_V1.3.wsdl");
 				parser.parse("/Users/srinandansridhar/Downloads/FoxEDFEmailEBO/FoxEDFEventProducer_BPEL_Client_ep.wsdl");
+//        parser.parse("/Users/ApigeeCorporation/Downloads/fox/FoxEDFEventProducer_BPEL_Client_ep.wsdl");
 				//parser.parse("https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl");
 		//parser.parse("http://www.thomas-bayer.com/axis2/services/BLZService?wsdl");
 				
@@ -89,14 +71,14 @@ public class XSLGenerator {
         		Schema s = e.getSchema();
         		for (ComplexType ct : s.getComplexTypes()) {
             		SchemaComponent sc = ct.getModel();
-            		parse(sc);
+            		parse(sc, defs.getSchemas());
         		}
         	}
         }
 	}
 	
 	
-	private static void parse(com.predic8.schema.SchemaComponent sc) {
+	private static void parse(SchemaComponent sc, List<Schema> schemas) {
 		if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
@@ -104,7 +86,7 @@ public class XSLGenerator {
 				if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
 						ComplexType ct = (ComplexType)e.getEmbeddedType();
-						parse(ct.getModel());
+						parse(ct.getModel(), schemas);
 					} else {
 						if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
 							out("\t\t"+e.getName() + " - " + e.getNamespaceUri() + " - " + e.getType().getNamespaceURI());
@@ -119,9 +101,13 @@ public class XSLGenerator {
 				if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
 						ComplexType ct = (ComplexType)e.getEmbeddedType();
-						parse(ct.getModel());
+						parse(ct.getModel(), schemas);
 					} else {
-						if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
+                        final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
+                        if (typeDefinition instanceof ComplexType) {
+                            parse(((ComplexType) typeDefinition).getModel(), schemas);
+                        }
+                        if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
 							out("\t\t"+e.getName() + " - " + e.getNamespaceUri() + " - " + e.getType().getNamespaceURI());
 						}
 					}
@@ -137,6 +123,18 @@ public class XSLGenerator {
 			out("here....");
 		}
 	}
+
+    private static TypeDefinition getTypeFromSchema(QName qName, List<Schema> schemas) {
+        if (qName != null) {
+            for (Schema schema: schemas) {
+                final TypeDefinition type = schema.getType(qName);
+                if (type != null) {
+                    return type;
+                }
+            }
+        }
+        return null;
+    }
 	
 	
 	private static void out(String str) {
