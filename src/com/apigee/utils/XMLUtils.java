@@ -22,8 +22,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import com.apigee.proxywriter.GenerateProxy;
+import com.apigee.xsltgen.Rule;
+import com.apigee.xsltgen.RuleSet;
 
 import org.json.XML;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -42,6 +45,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,23 +54,20 @@ public class XMLUtils {
 
 	private static final Logger LOGGER = Logger.getLogger(XMLUtils.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
-	
+
 	static {
-		LOGGER.setLevel(Level.WARNING);		
+		LOGGER.setLevel(Level.WARNING);
 		// PUBLISH this level
 		handler.setLevel(Level.WARNING);
 		LOGGER.addHandler(handler);
 	}
 
 	private DocumentBuilder builder;
-	
-	private static final Set<String> blacklist = new HashSet<String>(Arrays.asList(
-		     new String[] {"http://schemas.xmlsoap.org/wsdl/soap/",
-		    		 "http://schemas.xmlsoap.org/wsdl/", 
-		    		 "http://schemas.xmlsoap.org/ws/2003/05/partner-link/",
-		    		 "http://www.w3.org/2001/XMLSchema",
-		    		 "http://schemas.xmlsoap.org/soap/encoding/"}
-		));	
+
+	private static final Set<String> blacklist = new HashSet<String>(
+			Arrays.asList(new String[] { "http://schemas.xmlsoap.org/wsdl/soap/", "http://schemas.xmlsoap.org/wsdl/",
+					"http://schemas.xmlsoap.org/ws/2003/05/partner-link/", "http://www.w3.org/2001/XMLSchema",
+					"http://schemas.xmlsoap.org/soap/encoding/" }));
 
 	private static String elementName = ":{local-name()}";
 
@@ -144,10 +145,10 @@ public class XMLUtils {
 			throw e;
 		}
 	}
-	
-	private String extractElement (String fullElementName) {
+
+	private String extractElement(String fullElementName) {
 		if (fullElementName.indexOf(":") != -1) {
-			String elements [] = fullElementName.split(":");
+			String elements[] = fullElementName.split(":");
 			return elements[1];
 		} else {
 			return fullElementName;
@@ -195,6 +196,7 @@ public class XMLUtils {
 
 			XPathFactory xpf = XPathFactory.newInstance();
 			XPath xp = xpf.newXPath();
+
 			NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]", doc, XPathConstants.NODESET);
 
 			for (int i = 0, len = nodes.getLength(); i < len; i++) {
@@ -229,9 +231,6 @@ public class XMLUtils {
 
 			keyValue = new KeyValue<String, String>(fullSoap, bodyJson);
 			return keyValue;
-		} catch (ParserConfigurationException e) {
-			LOGGER.severe(e.getMessage());
-			throw e;
 		} catch (SAXException e) {
 			LOGGER.severe(e.getMessage());
 			throw e;
@@ -279,61 +278,224 @@ public class XMLUtils {
 		clonedDoc.appendChild(clonedDoc.importNode(doc.getDocumentElement(), true));
 		return clonedDoc;
 	}
-	
-	
-	public void generateXSLT(String xsltTemplate, String target, String operationName, String prefix, String namespaceUri) throws Exception{
+
+	public void generateXSLT(String xsltTemplate, String target, String operationName, String prefix,
+			String namespaceUri) throws Exception {
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		docBuilderFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 		Document document = docBuilder.parse(new File(xsltTemplate));
-		
+
 		Node stylesheet = document.getDocumentElement();
 		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
 			if (!blacklist.contains(value)) {
-				((Element) stylesheet).setAttribute("xmlns:"+key, value);
+				((Element) stylesheet).setAttribute("xmlns:" + key, value);
 			}
 		}
-		
+
 		XPathFactory xpf = XPathFactory.newInstance();
 		XPath xp = xpf.newXPath();
 		// there's no default implementation for NamespaceContext
 		xp.setNamespaceContext(new NamespaceContext() {
-			
+
 			@Override
 			public Iterator getPrefixes(String namespaceURI) {
-		        throw new UnsupportedOperationException();
+				throw new UnsupportedOperationException();
 			}
-			
+
 			@Override
 			public String getPrefix(String namespaceURI) {
-		        throw new UnsupportedOperationException();
+				throw new UnsupportedOperationException();
 			}
-			
+
 			@Override
 			public String getNamespaceURI(String prefix) {
-		        if (prefix == null) throw new NullPointerException("Null prefix");
-		        else if ("xsl".equals(prefix)) return "http://www.w3.org/1999/XSL/Transform";
-		        else if ("xml".equals(prefix)) return XMLConstants.XML_NS_URI;
-		        return XMLConstants.NULL_NS_URI;
+				if (prefix == null)
+					throw new NullPointerException("Null prefix");
+				else if ("xsl".equals(prefix))
+					return "http://www.w3.org/1999/XSL/Transform";
+				else if ("xml".equals(prefix))
+					return XMLConstants.XML_NS_URI;
+				return XMLConstants.NULL_NS_URI;
 			}
-		});		
+		});
 
-		NodeList nodes = (NodeList) xp.evaluate("/xsl:stylesheet/xsl:template/xsl:element", document, XPathConstants.NODESET);
+		NodeList nodes = (NodeList) xp.evaluate("/xsl:stylesheet/xsl:template/xsl:element", document,
+				XPathConstants.NODESET);
 		Node element = nodes.item(0);
 
 		NamedNodeMap attr = element.getAttributes();
 		Node nodeAttr = attr.getNamedItem("name");
-		nodeAttr.setNodeValue(prefix+elementName);
-		
+		nodeAttr.setNodeValue(prefix + elementName);
+
 		Node nspace = document.createElementNS("http://www.w3.org/1999/XSL/Transform", "xsl:namespace");
 		((Element) nspace).setAttribute("name", prefix);
-		((Element) nspace).setAttribute("select", "'"+namespaceUri+"'");
-		
+		((Element) nspace).setAttribute("select", "'" + namespaceUri + "'");
+
 		element.insertBefore(nspace, element.getFirstChild());
-		
-		writeXML(document, target+operationName+"-add-namespace.xslt");
-		
+
+		writeXML(document, target + operationName + "-add-namespace.xslt");
+
 	}
+
+	public RuleSet getElementsWithOtherNS(String parentNS, String requestTemplate) throws Exception {
+
+		XPathFactory xpf = XPathFactory.newInstance();
+		XPath xp = xpf.newXPath();
+
+		xp.setNamespaceContext(new NamespaceContext() {
+
+			@Override
+			public Iterator getPrefixes(String namespaceURI) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public String getPrefix(String namespaceURI) {
+				return GenerateProxy.getPrefix(namespaceURI);
+			}
+
+			@Override
+			public String getNamespaceURI(String prefix) {
+				return GenerateProxy.getNamespaceUri(prefix);
+			}
+		});
+
+		Document document = addMissingNamespaces(requestTemplate, parentNS);
+		
+		NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]",
+				document, XPathConstants.NODESET);
+
+	    /*NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]",
+				new InputSource(new StringReader(requestTemplate)), XPathConstants.NODESET);*/
+		
+		RuleSet rs = new RuleSet();
+		Rule r;
+
+		for (int i = 0; i < nodes.getLength(); i++) {
+			r = new Rule();
+			r.mode = "self";
+			r.namespace = nodes.item(i).getNamespaceURI();
+			r.xpath = getFullXPath(nodes.item(i));
+			r.nsprefix = GenerateProxy.getPrefix(nodes.item(i).getNamespaceURI());
+			rs.addRule(r);
+		}
+		return rs;
+	}
+	
+	private Document addMissingNamespaces (String requestTemplate, String parentNS) throws Exception{
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		//docBuilderFactory.setNamespaceAware(true);
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+		Document document = docBuilder.parse(new InputSource(new StringReader(requestTemplate)));
+		
+		Element rootElement = document.getDocumentElement();
+		NamedNodeMap attrList = rootElement.getAttributes();
+		ArrayList<String> tempNS = new ArrayList<String>();
+		
+		
+		for (int i=0; i< attrList.getLength(); i++) {
+			tempNS.add(attrList.item(i).getNodeValue());
+		}
+		
+		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
+			if (!tempNS.contains(entry.getValue())) {
+				rootElement.setAttribute("xmlns:"+entry.getKey(), entry.getValue());
+			}
+		}
+		return document;		
+	}
+
+	private String getFullXPath(Node n) {
+		// abort early
+		if (null == n)
+			return null;
+
+		// declarations
+		Node parent = null;
+		Stack<Node> hierarchy = new Stack<Node>();
+		StringBuffer buffer = new StringBuffer();
+
+		// push element on stack
+		hierarchy.push(n);
+
+		switch (n.getNodeType()) {
+		case Node.ATTRIBUTE_NODE:
+			parent = ((Attr) n).getOwnerElement();
+			break;
+		case Node.ELEMENT_NODE:
+			parent = n.getParentNode();
+			break;
+		case Node.DOCUMENT_NODE:
+			parent = n.getParentNode();
+			break;
+		default:
+			throw new IllegalStateException("Unexpected Node type" + n.getNodeType());
+		}
+
+		while (null != parent && parent.getNodeType() != Node.DOCUMENT_NODE) {
+			// push on stack
+			hierarchy.push(parent);
+
+			// get parent of parent
+			parent = parent.getParentNode();
+		}
+
+		// construct xpath
+		Object obj = null;
+		while (!hierarchy.isEmpty() && null != (obj = hierarchy.pop())) {
+			Node node = (Node) obj;
+			boolean handled = false;
+
+			if (node.getNodeType() == Node.ELEMENT_NODE) {
+				Element e = (Element) node;
+
+				// is this the root element?
+				if (buffer.length() == 0) {
+					// root element - simply append element name
+					buffer.append(node.getNodeName());
+				} else {
+					// child element - append slash and element name
+					buffer.append("/");
+					buffer.append(node.getNodeName());
+
+					if (node.hasAttributes()) {
+						// see if the element has a name or id attribute
+						if (e.hasAttribute("id")) {
+							// id attribute found - use that
+							buffer.append("[@id='" + e.getAttribute("id") + "']");
+							handled = true;
+						} else if (e.hasAttribute("name")) {
+							// name attribute found - use that
+							buffer.append("[@name='" + e.getAttribute("name") + "']");
+							handled = true;
+						}
+					}
+
+					if (!handled) {
+						// no known attribute we could use - get sibling index
+						int prev_siblings = 1;
+						Node prev_sibling = node.getPreviousSibling();
+						while (null != prev_sibling) {
+							if (prev_sibling.getNodeType() == node.getNodeType()) {
+								if (prev_sibling.getNodeName().equalsIgnoreCase(node.getNodeName())) {
+									prev_siblings++;
+								}
+							}
+							prev_sibling = prev_sibling.getPreviousSibling();
+						}
+						buffer.append("[" + prev_siblings + "]");
+					}
+				}
+			} else if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+				buffer.append("/@");
+				buffer.append(node.getNodeName());
+			}
+		}
+		// return buffer
+		return buffer.toString();
+	}
+
 }

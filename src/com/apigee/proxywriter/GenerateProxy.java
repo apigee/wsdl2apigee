@@ -49,6 +49,7 @@ import org.w3c.dom.Node;
 import com.apigee.proxywriter.exception.BindingNotFoundException;
 import com.apigee.proxywriter.exception.NoServicesFoundException;
 import com.apigee.proxywriter.exception.TargetFolderException;
+import com.apigee.proxywriter.exception.UnSupportedWSDLException;
 import com.apigee.utils.APIMap;
 import com.apigee.utils.KeyValue;
 import com.apigee.utils.OpsMap;
@@ -57,6 +58,7 @@ import com.apigee.utils.Options.Multiplicity;
 import com.apigee.utils.Options.Separator;
 import com.apigee.utils.StringUtils;
 import com.apigee.utils.XMLUtils;
+import com.apigee.xsltgen.RuleSet;
 import com.predic8.wsdl.AbstractSOAPBinding;
 import com.predic8.wsdl.Binding;
 import com.predic8.wsdl.BindingOperation;
@@ -735,10 +737,19 @@ public class GenerateProxy {
 
 	}
 	
-	private String getPrefix( String namespaceUri) {
+	public static String getPrefix( String namespaceUri) {
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			if (entry.getValue().equalsIgnoreCase(namespaceUri)) {
 				return entry.getKey();
+			}
+		}
+		return "ns";
+	}
+	
+	public static String getNamespaceUri(String prefix) {
+		for (Map.Entry<String, String> entry : namespace.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(prefix)) {
+				return entry.getValue();
 			}
 		}
 		return null;
@@ -762,7 +773,6 @@ public class GenerateProxy {
 				LOGGER.severe("No services were found in the WSDL");
 				throw new NoServicesFoundException("No services were found in the WSDL");
 			}
-
 			creator = new SOARequestCreator(wsdl, new RequestTemplateCreator(), new MarkupBuilder(writer));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -816,6 +826,10 @@ public class GenerateProxy {
 		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
 		
+		if (!binding.getStyle().equalsIgnoreCase("Document/Literal")) {
+			throw new UnSupportedWSDLException("Only Docuement/literal is supported");
+		}
+		
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
 				+ binding.getPrefix() + " NamespaceURI: " + binding.getNamespaceUri());
 		
@@ -823,8 +837,6 @@ public class GenerateProxy {
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
 
 		PortType portType = binding.getPortType();
-		
-		namespace = (Map<String, String>)portType.getNamespaceContext();
 		
 		for (Operation op : portType.getOperations()) {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
@@ -834,35 +846,36 @@ public class GenerateProxy {
 					APIMap apiMap = null;
 					String resourcePath = OpsMap.getResourcePath(op.getName());
 					String verb = OpsMap.getOpsMap(op.getName());
-					if (verb.equalsIgnoreCase("GET")) {
-						creator.setCreator(new RequestTemplateCreator());
-						// use membrane SOAP to generate a SOAP Request
-						creator.createRequest(port.getName(), op.getName(), binding.getName());
-						// store the operation name, SOAP Request and the
-						// expected JSON Body in the map
-						KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
-						apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb);
-						writer.getBuffer().setLength(0);
+					
+					if (op.getInput().getMessage().getParts().size() < 1) {
+						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
+					} else if (op.getInput().getMessage().getParts().size() > 1) {
+						LOGGER.warning("wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
 					} else {
-						if (op.getInput().getMessage().getParts().size() < 1) {
-							LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
-						} else if (op.getInput().getMessage().getParts().size() > 1) {
-							LOGGER.warning("wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
+						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0).getElement();
+						namespace = (Map<String,String>)requestElement.getNamespaceContext();
+						if (verb.equalsIgnoreCase("GET")) {
+							creator.setCreator(new RequestTemplateCreator());
+							// use membrane SOAP to generate a SOAP Request
+							creator.createRequest(port.getName(), op.getName(), binding.getName());							
+							// store the operation name, SOAP Request and the
+							// expected JSON Body in the map
+							KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
+							apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb);
+							writer.getBuffer().setLength(0);
 						} else {
-		            		com.predic8.schema.Element e = op.getInput().getMessage().getParts().get(0).getElement();
 							String namespaceUri = null;
-							if (e.getType() != null) {
-								namespaceUri = e.getType().getNamespaceURI();
+							if (requestElement.getType() != null) {
+								namespaceUri = requestElement.getType().getNamespaceURI();
 							} else {
-								namespaceUri = e.getEmbeddedType().getNamespaceUri();
+								namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
 							}
 							String prefix = getPrefix(namespaceUri);
 							xmlUtils.generateXSLT(SOAP2API_XSLT_TEMPLATE, SOAP2API_XSL, op.getName(), prefix, namespaceUri);
-						}						
-
-						apiMap = new APIMap("", "", resourcePath, verb);
-					}
-					messageTemplates.put(op.getName(), apiMap);
+							apiMap = new APIMap("", "", resourcePath, verb);
+						}
+						messageTemplates.put(op.getName(), apiMap);
+					}					
 				} else {
 					messageTemplates.put(op.getName(), null);
 				}
@@ -1095,25 +1108,13 @@ public class GenerateProxy {
 			LOGGER.setLevel(Level.FINEST);
 			handler.setLevel(Level.FINEST);
 		} else {
-			LOGGER.setLevel(Level.INFO);
-			handler.setLevel(Level.INFO);
+			LOGGER.setLevel(Level.FINEST);
+			handler.setLevel(Level.FINEST);
 		}
 
-
 		//genProxy.PASSTHRU = true;
-		// "http://www.konakart.com/konakart/services/KKWebServiceEng?wsdl";
 
 		genProxy.begin(proxyDescription, wsdlPath);
 
-		// TODO: in the fault rules, if the response is not a soap fault, handle
-		// it as xml...
-		// TODO: deal with soap action
-		
-		//TODO: expose this feature as an API
-		//TODO: use [xslts] to convert JSON to XML to SOAP
-		
-		//TODO: unit tests
-		//TODO: return WSDL information
-		//TODO: opsmapping API
 	}
 }
