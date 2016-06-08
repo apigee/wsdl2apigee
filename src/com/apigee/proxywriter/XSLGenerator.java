@@ -45,9 +45,9 @@ public class XSLGenerator {
 		SOARequestCreator creator = null;
 		
 		Definitions defs = //parser.parse("/Users/srinandansridhar/Documents/Accounts/Prudential/annuities-wsdl/ContractInformation_V1.3.wsdl");
-				parser.parse("/Users/srinandansridhar/Downloads/FoxEDFEmailEBO/FoxEDFEventProducer_BPEL_Client_ep.wsdl");
+//				parser.parse("/Users/srinandansridhar/Downloads/FoxEDFEmailEBO/FoxEDFEventProducer_BPEL_Client_ep.wsdl");
 //        parser.parse("/Users/ApigeeCorporation/Downloads/fox/FoxEDFEventProducer_BPEL_Client_ep.wsdl");
-				//parser.parse("https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl");
+				parser.parse("https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl");
 		//parser.parse("http://www.thomas-bayer.com/axis2/services/BLZService?wsdl");
 				
 				//TODO: has messages with no parts. messages with no input.
@@ -83,12 +83,26 @@ public class XSLGenerator {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
 				out("->"+e.getName());
-				if (!e.getName().equalsIgnoreCase(rootElement)) {
+                if (e.getName() == null) {
+                    if (e.getRef() != null) {
+                        out(e.getRef().getLocalPart());
+                        final TypeDefinition typeDefinition = getTypeFromSchema(e.getRef(), schemas);
+                        out(typeDefinition.toString());
+                    }
+                    else {
+                        out("Trouble");
+                    }
+                }
+				else if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
+                        out("\t\t" + e.getName());
 						ComplexType ct = (ComplexType)e.getEmbeddedType();
 						parse(ct.getModel(), schemas);
 					} else {
-						if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
+                        if (e.getType() == null) {
+                            out("No type: " + e.toString());
+                        }
+						else if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
 							out("\t\t"+e.getName() + " - " + e.getNamespaceUri() + " - " + e.getType().getNamespaceURI());
 						}
 					}
@@ -101,11 +115,15 @@ public class XSLGenerator {
 				if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
 						ComplexType ct = (ComplexType)e.getEmbeddedType();
+                        out("\t\t" + ct.getName());
 						parse(ct.getModel(), schemas);
 					} else {
                         final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
                         if (typeDefinition instanceof ComplexType) {
-                            parse(((ComplexType) typeDefinition).getModel(), schemas);
+                            out("\t\t" + e.getName());
+//                            out("\t\t" + typeDefinition.getName());
+                            parse(((
+                                    ComplexType) typeDefinition).getModel(), schemas);
                         }
                         if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
 							out("\t\t"+e.getName() + " - " + e.getNamespaceUri() + " - " + e.getType().getNamespaceURI());
@@ -115,8 +133,16 @@ public class XSLGenerator {
 			}
 		}
 		else if (sc instanceof ComplexContent) {
-			ComplexContent cc = (ComplexContent)sc;
-			//out("Complex Content");
+			ComplexContent complexContent = (ComplexContent)sc;
+            Derivation derivation = complexContent.getDerivation();
+            if (derivation != null) {
+                if (derivation.getModel() instanceof Sequence) {
+                    parse(derivation.getModel(), schemas);
+                }
+                else if (derivation.getModel() instanceof ModelGroup) {
+                    parse(derivation.getModel(), schemas);
+                }
+            }
 		}
 		else {
 			out(sc.getClass().getName());
@@ -127,9 +153,13 @@ public class XSLGenerator {
     private static TypeDefinition getTypeFromSchema(QName qName, List<Schema> schemas) {
         if (qName != null) {
             for (Schema schema: schemas) {
-                final TypeDefinition type = schema.getType(qName);
-                if (type != null) {
-                    return type;
+                try {
+                    final TypeDefinition type = schema.getType(qName);
+                    if (type != null) {
+                        return type;
+                    }
+                } catch (Exception e) {
+                    // Fail silently
                 }
             }
         }
