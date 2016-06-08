@@ -133,7 +133,6 @@ public class XSLGenerator {
         if (e.getName() == null) {
             if (e.getRef() != null) {
                 final String localPart = e.getRef().getLocalPart();
-                out(localPart);
                 final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
                 out(element.getName());
                 parse(element, schemas);
