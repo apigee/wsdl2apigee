@@ -1,6 +1,0 @@
-  <xsl:template match="@@MATCH">
-    <xsl:element name="@@PREFIX:{local-name()}" >
-      @@NAMESPACE-DECL
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:element>
-  </xsl:template>

@@ -141,8 +141,8 @@ public class GenerateProxy {
 
 	private String proxyName;
 
-	// default target folder is ./build
-	private String targetFolder;
+	// default build folder is ./build
+	private String buildFolder;
 
 	// Each row in this Map has the key as the operation name. The operation
 	// name has SOAP Request
@@ -172,12 +172,12 @@ public class GenerateProxy {
 	// initialize hashmap
 	public GenerateProxy() {
 		messageTemplates = new HashMap<String, APIMap>();
-		targetFolder = "." + File.separator + "build";
+		buildFolder = "." + File.separator + "build";
 		soapVersion = "SOAP12";
 	}
 
-	public void setTargetFolder(String folder) {
-		targetFolder = folder;
+	public void setBuildFolder(String folder) {
+		buildFolder = folder;
 	}
 
 	public void setPassThru(boolean pass) {
@@ -227,9 +227,9 @@ public class GenerateProxy {
 		LastModifiedAt.setTextContent(Long.toString(java.lang.System.currentTimeMillis()));
 
 		xmlUtils.writeXML(apiTemplateDocument,
-				targetFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
+				buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 		LOGGER.fine(
-				"Generated file: " + targetFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
+				"Generated file: " + buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
@@ -248,7 +248,7 @@ public class GenerateProxy {
 		}
 
 		Document apiTemplateDocument = xmlUtils
-				.readXML(targetFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
+				.readXML(buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 
 		Document extractTemplate = xmlUtils.readXML(SOAP2API_EXTRACT_TEMPLATE);
 
@@ -425,14 +425,14 @@ public class GenerateProxy {
 
 		flows.appendChild(flow);
 
-		LOGGER.fine("Edited proxy xml: " + targetFolder + File.separator + "apiproxy" + File.separator + proxyName
+		LOGGER.fine("Edited proxy xml: " + buildFolder + File.separator + "apiproxy" + File.separator + proxyName
 				+ ".xml");
 		xmlUtils.writeXML(apiTemplateDocument,
-				targetFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
+				buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 
-		xmlUtils.writeXML(proxyDefault, targetFolder + File.separator + "apiproxy" + File.separator + "proxies"
+		xmlUtils.writeXML(proxyDefault, buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
 				+ File.separator + "default.xml");
-		LOGGER.fine("Edited target xml: " + targetFolder + File.separator + "apiproxy" + File.separator + "proxies"
+		LOGGER.fine("Edited target xml: " + buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
 				+ File.separator + "default.xml");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -458,7 +458,7 @@ public class GenerateProxy {
 			Node resourceURL = xslPolicyXML.getElementsByTagName("ResourceURL").item(0);
 			resourceURL.setTextContent("xsl://" + policyName + ".xslt");
 
-			xmlUtils.writeXML(xslPolicyXML, targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+			xmlUtils.writeXML(xslPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator + policyName + ".xml");
 			
 			if (addOtherNamespaces) {
@@ -476,7 +476,7 @@ public class GenerateProxy {
 				Node resourceURLOther = xslPolicyXMLOther.getElementsByTagName("ResourceURL").item(0);
 				resourceURLOther.setTextContent("xsl://" + policyNameOther + ".xslt");
 
-				xmlUtils.writeXML(xslPolicyXMLOther, targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+				xmlUtils.writeXML(xslPolicyXMLOther, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 						+ File.separator + policyNameOther + ".xml");
 			}
 			
@@ -524,7 +524,7 @@ public class GenerateProxy {
 			rootElement.appendChild(queryParam);
 		}
 
-		xmlUtils.writeXML(extractPolicyXML, targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+		xmlUtils.writeXML(extractPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 				+ File.separator + policyName + ".xml");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -571,10 +571,10 @@ public class GenerateProxy {
 		Node value = assignPolicyXML.getElementsByTagName("Value").item(0);
 		value.setTextContent(targetEndpoint);
 
-		LOGGER.fine("Generated resource xml: " + targetFolder + File.separator + "apiproxy" + File.separator
+		LOGGER.fine("Generated resource xml: " + buildFolder + File.separator + "apiproxy" + File.separator
 				+ "policies" + File.separator + policyName + ".xml");
 
-		xmlUtils.writeXML(assignPolicyXML, targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+		xmlUtils.writeXML(assignPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 				+ File.separator + policyName + ".xml");
 
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
@@ -602,9 +602,9 @@ public class GenerateProxy {
 			LOGGER.warning("No target URL set");
 		}
 
-		xmlUtils.writeXML(targetDefault, targetFolder + File.separator + "apiproxy" + File.separator + "targets"
+		xmlUtils.writeXML(targetDefault, buildFolder + File.separator + "apiproxy" + File.separator + "targets"
 				+ File.separator + "default.xml");
-		LOGGER.info("Generated Target xml: " + targetFolder + File.separator + "apiproxy" + File.separator + "targets"
+		LOGGER.info("Generated Target xml: " + buildFolder + File.separator + "apiproxy" + File.separator + "targets"
 				+ File.separator + "default.xml");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -615,9 +615,9 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		try {
 			String sourcePath = "." + File.separator + "templates" + File.separator + "soap2api" + File.separator;
-			String xslResourcePath = targetFolder + File.separator + "apiproxy" + File.separator + "resources"
+			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
-			String targetPath = targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+			String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator;
 			Files.copy(Paths.get(sourcePath + "json-to-xml.xml"), Paths.get(targetPath + "json-to-xml.xml"),
 					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -649,9 +649,9 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		try {
 			String sourcePath = "/templates/";
-			String targetPath = targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+			String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator;
-			String xslResourcePath = targetFolder + File.separator + "apiproxy" + File.separator + "resources"
+			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
@@ -775,9 +775,9 @@ public class GenerateProxy {
 
 		flows.appendChild(flow);
 
-		xmlUtils.writeXML(proxyDefault, targetFolder + File.separator + "apiproxy" + File.separator + "proxies"
+		xmlUtils.writeXML(proxyDefault, buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
 				+ File.separator + "default.xml");
-		LOGGER.fine("Edited target xml: " + targetFolder + File.separator + "apiproxy" + File.separator + "proxies"
+		LOGGER.fine("Edited target xml: " + buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
 				+ File.separator + "default.xml");
 
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
@@ -863,7 +863,6 @@ public class GenerateProxy {
         return null;
     }
     
-
 	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -1179,7 +1178,7 @@ public class GenerateProxy {
 	private boolean prepareTargetFolder() {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		File f = new File(targetFolder);
+		File f = new File(buildFolder);
 
 		if (f.isDirectory()) { // ensure target is a folder
 			LOGGER.fine("Target is a folder");
@@ -1247,8 +1246,8 @@ public class GenerateProxy {
 
 		try {
             tempDirectory = Files.createTempDirectory(null);
-            targetFolder = tempDirectory.toAbsolutePath().toString();
-            zipFolder = targetFolder + File.separator + "apiproxy";
+            buildFolder = tempDirectory.toAbsolutePath().toString();
+            zipFolder = buildFolder + File.separator + "apiproxy";
             // prepare the target folder (create apiproxy folder and sub-folders
 			if (prepareTargetFolder()) {
 
@@ -1259,13 +1258,14 @@ public class GenerateProxy {
 					LOGGER.info("Read operations map");
 				}
 
+				LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
+				LOGGER.info("Build Folder: " + buildFolder + "\nSOAP Version: " + soapVersion);
+				
 				// parse the wsdl
 				parseWSDL(wsdlPath);
 				LOGGER.info("Parsed WSDL Successfully.");
-
 				LOGGER.info("Proxy Name: " + proxyName + "\nProxy Description: " + proxyDescription);
-				LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
-				LOGGER.info("Target Folder: " + targetFolder + "\nSOAP Version: " + soapVersion);
+
 
 				// create the basic proxy structure from templates
 				writeAPIProxy(proxyDescription);
@@ -1336,6 +1336,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("port", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// set this flag to set build folder
+		opt.getSet().addOption("build", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
 		opt.check();
 
@@ -1369,6 +1371,10 @@ public class GenerateProxy {
 				genProxy.setPort(opt.getSet().getOption("port").getResultValue(0));
 			}
 		}
+		
+		if (opt.getSet().isSet("build")) {
+			//TODO: set build folder
+		} 
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
