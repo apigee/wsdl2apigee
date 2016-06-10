@@ -4,7 +4,6 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -22,8 +21,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import com.apigee.proxywriter.GenerateProxy;
-import com.apigee.xsltgen.Rule;
-import com.apigee.xsltgen.RuleSet;
 
 import org.json.XML;
 import org.w3c.dom.Attr;
@@ -130,6 +127,19 @@ public class XMLUtils {
 			LOGGER.severe(" " + te.getMessage());
 			throw te;
 		}
+	}
+
+	public void generateOtherNamespacesXSLT(String filePath, String operationName, String data) throws Exception {
+		LOGGER.entering(XMLUtils.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+
+		File f = new File(filePath + operationName + "-add-other-namespaces.xslt");
+		FileOutputStream fos = new FileOutputStream(f, false);
+		fos.write(data.getBytes());
+		fos.close();
+
+		LOGGER.exiting(XMLUtils.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
 	}
 
 	public Document getXMLFromString(String xml) throws Exception {
@@ -279,7 +289,7 @@ public class XMLUtils {
 		return clonedDoc;
 	}
 
-	public void generateXSLT(String xsltTemplate, String target, String operationName, String prefix,
+	public void generateRootNamespaceXSLT(String xsltTemplate, String target, String operationName, String prefix,
 			String namespaceUri) throws Exception {
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		docBuilderFactory.setNamespaceAware(true);
@@ -301,7 +311,7 @@ public class XMLUtils {
 		xp.setNamespaceContext(new NamespaceContext() {
 
 			@Override
-			public Iterator getPrefixes(String namespaceURI) {
+			public Iterator<String> getPrefixes(String namespaceURI) {
 				throw new UnsupportedOperationException();
 			}
 
@@ -338,74 +348,6 @@ public class XMLUtils {
 
 		writeXML(document, target + operationName + "-add-namespace.xslt");
 
-	}
-
-	public RuleSet getElementsWithOtherNS(String parentNS, String requestTemplate) throws Exception {
-
-		XPathFactory xpf = XPathFactory.newInstance();
-		XPath xp = xpf.newXPath();
-
-		xp.setNamespaceContext(new NamespaceContext() {
-
-			@Override
-			public Iterator getPrefixes(String namespaceURI) {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public String getPrefix(String namespaceURI) {
-				return GenerateProxy.getPrefix(namespaceURI);
-			}
-
-			@Override
-			public String getNamespaceURI(String prefix) {
-				return GenerateProxy.getNamespaceUri(prefix);
-			}
-		});
-
-		Document document = addMissingNamespaces(requestTemplate, parentNS);
-		
-		NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]",
-				document, XPathConstants.NODESET);
-
-	    /*NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]",
-				new InputSource(new StringReader(requestTemplate)), XPathConstants.NODESET);*/
-		
-		RuleSet rs = new RuleSet();
-		Rule r;
-
-		for (int i = 0; i < nodes.getLength(); i++) {
-			r = new Rule();
-			r.mode = "self";
-			r.namespace = nodes.item(i).getNamespaceURI();
-			r.xpath = getFullXPath(nodes.item(i));
-			r.nsprefix = GenerateProxy.getPrefix(nodes.item(i).getNamespaceURI());
-			rs.addRule(r);
-		}
-		return rs;
-	}
-	
-	private Document addMissingNamespaces (String requestTemplate, String parentNS) throws Exception{
-		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
-		//docBuilderFactory.setNamespaceAware(true);
-		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-		Document document = docBuilder.parse(new InputSource(new StringReader(requestTemplate)));
-		
-		Element rootElement = document.getDocumentElement();
-		NamedNodeMap attrList = rootElement.getAttributes();
-		ArrayList<String> tempNS = new ArrayList<String>();
-		
-		
-		for (int i=0; i< attrList.getLength(); i++) {
-			tempNS.add(attrList.item(i).getNodeValue());
-		}
-		
-		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
-			if (!tempNS.contains(entry.getValue())) {
-				rootElement.setAttribute("xmlns:"+entry.getKey(), entry.getValue());
-			}
-		}
-		return document;		
 	}
 
 	private String getFullXPath(Node n) {

@@ -29,4 +29,11 @@ public class Rule {
     public boolean validate() {
         return (Arrays.asList(validModes).contains(mode));
     }
+    
+    public Rule(String xp, String nsp, String ns) {
+    	mode = "self";
+    	xpath = xp;
+    	nsprefix = nsp;
+    	namespace = ns;
+    }
 }

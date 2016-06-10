@@ -53,6 +53,10 @@ public class RuleSet {
         return true;
     }
     
+    public void addRuleList (ArrayList<Rule> r) {
+    	rules = r;
+    }
+    
     public void addRule(Rule r) {
     	rules.add(r);
     }
