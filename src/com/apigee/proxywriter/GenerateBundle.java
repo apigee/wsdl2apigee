@@ -41,7 +41,7 @@ public class GenerateBundle {
 		ZipOutputStream zos = null;
 		try {
 			try {
-				source = targetFolder.substring(targetFolder.lastIndexOf(File.separator), targetFolder.length());
+				source = targetFolder.substring(targetFolder.lastIndexOf(File.separator) + 1, targetFolder.length());
 			} catch (Exception e) {
 				source = targetFolder;
 			}
