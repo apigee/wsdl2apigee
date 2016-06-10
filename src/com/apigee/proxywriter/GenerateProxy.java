@@ -266,8 +266,8 @@ public class GenerateProxy {
 		Node request;
 		Node response;
 		Node condition;
-		Node step1, step2, step3;
-		Node name1, name2, name3;
+		Node step1, step2, step3, step4;
+		Node name1, name2, name3, name4;
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			String operationName = entry.getKey();
@@ -303,6 +303,9 @@ public class GenerateProxy {
 			step3 = proxyDefault.createElement("Step");
 			name3 = proxyDefault.createElement("Name");
 
+			step4 = proxyDefault.createElement("Step");
+			name4 = proxyDefault.createElement("Name");
+			
 			if (httpVerb.equalsIgnoreCase("get")) {
 				name1.setTextContent(extractPolicyName);
 				step1.appendChild(name1);
@@ -325,6 +328,12 @@ public class GenerateProxy {
 				name2.setTextContent(operationName + "-add-namespace");
 				step2.appendChild(name2);
 				request.appendChild(step2);
+				
+				if (apiMap.getOthernamespaces()) {
+					name4.setTextContent(operationName + "-add-other-namespaces");
+					step4.appendChild(name4);
+					request.appendChild(step4);
+				}
 
 				if (soapVersion.equalsIgnoreCase("SOAP12")) {
 					name3.setTextContent(soap12);
@@ -374,9 +383,21 @@ public class GenerateProxy {
 					addJsonToXMLPolicy = true;
 					writeJsonToXMLPolicy();
 				}
+				
 				Node policy3 = apiTemplateDocument.createElement("Policy");
 				policy3.setTextContent(operationName + "add-namespace");
-				writeAddNamespace(addNamespaceTemplate, operationName);
+				policies.appendChild(policy3);
+				
+				if (apiMap.getOthernamespaces()) {
+					Node policy4 = apiTemplateDocument.createElement("Policy");
+					policy4.setTextContent(operationName + "add-other-namespaces");
+					
+					policies.appendChild(policy4);
+					
+					writeAddNamespace(addNamespaceTemplate, operationName, true);
+				} else {
+					writeAddNamespace(addNamespaceTemplate, operationName, false);
+				}
 			}
 		}
 
@@ -417,7 +438,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeAddNamespace(Document namespaceTemplate, String operationName) throws Exception {
+	private void writeAddNamespace(Document namespaceTemplate, String operationName, boolean addOtherNamespaces) throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -439,6 +460,26 @@ public class GenerateProxy {
 
 			xmlUtils.writeXML(xslPolicyXML, targetFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator + policyName + ".xml");
+			
+			if (addOtherNamespaces) {
+				String policyNameOther = operationName + "-add-other-namespaces";
+				Document xslPolicyXMLOther = xmlUtils.cloneDocument(namespaceTemplate);
+
+				Node rootElementOther = xslPolicyXMLOther.getFirstChild();
+				NamedNodeMap attrOther = rootElementOther.getAttributes();
+				Node nodeAttrOther = attrOther.getNamedItem("name");
+				nodeAttrOther.setNodeValue(policyNameOther);
+
+				Node displayNameOther = xslPolicyXMLOther.getElementsByTagName("DisplayName").item(0);
+				displayNameOther.setTextContent(operationName + " Add Other Namespaces");
+
+				Node resourceURLOther = xslPolicyXMLOther.getElementsByTagName("ResourceURL").item(0);
+				resourceURLOther.setTextContent("xsl://" + policyNameOther + ".xslt");
+
+				xmlUtils.writeXML(xslPolicyXMLOther, targetFolder + File.separator + "apiproxy" + File.separator + "policies"
+						+ File.separator + policyNameOther + ".xml");
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -783,7 +824,7 @@ public class GenerateProxy {
                 parseSchema(element, schemas, rootElement, rootNamespace);
             }
             else {
-                //out("Trouble");
+            	//TODO: handle this
             	LOGGER.warning("unhandle conditions getRef() = null");
             }
         }
@@ -870,14 +911,15 @@ public class GenerateProxy {
 			Derivation derivation = (Derivation) simpleContent.getDerivation();
 
 			if (derivation.getAllAttributes().size() > 0) {
-				buildXPath(simpleContent.getParent(), null, true, rootElement); // has
-																				// attributes
+				//has attributes
+				buildXPath(simpleContent.getParent(), null, true, rootElement); 
 			} else {
-				buildXPath(simpleContent.getParent(), null, false, rootElement); // has
-																					// no
-																					// attributes
+				//has no attributes
+				buildXPath(simpleContent.getParent(), null, false, rootElement); 
 			}
-		} else {
+		} else if (sc instanceof com.predic8.schema.Element) {
+            parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace);
+        } else {
 			// TODO: handle this
 			LOGGER.warning("unhandle conditions - " + sc.getClass().getName());
 		}
