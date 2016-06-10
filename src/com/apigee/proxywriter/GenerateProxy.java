@@ -29,6 +29,7 @@ package com.apigee.proxywriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -978,10 +979,14 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 		LOGGER.fine("Preparing target folder");
-		String zipFolder = targetFolder + File.separator + "apiproxy";
+		String zipFolder = null;
+        Path tempDirectory = null;
 
 		try {
-			// prepare the target folder (create apiproxy folder and sub-folders
+            tempDirectory = Files.createTempDirectory(null);
+            targetFolder = tempDirectory.toAbsolutePath().toString();
+            zipFolder = targetFolder + File.separator + "apiproxy";
+            // prepare the target folder (create apiproxy folder and sub-folders
 			if (prepareTargetFolder()) {
 				
 				// if not passthru read conf file to interpret soap operations
@@ -1031,15 +1036,21 @@ public class GenerateProxy {
 				throw new TargetFolderException("Erorr is preparing target folder");
 			}
 		} catch (SecurityException e) {
-			removeBuildFolder(new File(zipFolder));
 			LOGGER.severe(e.getMessage());
 		} catch (TargetFolderException e) {
-			removeBuildFolder(new File(zipFolder));
 			LOGGER.severe(e.getMessage());
 		} catch (Exception e) {
-			removeBuildFolder(new File(zipFolder));
 			LOGGER.severe(e.getMessage());
 		}
+        finally {
+            if (tempDirectory != null) {
+                try {
+                    Files.delete(tempDirectory);
+                } catch (IOException e) {
+                    LOGGER.severe(e.getMessage());
+                }
+            }
+        }
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -1054,8 +1065,6 @@ public class GenerateProxy {
 		opt.getSet().addOption("wsdl", Separator.EQUALS, Multiplicity.ONCE);
 		// if this flag it set, the generate a passthru proxy
 		opt.getSet().addOption("passthru", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// set this flag to specify target folder
-		opt.getSet().addOption("target", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to pass proxy description
 		opt.getSet().addOption("desc", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to specify service name
@@ -1073,11 +1082,6 @@ public class GenerateProxy {
 		} else {
 			System.out.println("-wsdl is a madatory parameter");
 			System.exit(1);
-		}
-
-		if (opt.getSet().isSet("target")) {
-			// React to option -target
-			genProxy.setTargetFolder(opt.getSet().getOption("target").getResultValue(0));
 		}
 
 		if (opt.getSet().isSet("passthru")) {
