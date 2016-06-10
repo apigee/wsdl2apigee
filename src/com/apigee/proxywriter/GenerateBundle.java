@@ -30,7 +30,7 @@ public class GenerateBundle {
 		LOGGER.addHandler(handler);
 	}	
 	
-	private static void zipIt(String zipFile, String targetFolder) throws Exception{
+	private static File zipIt(String zipFile, String targetFolder) throws Exception{
 
 		LOGGER.entering(GenerateBundle.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -76,6 +76,7 @@ public class GenerateBundle {
 
 			zos.closeEntry();
 			LOGGER.fine("Folder successfully compressed");
+            return f;
 
 		} catch (IOException ex) {
 			LOGGER.severe(ex.getMessage());
@@ -118,19 +119,21 @@ public class GenerateBundle {
 		return file.substring(targetFolder.length() + 1, file.length());
 	}
 	
-	public static void build(String zipFolder, String proxyName) throws Exception{
+	public static File build(String zipFolder, String proxyName) throws Exception{
 		LOGGER.entering(GenerateBundle.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+        File f;
 		try {
 			generateFileList(new File(zipFolder), zipFolder);
-			zipIt(proxyName + ".zip", zipFolder);
+			f =  zipIt(proxyName + ".zip", zipFolder);
 		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
 			e.printStackTrace();
 			throw e;
 		}
 		LOGGER.exiting(GenerateBundle.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());	
+		}.getClass().getEnclosingMethod().getName());
+        return f;
 	}
 
 }

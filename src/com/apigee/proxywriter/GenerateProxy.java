@@ -26,18 +26,10 @@ package com.apigee.proxywriter;
  * @since   2016-05-20 
 */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-
-import java.util.ArrayList;
-
+import java.io.*;
 import java.nio.file.Path;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -248,7 +240,7 @@ public class GenerateProxy {
 		}
 
 		Document apiTemplateDocument = xmlUtils
-				.readXML(buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
+				.readXML(buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml", true);
 
 		Document extractTemplate = xmlUtils.readXML(SOAP2API_EXTRACT_TEMPLATE);
 
@@ -305,7 +297,7 @@ public class GenerateProxy {
 
 			step4 = proxyDefault.createElement("Step");
 			name4 = proxyDefault.createElement("Name");
-			
+
 			if (httpVerb.equalsIgnoreCase("get")) {
 				name1.setTextContent(extractPolicyName);
 				step1.appendChild(name1);
@@ -383,17 +375,17 @@ public class GenerateProxy {
 					addJsonToXMLPolicy = true;
 					writeJsonToXMLPolicy();
 				}
-				
+
 				Node policy3 = apiTemplateDocument.createElement("Policy");
 				policy3.setTextContent(operationName + "add-namespace");
 				policies.appendChild(policy3);
-				
+
 				if (apiMap.getOthernamespaces()) {
 					Node policy4 = apiTemplateDocument.createElement("Policy");
 					policy4.setTextContent(operationName + "add-other-namespaces");
-					
+
 					policies.appendChild(policy4);
-					
+
 					writeAddNamespace(addNamespaceTemplate, operationName, true);
 				} else {
 					writeAddNamespace(addNamespaceTemplate, operationName, false);
@@ -460,7 +452,7 @@ public class GenerateProxy {
 
 			xmlUtils.writeXML(xslPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator + policyName + ".xml");
-			
+
 			if (addOtherNamespaces) {
 				String policyNameOther = operationName + "-add-other-namespaces";
 				Document xslPolicyXMLOther = xmlUtils.cloneDocument(namespaceTemplate);
@@ -479,7 +471,7 @@ public class GenerateProxy {
 				xmlUtils.writeXML(xslPolicyXMLOther, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 						+ File.separator + policyNameOther + ".xml");
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -814,7 +806,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		return null;
 	}
-	
+
     private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace) {
         if (e.getName() == null) {
             if (e.getRef() != null) {
@@ -845,8 +837,8 @@ public class GenerateProxy {
                 }
             }
         }
-    }	
-    
+    }
+
     private com.predic8.schema.Element elementFromSchema(String name, List<Schema> schemas) {
         if (name != null) {
             for (Schema schema: schemas) {
@@ -862,7 +854,7 @@ public class GenerateProxy {
         }
         return null;
     }
-    
+
 	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -911,10 +903,10 @@ public class GenerateProxy {
 
 			if (derivation.getAllAttributes().size() > 0) {
 				//has attributes
-				buildXPath(simpleContent.getParent(), null, true, rootElement); 
+				buildXPath(simpleContent.getParent(), null, true, rootElement);
 			} else {
 				//has no attributes
-				buildXPath(simpleContent.getParent(), null, false, rootElement); 
+				buildXPath(simpleContent.getParent(), null, false, rootElement);
 			}
 		} else if (sc instanceof com.predic8.schema.Element) {
             parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace);
@@ -1235,7 +1227,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	public void begin(String proxyDescription, String wsdlPath) {
+	public File begin(String proxyDescription, String wsdlPath) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1243,6 +1235,7 @@ public class GenerateProxy {
 		LOGGER.fine("Preparing target folder");
 		String zipFolder = null;
         Path tempDirectory = null;
+        File file = null;
 
 		try {
             tempDirectory = Files.createTempDirectory(null);
@@ -1260,7 +1253,7 @@ public class GenerateProxy {
 
 				LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
 				LOGGER.info("Build Folder: " + buildFolder + "\nSOAP Version: " + soapVersion);
-				
+
 				// parse the wsdl
 				parseWSDL(wsdlPath);
 				LOGGER.info("Parsed WSDL Successfully.");
@@ -1287,12 +1280,13 @@ public class GenerateProxy {
 					writeSOAPPassThruProxyEndpointConditions();
 				}
 
-				GenerateBundle.build(zipFolder, proxyName);
+				file = GenerateBundle.build(zipFolder, proxyName);
 				LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
 				removeBuildFolder(new File(zipFolder));
 				LOGGER.info("Cleaned up temp folder");
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
+                return file;
 			} else {
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
@@ -1314,6 +1308,7 @@ public class GenerateProxy {
                 }
             }
         }
+        return file;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -1371,10 +1366,10 @@ public class GenerateProxy {
 				genProxy.setPort(opt.getSet().getOption("port").getResultValue(0));
 			}
 		}
-		
+
 		if (opt.getSet().isSet("build")) {
 			//TODO: set build folder
-		} 
+		}
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
@@ -1390,4 +1385,11 @@ public class GenerateProxy {
 		genProxy.begin(proxyDescription, wsdlPath);
 
 	}
+
+    public static InputStream generateProxy(String wsdl, boolean passthrough, String description) throws FileNotFoundException {
+        GenerateProxy genProxy = new GenerateProxy();
+        genProxy.setPassThru(passthrough);
+        final File file = genProxy.begin(wsdl, description);
+        return new FileInputStream(file);
+    }
 }
