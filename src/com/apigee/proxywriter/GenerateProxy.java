@@ -99,31 +99,22 @@ public class GenerateProxy {
 	private static final Logger LOGGER = Logger.getLogger(GenerateProxy.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
 
-	private static final String OPSMAPPING_TEMPLATE = "." + File.separator + "opsmapping.xml";
+	private static final String OPSMAPPING_TEMPLATE = "/opsmapping.xml";
 
 	private static String SOAP2API_XSL = "";
+	
+	private static final String SOAP2API_APIPROXY_TEMPLATE = "/templates/soap2api/apiProxyTemplate.xml";
+	private static final String SOAP2API_PROXY_TEMPLATE = "/templates/soap2api/proxyDefault.xml";
+	private static final String SOAP2API_TARGET_TEMPLATE = "/templates/soap2api/targetDefault.xml";
+	private static final String SOAP2API_EXTRACT_TEMPLATE = "/templates/soap2api/ExtractPolicy.xml";
+	private static final String SOAP2API_ASSIGN_TEMPLATE = "/templates/soap2api/AssignMessagePolicy.xml";
+	private static final String SOAP2API_XSLTPOLICY_TEMPLATE = "/templates/soap2api/add-namespace.xml";
+	private static final String SOAP2API_XSLT_TEMPLATE = "/templates/soap2api/add-namespace.xslt";
 
-	private static final String SOAP2API_APIPROXY_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "apiProxyTemplate.xml";
-	private static final String SOAP2API_PROXY_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "proxyDefault.xml";
-	private static final String SOAP2API_TARGET_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "targetDefault.xml";
-	private static final String SOAP2API_EXTRACT_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "ExtractPolicy.xml";
-	private static final String SOAP2API_ASSIGN_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "AssignMessagePolicy.xml";
-	private static final String SOAP2API_XSLTPOLICY_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "add-namespace.xml";
-	private static final String SOAP2API_XSLT_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soap2api" + File.separator + "add-namespace.xslt";
-
-	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soappassthru" + File.separator + "apiProxyTemplate.xml";
-	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soappassthru" + File.separator + "proxyDefault.xml";
-	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "." + File.separator + "templates" + File.separator
-			+ "soappassthru" + File.separator + "targetDefault.xml";
+	
+	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
+	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
+	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
 
 	private static final String SOAP11_CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml;
 																				// charset=utf-8";
@@ -616,7 +607,7 @@ public class GenerateProxy {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		try {
-			String sourcePath = "." + File.separator + "templates" + File.separator;
+			String sourcePath = "/templates/";
 			String targetPath = targetFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator;
 			String xslResourcePath = targetFolder + File.separator + "apiproxy" + File.separator + "resources"
@@ -624,34 +615,37 @@ public class GenerateProxy {
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
 			if (PASSTHRU) {
-				sourcePath += "soappassthru" + File.separator;
-				Files.copy(Paths.get(sourcePath + "Extract-Operation-Name.xml"),
+				sourcePath += "soappassthru/";
+				Files.copy(getClass().getResourceAsStream(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "Invalid-SOAP.xml"), Paths.get(targetPath + "Invalid-SOAP.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"), 
+						Paths.get(targetPath + "Invalid-SOAP.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} else {
 				sourcePath += "soap2api" + File.separator;
-				Files.copy(Paths.get(sourcePath + "xml-to-json.xml"), Paths.get(targetPath + "xml-to-json.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"), 
+						Paths.get(targetPath + "xml-to-json.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "set-response-soap-body.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "get-response-soap-body.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "get-response-soap-body.xml"),
 						Paths.get(targetPath + "get-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "set-target-url.xml"), Paths.get(targetPath + "set-target-url.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "set-target-url.xml"), 
+						Paths.get(targetPath + "set-target-url.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "unknown-resource.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource.xml"),
 						Paths.get(targetPath + "unknown-resource.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "remove-empty-nodes.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-empty-nodes.xml"),
 						Paths.get(targetPath + "remove-empty-nodes.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "remove-empty-nodes.xslt"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-empty-nodes.xslt"),
 						Paths.get(xslResourcePath + "remove-empty-nodes.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "return-generic-error.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "return-generic-error.xml"),
 						Paths.get(targetPath + "return-generic-error.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			}
