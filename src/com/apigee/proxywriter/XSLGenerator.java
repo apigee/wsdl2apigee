@@ -88,34 +88,8 @@ public class XSLGenerator {
 		if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
-                if (e.getName() == null) {
-                    if (e.getRef() != null) {
-                        out(e.getRef().getLocalPart());
-                        final TypeDefinition typeDefinition = getTypeFromSchema(e.getRef(), schemas);
-                        //out(typeDefinition.toString());
-                    }
-                    else {
-                        //TODO: handle this
-                    }
-                }
-				else if (!e.getName().equalsIgnoreCase(rootElement)) {					
-					if (e.getEmbeddedType() instanceof ComplexType) {
-						ComplexType ct = (ComplexType)e.getEmbeddedType();
-						parse(ct.getModel(), schemas);
-					} else {
-                        final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
-                        if (typeDefinition instanceof ComplexType) {
-                        	parse(((ComplexType) typeDefinition).getModel(), schemas);
-                        }						
-                        if (e.getType() == null) {
-                            //TODO: handle this
-                        }
-						else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace) &&
-								!e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-							buildXPath(e.getParent(), e.getName(), false);						} 
-                    }
-				}
-			}
+                parseElement(e, schemas);
+            }
 		}
 		else if (sc instanceof Choice) {
 			Choice ch = (Choice)sc;
@@ -162,12 +136,46 @@ public class XSLGenerator {
 				buildXPath(simpleContent.getParent(), null, false); //has no attributes
 			}
 		} 
+        else if (sc instanceof com.predic8.schema.Element) {
+            parseElement((com.predic8.schema.Element) sc, schemas);
+        }
 		else {
 			//TODO: handle this
 			out("here");
 		}
 		
 	}
+
+    private static void parseElement(com.predic8.schema.Element e, List<Schema> schemas) {
+        if (e.getName() == null) {
+            if (e.getRef() != null) {
+                final String localPart = e.getRef().getLocalPart();
+                final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
+                out(element.getName());
+                parse(element, schemas);
+            }
+            else {
+                out("Trouble");
+            }
+        }
+        else {
+            out("->"+e.getName());
+            if (!e.getName().equalsIgnoreCase(rootElement)) {
+                if (e.getEmbeddedType() instanceof ComplexType) {
+                    out("\t\t" + e.getName());
+                    ComplexType ct = (ComplexType)e.getEmbeddedType();
+                    parse(ct.getModel(), schemas);
+                } else {
+                    if (e.getType() == null) {
+                        out("No type: " + e.toString());
+                    }
+                    else if (!e.getType().getNamespaceURI().equalsIgnoreCase("http://www.w3.org/2001/XMLSchema")){
+                        out("\t\t"+e.getName() + " - " + e.getNamespaceUri() + " - " + e.getType().getNamespaceURI());
+                    }
+                }
+            }
+        }
+    }
 
     private static TypeDefinition getTypeFromSchema(QName qName, List<Schema> schemas) {
         if (qName != null) {
@@ -176,6 +184,22 @@ public class XSLGenerator {
                     final TypeDefinition type = schema.getType(qName);
                     if (type != null) {
                         return type;
+                    }
+                } catch (Exception e) {
+                    // Fail silently
+                }
+            }
+        }
+        return null;
+    }
+
+    private static com.predic8.schema.Element elementFromSchema(String name, List<Schema> schemas) {
+        if (name != null) {
+            for (Schema schema: schemas) {
+                try {
+                    final com.predic8.schema.Element element = schema.getElement(name);
+                    if (element != null) {
+                        return element;
                     }
                 } catch (Exception e) {
                     // Fail silently

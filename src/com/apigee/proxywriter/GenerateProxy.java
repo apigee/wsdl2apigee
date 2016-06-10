@@ -29,7 +29,11 @@ package com.apigee.proxywriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+
 import java.util.ArrayList;
+
+import java.nio.file.Path;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -775,6 +779,55 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		return null;
 	}
+	
+    private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace) {
+        if (e.getName() == null) {
+            if (e.getRef() != null) {
+                final String localPart = e.getRef().getLocalPart();
+                final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
+                //out(element.getName());
+                parseSchema(element, schemas, rootElement, rootNamespace);
+            }
+            else {
+                //out("Trouble");
+            	LOGGER.warning("unhandle conditions getRef() = null");
+            }
+        }
+        else {
+            if (!e.getName().equalsIgnoreCase(rootElement)) {
+                if (e.getEmbeddedType() instanceof ComplexType) {
+                    ComplexType ct = (ComplexType)e.getEmbeddedType();
+                    parseSchema(ct.getModel(), schemas, rootElement, rootNamespace);
+                } else {
+                    if (e.getType() == null) {
+                    	//TODO: handle this
+                    	LOGGER.warning("unhandle conditions - getRef() = null");
+                    }
+                    else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
+							&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
+						buildXPath(e.getParent(), e.getName(), false, rootElement);
+                    }
+                }
+            }
+        }
+    }	
+    
+    private com.predic8.schema.Element elementFromSchema(String name, List<Schema> schemas) {
+        if (name != null) {
+            for (Schema schema: schemas) {
+                try {
+                    final com.predic8.schema.Element element = schema.getElement(name);
+                    if (element != null) {
+                        return element;
+                    }
+                } catch (Exception e) {
+                	LOGGER.warning("unhandle conditions: " + e.getMessage());
+                }
+            }
+        }
+        return null;
+    }
+    
 
 	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace) {
 
@@ -784,33 +837,7 @@ public class GenerateProxy {
 		if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
-				if (e.getName() == null) {
-					if (e.getRef() != null) {
-						final TypeDefinition typeDefinition = getTypeFromSchema(e.getRef(), schemas);
-						// out(typeDefinition.toString());
-						LOGGER.warning("unhandled conditions: " + e.getRef());
-					} else {
-						// TODO: handle this
-						LOGGER.warning("unhandle conditions - getRef() = null");
-					}
-				} else if (!e.getName().equalsIgnoreCase(rootElement)) {
-					if (e.getEmbeddedType() instanceof ComplexType) {
-						ComplexType ct = (ComplexType) e.getEmbeddedType();
-						parseSchema(ct.getModel(), schemas, rootElement, rootNamespace);
-					} else {
-						final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
-						if (typeDefinition instanceof ComplexType) {
-							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace);
-						}
-						if (e.getType() == null) {
-							// TODO: handle this
-							LOGGER.warning("unhandle conditions - getRef() = null");
-						} else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
-								&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-							buildXPath(e.getParent(), e.getName(), false, rootElement);
-						}
-					}
-				}
+				parseElement(e, schemas, rootElement, rootNamespace);
 			}
 		} else if (sc instanceof Choice) {
 			Choice ch = (Choice) sc;
@@ -1179,10 +1206,14 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 		LOGGER.fine("Preparing target folder");
-		String zipFolder = targetFolder + File.separator + "apiproxy";
+		String zipFolder = null;
+        Path tempDirectory = null;
 
 		try {
-			// prepare the target folder (create apiproxy folder and sub-folders
+            tempDirectory = Files.createTempDirectory(null);
+            targetFolder = tempDirectory.toAbsolutePath().toString();
+            zipFolder = targetFolder + File.separator + "apiproxy";
+            // prepare the target folder (create apiproxy folder and sub-folders
 			if (prepareTargetFolder()) {
 
 				// if not passthru read conf file to interpret soap operations
@@ -1232,15 +1263,21 @@ public class GenerateProxy {
 				throw new TargetFolderException("Erorr is preparing target folder");
 			}
 		} catch (SecurityException e) {
-			removeBuildFolder(new File(zipFolder));
 			LOGGER.severe(e.getMessage());
 		} catch (TargetFolderException e) {
-			removeBuildFolder(new File(zipFolder));
 			LOGGER.severe(e.getMessage());
 		} catch (Exception e) {
-			removeBuildFolder(new File(zipFolder));
 			LOGGER.severe(e.getMessage());
 		}
+        finally {
+            if (tempDirectory != null) {
+                try {
+                    Files.delete(tempDirectory);
+                } catch (IOException e) {
+                    LOGGER.severe(e.getMessage());
+                }
+            }
+        }
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -1255,8 +1292,6 @@ public class GenerateProxy {
 		opt.getSet().addOption("wsdl", Separator.EQUALS, Multiplicity.ONCE);
 		// if this flag it set, the generate a passthru proxy
 		opt.getSet().addOption("passthru", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// set this flag to specify target folder
-		opt.getSet().addOption("target", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to pass proxy description
 		opt.getSet().addOption("desc", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to specify service name
@@ -1274,11 +1309,6 @@ public class GenerateProxy {
 		} else {
 			System.out.println("-wsdl is a madatory parameter");
 			System.exit(1);
-		}
-
-		if (opt.getSet().isSet("target")) {
-			// React to option -target
-			genProxy.setTargetFolder(opt.getSet().getOption("target").getResultValue(0));
 		}
 
 		if (opt.getSet().isSet("passthru")) {
