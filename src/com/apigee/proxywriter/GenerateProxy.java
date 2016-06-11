@@ -606,26 +606,31 @@ public class GenerateProxy {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		try {
-			String sourcePath = "." + File.separator + "templates" + File.separator + "soap2api" + File.separator;
+			String sourcePath = "/templates/soap2api/";//"." + File.separator + "templates" + File.separator + "soap2api" + File.separator;
 			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
 			String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 					+ File.separator;
-			Files.copy(Paths.get(sourcePath + "json-to-xml.xml"), Paths.get(targetPath + "json-to-xml.xml"),
+			
+			Files.copy(getClass().getResourceAsStream(sourcePath + "json-to-xml.xml"), 
+					Paths.get(targetPath + "json-to-xml.xml"),
 					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
 			if (soapVersion.equalsIgnoreCase("SOAP12")) {
-				Files.copy(Paths.get(sourcePath + "add-soap12.xml"), Paths.get(targetPath + "add-soap12.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap12.xml"), 
+						Paths.get(targetPath + "add-soap12.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "add-soap12.xslt"), Paths.get(xslResourcePath + "add-soap12.xslt"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap12.xslt"), 
+						Paths.get(xslResourcePath + "add-soap12.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} else {
-				Files.copy(Paths.get(sourcePath + "add-soap11.xml"), Paths.get(targetPath + "add-soap11.xml"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap11.xml"), 
+						Paths.get(targetPath + "add-soap11.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(Paths.get(sourcePath + "add-soap11.xslt"), Paths.get(xslResourcePath + "add-soap11.xslt"),
+				Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap11.xslt"), 
+						Paths.get(xslResourcePath + "add-soap11.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			}
-
 		} catch (IOException e) {
 			LOGGER.severe(e.getMessage());
 			e.printStackTrace();
@@ -782,13 +787,16 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			if (entry.getValue().equalsIgnoreCase(namespaceUri)) {
-				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-				}.getClass().getEnclosingMethod().getName());
-				return entry.getKey();
+				if (entry.getKey().length() == 0) {
+					return "ns";
+				} else {
+					return entry.getKey();
+				}
 			}
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+		System.out.println("returning default");
 		return "ns";
 	}
 
@@ -797,23 +805,19 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			if (entry.getKey().equalsIgnoreCase(prefix)) {
-				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-				}.getClass().getEnclosingMethod().getName());
 				return entry.getValue();
 			}
 		}
-		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-		return null;
+		return "ns";
 	}
 
-    private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace) {
+    private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix) {
         if (e.getName() == null) {
             if (e.getRef() != null) {
                 final String localPart = e.getRef().getLocalPart();
                 final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
                 //out(element.getName());
-                parseSchema(element, schemas, rootElement, rootNamespace);
+                parseSchema(element, schemas, rootElement, rootNamespace, rootPrefix);
             }
             else {
             	//TODO: handle this
@@ -824,7 +828,7 @@ public class GenerateProxy {
             if (!e.getName().equalsIgnoreCase(rootElement)) {
                 if (e.getEmbeddedType() instanceof ComplexType) {
                     ComplexType ct = (ComplexType)e.getEmbeddedType();
-                    parseSchema(ct.getModel(), schemas, rootElement, rootNamespace);
+                    parseSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
                 } else {
                     if (e.getType() == null) {
                     	//TODO: handle this
@@ -832,7 +836,7 @@ public class GenerateProxy {
                     }
                     else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
 							&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-						buildXPath(e.getParent(), e.getName(), false, rootElement);
+						buildXPath(e.getParent(), e.getName(), false, rootElement, rootNamespace, rootPrefix);
                     }
                 }
             }
@@ -855,7 +859,7 @@ public class GenerateProxy {
         return null;
     }
 
-	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace) {
+	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -863,7 +867,7 @@ public class GenerateProxy {
 		if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
-				parseElement(e, schemas, rootElement, rootNamespace);
+				parseElement(e, schemas, rootElement, rootNamespace, rootPrefix);
 			}
 		} else if (sc instanceof Choice) {
 			Choice ch = (Choice) sc;
@@ -871,18 +875,18 @@ public class GenerateProxy {
 				if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
 						ComplexType ct = (ComplexType) e.getEmbeddedType();
-						parseSchema(ct.getModel(), schemas, rootElement, rootNamespace);
+						parseSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 					} else {
 						final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
 						if (typeDefinition instanceof ComplexType) {
-							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace);
+							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 						}
 						if (e.getType() == null) {
 							// TODO: handle this
 							LOGGER.warning("unhandle conditions getRef() = null");
 						} else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
 								&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-							buildXPath(e.getParent(), e.getName(), false, rootElement);
+							buildXPath(e.getParent(), e.getName(), false, rootElement, rootNamespace, rootPrefix);
 						}
 					}
 				}
@@ -892,9 +896,9 @@ public class GenerateProxy {
 			Derivation derivation = complexContent.getDerivation();
 			if (derivation != null) {
 				if (derivation.getModel() instanceof Sequence) {
-					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace);
+					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 				} else if (derivation.getModel() instanceof ModelGroup) {
-					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace);
+					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 				}
 			}
 		} else if (sc instanceof SimpleContent) {
@@ -903,13 +907,13 @@ public class GenerateProxy {
 
 			if (derivation.getAllAttributes().size() > 0) {
 				//has attributes
-				buildXPath(simpleContent.getParent(), null, true, rootElement);
+				buildXPath(simpleContent.getParent(), null, true, rootElement, rootNamespace, rootPrefix);
 			} else {
 				//has no attributes
-				buildXPath(simpleContent.getParent(), null, false, rootElement);
+				buildXPath(simpleContent.getParent(), null, false, rootElement, rootNamespace, rootPrefix);
 			}
 		} else if (sc instanceof com.predic8.schema.Element) {
-            parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace);
+            parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace, rootPrefix);
         } else {
 			// TODO: handle this
 			LOGGER.warning("unhandle conditions - " + sc.getClass().getName());
@@ -938,12 +942,12 @@ public class GenerateProxy {
 		return null;
 	}
 
-	private void buildXPath(XMLElement xml, String elementName, boolean hasAttributes, String rootElement) {
+	private void buildXPath(XMLElement xml, String elementName, boolean hasAttributes, String rootElement, String rootNamespace, String rootPrefix) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
-		String start = "/" + rootElement + "/*/";
+		String start = "/" + rootPrefix+":"+rootElement + "//*/";
 		Rule r = null;
 
 		getXPathElement(xml);
@@ -952,9 +956,10 @@ public class GenerateProxy {
 			xpaths.add(elementName);
 
 		for (String s : xpaths) {
-			r = new Rule(start + s, getPrefix(xml.getNamespaceUri()), xml.getNamespaceUri());
+			String prefix = getPrefix(xml.getNamespaceUri());
+			r = new Rule(start + rootPrefix+":"+ s, prefix, xml.getNamespaceUri());
 			ruleList.add(r);
-			start = start + s + "/";
+			start = start + rootPrefix+":"+s + "/";
 		}
 		if (hasAttributes && xpaths.size() > 0) {
 			start = start + "@*";
@@ -1073,7 +1078,7 @@ public class GenerateProxy {
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
 
 		PortType portType = binding.getPortType();
-
+		
 		for (Operation op : portType.getOperations()) {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
@@ -1082,7 +1087,7 @@ public class GenerateProxy {
 					APIMap apiMap = null;
 					String resourcePath = OpsMap.getResourcePath(op.getName());
 					String verb = OpsMap.getOpsMap(op.getName());
-
+					
 					if (op.getInput().getMessage().getParts().size() < 1) {
 						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
 					} else if (op.getInput().getMessage().getParts().size() > 1) {
@@ -1092,6 +1097,12 @@ public class GenerateProxy {
 						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
 								.getElement();
 						namespace = (Map<String, String>) requestElement.getNamespaceContext();
+
+						for (Map.Entry<String, String> entry : namespace.entrySet()) {
+							System.out.println("Entry Key: " + entry.getKey());
+							System.out.println("Entry Value: " + entry.getValue());
+						}		
+						
 						if (verb.equalsIgnoreCase("GET")) {
 							creator.setCreator(new RequestTemplateCreator());
 							// use membrane SOAP to generate a SOAP Request
@@ -1116,7 +1127,7 @@ public class GenerateProxy {
 							for (ComplexType ct : s.getComplexTypes()) {
 								SchemaComponent sc = ct.getModel();
 								parseSchema(sc, wsdl.getSchemas(), requestElement.getName(),
-										requestElement.getNamespaceUri());
+										namespaceUri, prefix);
 							}
 							if (ruleList.size() > 0) {
 								RuleSet rs = new RuleSet();

@@ -131,14 +131,30 @@ public class XMLUtils {
 		}
 	}
 
-	public void generateOtherNamespacesXSLT(String filePath, String operationName, String data) throws Exception {
+	public void generateOtherNamespacesXSLT(String filePath, String operationName, String xsltTemplate) throws Exception {
 		LOGGER.entering(XMLUtils.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
-		File f = new File(filePath + operationName + "-add-other-namespaces.xslt");
-		FileOutputStream fos = new FileOutputStream(f, false);
-		fos.write(data.getBytes());
-		fos.close();
+		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+		docBuilderFactory.setNamespaceAware(true);
+		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+
+		Document document = docBuilder.parse(new InputSource(new StringReader(xsltTemplate)));
+
+		Node stylesheet = document.getDocumentElement();
+		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
+			String key = entry.getKey();
+			String value = entry.getValue();
+			if (!blacklist.contains(value)) {
+				if (key.length() == 0) {
+					((Element) stylesheet).setAttribute("xmlns:ns", value);
+				} else {
+					((Element) stylesheet).setAttribute("xmlns:" + key, value);
+				}
+			}
+		}
+		
+		writeXML(document, filePath + operationName + "-add-other-namespaces.xslt");
 
 		LOGGER.exiting(XMLUtils.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -304,7 +320,11 @@ public class XMLUtils {
 			String key = entry.getKey();
 			String value = entry.getValue();
 			if (!blacklist.contains(value)) {
-				((Element) stylesheet).setAttribute("xmlns:" + key, value);
+				if (key.length() == 0) {
+					((Element) stylesheet).setAttribute("xmlns:ns", value);
+				} else {
+					((Element) stylesheet).setAttribute("xmlns:" + key, value);
+				}
 			}
 		}
 
