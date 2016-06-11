@@ -1351,8 +1351,6 @@ public class GenerateProxy {
 		opt.getSet().addOption("port", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// set this flag to set build folder
-		opt.getSet().addOption("build", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
 		opt.check();
 
@@ -1387,17 +1385,13 @@ public class GenerateProxy {
 			}
 		}
 
-		if (opt.getSet().isSet("build")) {
-			//TODO: set build folder
-		}
-
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
 			LOGGER.setLevel(Level.FINEST);
 			handler.setLevel(Level.FINEST);
 		} else {
-			LOGGER.setLevel(Level.FINEST);
-			handler.setLevel(Level.FINEST);
+			LOGGER.setLevel(Level.INFO);
+			handler.setLevel(Level.INFO);
 		}
 
 		// genProxy.PASSTHRU = true;
