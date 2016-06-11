@@ -27,8 +27,9 @@ package com.apigee.proxywriter;
 */
 
 import java.io.*;
-import java.nio.file.Path;
+import java.nio.file.*;
 
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
@@ -82,9 +83,6 @@ import com.predic8.wstool.creator.SOARequestCreator;
 
 import groovy.xml.MarkupBuilder;
 import groovy.xml.QName;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class GenerateProxy {
 
@@ -1227,7 +1225,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	public File begin(String proxyDescription, String wsdlPath) {
+	public InputStream begin(String proxyDescription, String wsdlPath) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1235,7 +1233,7 @@ public class GenerateProxy {
 		LOGGER.fine("Preparing target folder");
 		String zipFolder = null;
         Path tempDirectory = null;
-        File file = null;
+        InputStream is = null;
 
 		try {
             tempDirectory = Files.createTempDirectory(null);
@@ -1280,13 +1278,11 @@ public class GenerateProxy {
 					writeSOAPPassThruProxyEndpointConditions();
 				}
 
-				file = GenerateBundle.build(zipFolder, proxyName);
+				File file = GenerateBundle.build(zipFolder, proxyName);
 				LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
-				removeBuildFolder(new File(zipFolder));
-				LOGGER.info("Cleaned up temp folder");
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
-                return file;
+                return new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
 			} else {
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
@@ -1302,13 +1298,26 @@ public class GenerateProxy {
         finally {
             if (tempDirectory != null) {
                 try {
-                    Files.delete(tempDirectory);
+                    Files.walkFileTree(tempDirectory, new SimpleFileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            Files.delete(file);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            Files.delete(dir);
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                    });
                 } catch (IOException e) {
                     LOGGER.severe(e.getMessage());
                 }
             }
         }
-        return file;
+        return is;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -1382,14 +1391,14 @@ public class GenerateProxy {
 
 		// genProxy.PASSTHRU = true;
 
-		genProxy.begin(proxyDescription, wsdlPath);
+        final InputStream begin = genProxy.begin(proxyDescription, wsdlPath);
+        Files.copy(begin, new File(genProxy.proxyName + ".zip").toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-	}
+    }
 
     public static InputStream generateProxy(String wsdl, boolean passthrough, String description) throws FileNotFoundException {
         GenerateProxy genProxy = new GenerateProxy();
         genProxy.setPassThru(passthrough);
-        final File file = genProxy.begin(wsdl, description);
-        return new FileInputStream(file);
+        return genProxy.begin(description != null ? description : "Generated SOAP to API proxy", wsdl);
     }
 }

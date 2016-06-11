@@ -20,23 +20,21 @@ public class GenerateBundle {
 	private static final Logger LOGGER = Logger.getLogger(GenerateBundle.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
 	
-	private static List<String> fileList;
-	
+
 	static {
-		fileList = new ArrayList<String>();
-		LOGGER.setLevel(Level.WARNING);		
+		LOGGER.setLevel(Level.WARNING);
 		// PUBLISH this level
 		handler.setLevel(Level.WARNING);
 		LOGGER.addHandler(handler);
 	}	
 	
-	private static File zipIt(String zipFile, String targetFolder) throws Exception{
+	private static File zipIt(String zipFile, String targetFolder, List<String> fileList) throws Exception{
 
 		LOGGER.entering(GenerateBundle.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		byte[] buffer = new byte[BUFFER];
 		String source = "";
-		File f = new File(zipFile);
+		File f = new File(new File(targetFolder).getParent(), zipFile);
 		FileOutputStream fos = null;
 		ZipOutputStream zos = null;
 		try {
@@ -52,7 +50,7 @@ public class GenerateBundle {
 				Files.move(f.toPath(), newFile.toPath());
 			}
 
-			fos = new FileOutputStream(zipFile);
+			fos = new FileOutputStream(f);
 			zos = new ZipOutputStream(fos);
 
 			LOGGER.fine("Output to Zip : " + zipFile);
@@ -61,10 +59,10 @@ public class GenerateBundle {
 
 			for (String file : fileList) {
 				LOGGER.fine("File Added : " + file);
-				ZipEntry ze = new ZipEntry(source + File.separator + file);
+				ZipEntry ze = new ZipEntry(source + '/' + file);
 				zos.putNextEntry(ze);
 				try {
-					in = new FileInputStream(targetFolder + File.separator + file);
+					in = new FileInputStream(targetFolder + '/' + file);
 					int len;
 					while ((len = in.read(buffer)) > 0) {
 						zos.write(buffer, 0, len);
@@ -93,9 +91,10 @@ public class GenerateBundle {
 		}
 	}
 	
-	private static void generateFileList(File node, String targetFolder) throws Exception{
+	private static List<String> generateFileList(File node, String targetFolder) throws Exception{
 
-		// add file only
+        final ArrayList<String> fileList = new ArrayList<>();
+        // add file only
 		if (node.isFile()) {
 			fileList.add(generateZipEntry(node.toString(), targetFolder));
 
@@ -104,9 +103,10 @@ public class GenerateBundle {
 		if (node.isDirectory()) {
 			String[] subNote = node.list();
 			for (String filename : subNote) {
-				generateFileList(new File(node, filename), targetFolder);
+				fileList.addAll(generateFileList(new File(node, filename), targetFolder));
 			}
 		}
+        return fileList;
 	}
 
 	private static String generateZipEntry(String file, String targetFolder) throws Exception{
@@ -124,8 +124,7 @@ public class GenerateBundle {
 		}.getClass().getEnclosingMethod().getName());
         File f;
 		try {
-			generateFileList(new File(zipFolder), zipFolder);
-			f =  zipIt(proxyName + ".zip", zipFolder);
+            f =  zipIt(proxyName + ".zip", zipFolder, generateFileList(new File(zipFolder), zipFolder));
 		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
 			e.printStackTrace();
