@@ -794,7 +794,6 @@ public class GenerateProxy {
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		System.out.println("returning default");
 		return "ns";
 	}
 
@@ -1095,11 +1094,6 @@ public class GenerateProxy {
 						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
 								.getElement();
 						namespace = (Map<String, String>) requestElement.getNamespaceContext();
-
-						for (Map.Entry<String, String> entry : namespace.entrySet()) {
-							System.out.println("Entry Key: " + entry.getKey());
-							System.out.println("Entry Value: " + entry.getValue());
-						}		
 						
 						if (verb.equalsIgnoreCase("GET")) {
 							creator.setCreator(new RequestTemplateCreator());
