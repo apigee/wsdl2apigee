@@ -1,7 +1,9 @@
 bin/**
 target/**
 log/**
+build/**
 .project
 .classpath
 .settings/**
+src/com/apigee/proxywriter/XSLGenerator.java
 

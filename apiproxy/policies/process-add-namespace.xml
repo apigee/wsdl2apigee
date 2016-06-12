@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XSL async="false" continueOnError="false" enabled="true" name="process-add-namespace">
+    <DisplayName>process Add Namespace</DisplayName>
+    <Properties/>
+    <Source>request</Source>
+    <ResourceURL>xsl://process-add-namespace.xslt</ResourceURL>
+    <Parameters ignoreUnresolvedVariables="true"/>
+</XSL>

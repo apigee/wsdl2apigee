@@ -7,8 +7,8 @@
 		<name location="beginsWith">retrieve</name>
 	</get>
 	<post>
-		<!-- <name location="beginsWith">inq</name>
-		<name location="beginsWith">search</name>	-->
+		<!--<name location="beginsWith">inq</name>
+		<name location="beginsWith">search</name> -->
 		<name location="contains">create</name>
 		<name location="beginsWith">add</name>
 		<name location="beginsWith">process</name>

@@ -101,12 +101,12 @@ public class RuleSet {
     public String getTransform() throws Exception {
         boolean firstTemplate = true;
         
-        String template = new Scanner(RuleSet.class.getClassLoader()
-                                      .getResourceAsStream("transform.xsl.tmpl"), "UTF-8")
-            .useDelimiter("\\A").next();
-
-        String oneRule = new Scanner(RuleSet.class.getClassLoader()
-                                      .getResourceAsStream("one-template.xml"), "UTF-8")
+        String template = new Scanner(getClass()
+                .getResourceAsStream("/templates/xsltgen/transform.xsl.tmpl"), "UTF-8")
+        		.useDelimiter("\\A").next();
+        
+        String oneRule = new Scanner(getClass()
+            .getResourceAsStream("/templates/xsltgen/one-template.xml"), "UTF-8")
             .useDelimiter("\\A").next();
 
         HashMap<String,String> namespaces = new HashMap<String,String>();

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XSL async="false" continueOnError="false" enabled="true" name="remove-empty-nodes">
+    <DisplayName>Remove Empty Nodes</DisplayName>
+    <Properties/>
+    <Source>request</Source>
+    <ResourceURL>xsl://remove-empty-nodes.xslt</ResourceURL>
+    <Parameters ignoreUnresolvedVariables="true"/>
+</XSL>
