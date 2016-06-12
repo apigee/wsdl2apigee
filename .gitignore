@@ -6,4 +6,5 @@ build/**
 .classpath
 .settings/**
 src/com/apigee/proxywriter/XSLGenerator.java
+apiproxy/**
 
