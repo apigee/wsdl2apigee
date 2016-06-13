@@ -118,6 +118,8 @@ public class GenerateProxy {
 
 	// set this to true if SOAP passthru is needed
 	private boolean PASSTHRU;
+	//set this to true if all operations are to be consumed via POST verb
+	private boolean ALLPOST;
 
 	private String targetEndpoint;
 
@@ -139,8 +141,10 @@ public class GenerateProxy {
 	// and JSON Equivalent of SOAP (without the SOAP Envelope) as values.
 	// private Map<String, KeyValue<String, String>> messageTemplates;
 	private Map<String, APIMap> messageTemplates;
-	//
-	private ArrayList<String> xpaths = new ArrayList<String>();
+	//tree to hold elements to build an xpath
+	private HashMap<Integer, String>xpathElement;	
+	//xpath tree element level
+	private int level;	
 	//
 	private ArrayList<Rule> ruleList = new ArrayList<Rule>();
 
@@ -162,8 +166,16 @@ public class GenerateProxy {
 	// initialize hashmap
 	public GenerateProxy() {
 		messageTemplates = new HashMap<String, APIMap>();
+		xpathElement = new HashMap<Integer, String>();
 		buildFolder = "." + File.separator + "build";
 		soapVersion = "SOAP12";
+		ALLPOST = false;
+		PASSTHRU = false;
+		level = 0;
+	}
+	
+	public void setAllPost (boolean allPost) {
+		ALLPOST = allPost;
 	}
 	
 	public void setBuildFolder(String folder) {
@@ -824,21 +836,25 @@ public class GenerateProxy {
             if (!e.getName().equalsIgnoreCase(rootElement)) {
                 if (e.getEmbeddedType() instanceof ComplexType) {
                     ComplexType ct = (ComplexType)e.getEmbeddedType();
+                    if (!e.getNamespaceUri().equalsIgnoreCase(rootNamespace)) {
+                    	buildXPath(e, rootElement, rootNamespace, rootPrefix);
+                    }
                     parseSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
                 } else {
                 	if (e.getType() != null){
                 		if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
     							&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-    						buildXPath(e.getParent(), e.getName(), false, rootElement, rootNamespace, rootPrefix);
+                			buildXPath(e, rootElement, rootNamespace, rootPrefix);
                         }                		
                     	TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
                     	if (typeDefinition instanceof ComplexType) {
                     		parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-                    	}
+                    	} 
                 	}
-                	else if (e.getType() == null) {
+                	else  {
                     	//TODO: handle this
                     	LOGGER.warning("unhandle conditions - getRef() = null");
+                    	
                     }
                 }
             }
@@ -868,53 +884,63 @@ public class GenerateProxy {
 
 		if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
+			level ++;
 			for (com.predic8.schema.Element e : seq.getElements()) {
+				if (e.getName() == null) level --;
+				if (e.getName() != null) xpathElement.put(level, e.getName());
 				parseElement(e, schemas, rootElement, rootNamespace, rootPrefix);
 			}
+			level --;
+			cleanUpXPath();
 		} else if (sc instanceof Choice) {
 			Choice ch = (Choice) sc;
+			level ++;
 			for (com.predic8.schema.Element e : ch.getElements()) {
 				if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
 						ComplexType ct = (ComplexType) e.getEmbeddedType();
+						xpathElement.put(level, e.getName());
 						parseSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 					} else {
 						final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
 						if (typeDefinition instanceof ComplexType) {
+							xpathElement.put(level, e.getName());
 							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-						}
+						} 
 						if (e.getType() == null) {
 							// TODO: handle this
 							LOGGER.warning("unhandle conditions getRef() = null");
 						} else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
 								&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-							buildXPath(e.getParent(), e.getName(), false, rootElement, rootNamespace, rootPrefix);
+							buildXPath(e, rootElement, rootNamespace, rootPrefix);
 						}
 					}
 				}
 			}
+			level --;
+			cleanUpXPath();
 		} else if (sc instanceof ComplexContent) {
 			ComplexContent complexContent = (ComplexContent) sc;
 			Derivation derivation = complexContent.getDerivation();
+
 			if (derivation != null) {
 				if (derivation.getModel() instanceof Sequence) {
 					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 				} else if (derivation.getModel() instanceof ModelGroup) {
 					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-				}
-			}
+				} 
+			} 
 		} else if (sc instanceof SimpleContent) {
 			SimpleContent simpleContent = (SimpleContent) sc;
 			Derivation derivation = (Derivation) simpleContent.getDerivation();
 
 			if (derivation.getAllAttributes().size() > 0) {
 				//has attributes
-				buildXPath(simpleContent.getParent(), null, true, rootElement, rootNamespace, rootPrefix);
-			} else {
-				//has no attributes
-				buildXPath(simpleContent.getParent(), null, false, rootElement, rootNamespace, rootPrefix);
-			}
+				buildXPath(derivation.getNamespaceUri(), rootElement, rootNamespace, rootPrefix);
+			} 
 		} else if (sc instanceof com.predic8.schema.Element) {
+			level ++;
+			xpathElement.put(level, ((com.predic8.schema.Element)sc).getName());
             parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace, rootPrefix);
         } else if (sc != null) {
 			// TODO: handle this
@@ -944,60 +970,53 @@ public class GenerateProxy {
 		return null;
 	}
 
-	private void buildXPath(XMLElement xml, String elementName, boolean hasAttributes, String rootElement, String rootNamespace, String rootPrefix) {
-
+	private void cleanUpXPath () {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-
-		String start = "/" + rootPrefix+":"+rootElement + "//*/";
+		for (Integer key : xpathElement.keySet()) {
+			if (key > level)
+				xpathElement.remove(key);
+		}		
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+	}
+	
+	private void buildXPath (com.predic8.schema.Element e, String rootElement, String rootNamespace, String rootPrefix) {
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
 		Rule r = null;
-
-		getXPathElement(xml);
-
-		if (elementName != null)
-			xpaths.add(elementName);
-
-		try {
-			for (String s : xpaths) {
-				String prefix = getPrefix(xml.getNamespaceUri());
-				r = new Rule(start + rootPrefix+":"+ s, prefix, xml.getNamespaceUri());
-				ruleList.add(r);
-				start = start + rootPrefix+":"+s + "/";
-			}
-			if (hasAttributes && xpaths.size() > 0) {
-				start = start + "@*";
-				r = new Rule(start, getPrefix(xml.getNamespaceUri()), xml.getNamespaceUri());
-				ruleList.add(r);
-			}
-		} catch (NullPointerException npe) {
-			//LOGGER.warning("NamespaceUri is empty - " + xml.toString());
+		String xpathString = "";
+		String prefix = getPrefix(e.getNamespaceUri());
+		String namespaceUri = e.getNamespaceUri();
+		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
+			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
 		}
-		xpaths.clear();
 
+		r = new Rule(xpathString, prefix, namespaceUri);
+		ruleList.add(r);
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-
-	}
-
-	private void getXPathElement(XMLElement xml) {
-
+	}	
+	
+	private void buildXPath(String namespaceUri, String rootElement, String rootNamespace, String rootPrefix) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+		Rule r = null;
+		String prefix = getPrefix(namespaceUri);
+		String xpathString = "";
+		
+		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
+			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
+		}		
+		
+		r = new Rule(xpathString+"/@*", prefix, namespaceUri);
+		ruleList.add(r);
 
-		if (xml == null) {
-			return;
-		} else if (xml instanceof com.predic8.schema.Element) {
-			xpaths.add(((com.predic8.schema.Element) xml).getName());
-			getXPathElement(xml.getParent());
-		} else {
-			getXPathElement(xml.getParent());
-		}
-
+		cleanUpXPath();
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-
-	}
-
+	}	
+	
 	private String getParentNamepace(com.predic8.schema.Element e) {
 		XMLElement parent = e.getParent();
 		
@@ -1101,7 +1120,13 @@ public class GenerateProxy {
 				if (!PASSTHRU) {
 					APIMap apiMap = null;
 					String resourcePath = OpsMap.getResourcePath(op.getName());
-					String verb = OpsMap.getOpsMap(op.getName());
+					String verb = "";
+					
+					if (!ALLPOST) {
+						verb = OpsMap.getOpsMap(op.getName());
+					} else {
+						verb = "POST";
+					}
 					
 					if (op.getInput().getMessage().getParts().size() < 1) {
 						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
@@ -1142,10 +1167,10 @@ public class GenerateProxy {
 			        		}
 			        		if (typeDefinition instanceof ComplexType) {
 			        			ComplexType ct = (ComplexType)typeDefinition;
+			            		xpathElement.put(level, requestElement.getName());        			
 			            		parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(), 
 			            				namespaceUri, prefix);
 			        		}
-							
 							if (ruleList.size() > 0) {
 								RuleSet rs = new RuleSet();
 								rs.addRuleList(ruleList);
@@ -1235,24 +1260,6 @@ public class GenerateProxy {
 			}.getClass().getEnclosingMethod().getName());
 			return false;
 		}
-	}
-
-	private void removeBuildFolder(File targetFolder) {
-		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-		File[] files = targetFolder.listFiles();
-		if (files != null) { // some JVMs return null for empty dirs
-			for (File f : files) {
-				if (f.isDirectory()) {
-					removeBuildFolder(f);
-				} else {
-					f.delete();
-				}
-			}
-		}
-		targetFolder.delete();
-		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
 	}
 
 	public InputStream begin(String proxyDescription, String wsdlPath) {
@@ -1370,6 +1377,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("port", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to specify operations map
 		opt.getSet().addOption("opsmap", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// set this flag to handle all operations via post verb
+		opt.getSet().addOption("allpost", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
@@ -1409,6 +1418,10 @@ public class GenerateProxy {
 		if (opt.getSet().isSet("opsmap")) {
 			GenerateProxy.OPSMAPPING_TEMPLATE = opt.getSet().getOption("opsmap").getResultValue(0);
 		}
+		
+		if (opt.getSet().isSet("allpost")) {
+			GenerateProxy.OPSMAPPING_TEMPLATE = opt.getSet().getOption("allpost").getResultValue(0);
+		}		
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
