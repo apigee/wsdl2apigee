@@ -132,6 +132,8 @@ public class GenerateProxy {
 	private String basePath;
 
 	private String proxyName;
+	
+	private List<String> vHosts;
 
 	// default build folder is ./build
 	private String buildFolder;
@@ -145,7 +147,7 @@ public class GenerateProxy {
 	private HashMap<Integer, String>xpathElement;	
 	//xpath tree element level
 	private int level;	
-	//
+	//List of rules to generate XSLT
 	private ArrayList<Rule> ruleList = new ArrayList<Rule>();
 
 	public static Map<String, String> namespace = new LinkedHashMap<String, String>();
@@ -167,11 +169,26 @@ public class GenerateProxy {
 	public GenerateProxy() {
 		messageTemplates = new HashMap<String, APIMap>();
 		xpathElement = new HashMap<Integer, String>();
+		
+		vHosts = new ArrayList<String>();
+		vHosts.add("default");
+		
 		buildFolder = "." + File.separator + "build";
 		soapVersion = "SOAP12";
 		ALLPOST = false;
 		PASSTHRU = false;
 		level = 0;
+	}
+	
+	public void setVHost (String vhosts) {
+		if (vhosts.indexOf(",") != -1) {
+			//contains > 1 vhosts
+			vHosts = Arrays.asList(vhosts.split(","));
+		}
+		else {
+			vHosts.remove(0);//remove default
+			vHosts.add(vhosts);
+		}
 	}
 	
 	public void setAllPost (boolean allPost) {
@@ -248,7 +265,15 @@ public class GenerateProxy {
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
 			basePathNode.setTextContent(basePath);
 		}
-
+		
+		Node httpProxyConnection = proxyDefault.getElementsByTagName("HTTPProxyConnection").item(0);
+		Node virtualHost = null;
+		for (String vHost : vHosts) {
+			virtualHost = proxyDefault.createElement("VirtualHost");
+			virtualHost.setTextContent(vHost);
+			httpProxyConnection.appendChild(virtualHost);
+		}
+		
 		Document apiTemplateDocument = xmlUtils
 				.readXML(buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 
@@ -719,6 +744,15 @@ public class GenerateProxy {
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
 			basePathNode.setTextContent(basePath);
 		}
+		
+		Node httpProxyConnection = proxyDefault.getElementsByTagName("HTTPProxyConnection").item(0);
+		Node virtualHost = null;
+		for (String vHost : vHosts) {
+			virtualHost = proxyDefault.createElement("VirtualHost");
+			virtualHost.setTextContent(vHost);
+			httpProxyConnection.appendChild(virtualHost);
+		}
+		
 
 		Node soapCondition = proxyDefault.getElementsByTagName("Condition").item(1);
 		if (soapVersion.equalsIgnoreCase("SOAP11")) {
@@ -1357,6 +1391,56 @@ public class GenerateProxy {
         return is;
 	}
 
+	public static void usage() {
+		System.out.println("");
+		System.out.println("Usage: java -jar wsdl2apigee.jar -wsdl={url or path to wsdl} <options>");
+		System.out.println("");
+		System.out.println("Options:");
+		System.out.println("-passthru=<true|false>    default is false;");
+		System.out.println("-desc=\"description for proxy\"");
+		System.out.println("-service=servicename      if wsdl has > 1 service, enter service name");
+		System.out.println("-port=portname            if service has > 1 port, enter port name");
+		System.out.println("-opsmap=opsmapping.xml    mapping file that to map wsdl operation to http verb");
+		System.out.println("-allpost=<true|false>     set to true if all operations are http verb; default is false");
+		System.out.println("-vhosts=<comma separated values for virtuals hosts>");
+		System.out.println("-debug=<true|false>       default is false");
+		System.out.println("");
+		System.out.println("");
+		System.out.println("Examples:");
+		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\"");
+		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\" -passthru=true");
+		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\" -vhosts=secure");
+		System.out.println("");
+		System.out.println("OpsMap:");
+		System.out.println("A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:");
+		System.out.println("");
+		System.out.println("\t<proxywriter>");
+		System.out.println("\t\t<get>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">get</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">list</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">inq</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">search</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">retrieve</name>");
+		System.out.println("\t\t</get>");
+		System.out.println("\t\t<post>");
+		System.out.println("\t\t\t<name location=\"contains\">create</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">add</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">process</name>");
+		System.out.println("\t\t</post>");
+		System.out.println("\t\t<put>");
+		System.out.println("\t\t\t<name location=\"contains\">update</name>");
+		System.out.println("\t\t\t<name location=\"contains\">change</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">modify</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">set</name>");
+		System.out.println("\t\t</put>");
+		System.out.println("\t\t<delete>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">delete</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">remove</name>");
+		System.out.println("\t\t\t<name location=\"beginsWith\">del</name>");
+		System.out.println("\t\t</delete>");
+		System.out.println("\t</proxywriter>");
+	}
+	
 	public static void main(String[] args) throws Exception {
 
 		GenerateProxy genProxy = new GenerateProxy();
@@ -1379,6 +1463,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("opsmap", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to handle all operations via post verb
 		opt.getSet().addOption("allpost", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//set virtual hosts
+		opt.getSet().addOption("vhosts", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
@@ -1389,6 +1475,7 @@ public class GenerateProxy {
 			wsdlPath = opt.getSet().getOption("wsdl").getResultValue(0);
 		} else {
 			System.out.println("-wsdl is a madatory parameter");
+			usage();
 			System.exit(1);
 		}
 
@@ -1422,6 +1509,10 @@ public class GenerateProxy {
 		if (opt.getSet().isSet("allpost")) {
 			GenerateProxy.OPSMAPPING_TEMPLATE = opt.getSet().getOption("allpost").getResultValue(0);
 		}		
+		
+		if (opt.getSet().isSet("vhosts")) {
+			genProxy.setVHost(opt.getSet().getOption("vhosts").getResultValue(0));
+		} 
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug

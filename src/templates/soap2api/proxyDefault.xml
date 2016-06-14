@@ -18,7 +18,6 @@
     <HTTPProxyConnection>
         <BasePath>/test</BasePath>
         <Properties/>
-        <VirtualHost>default</VirtualHost>
     </HTTPProxyConnection>
     <RouteRule name="default">
         <TargetEndpoint>default</TargetEndpoint>

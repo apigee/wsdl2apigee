@@ -26,7 +26,6 @@
     <HTTPProxyConnection>
         <BasePath>/default</BasePath>
         <Properties/>
-        <VirtualHost>default</VirtualHost>
     </HTTPProxyConnection>
     <RouteRule name="default">
         <TargetEndpoint>default</TargetEndpoint>
