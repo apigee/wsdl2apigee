@@ -7,13 +7,15 @@ public class APIMap {
 	private String resourcePath;
 	private String verb;
 	private String soapAction;
+	private String rootElement;
 	private boolean otherNamespaces;
 	
-	public APIMap(String j, String s, String r, String v, boolean ons) {
+	public APIMap(String j, String s, String r, String v, String re, boolean ons) {
 		jsonBody = j;
 		soapBody = s;
 		resourcePath = r;
 		verb = v;
+		rootElement = re;
 		otherNamespaces = ons;
 	}
 	
@@ -43,5 +45,9 @@ public class APIMap {
 	
 	public boolean getOthernamespaces() {
 		return otherNamespaces;
+	}
+	
+	public String getRootElement () {
+		return rootElement;
 	}
 }

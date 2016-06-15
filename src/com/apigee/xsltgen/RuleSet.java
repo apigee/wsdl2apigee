@@ -104,10 +104,15 @@ public class RuleSet {
         String template = new Scanner(getClass()
                 .getResourceAsStream("/templates/xsltgen/transform.xsl.tmpl"), "UTF-8")
         		.useDelimiter("\\A").next();
+
         
         String oneRule = new Scanner(getClass()
             .getResourceAsStream("/templates/xsltgen/one-template.xml"), "UTF-8")
             .useDelimiter("\\A").next();
+        
+        String twoRule = new Scanner(getClass()
+                .getResourceAsStream("/templates/xsltgen/two-template.xml"), "UTF-8")
+                .useDelimiter("\\A").next();        
 
         HashMap<String,String> namespaces = new HashMap<String,String>();
         String xslTemplatesForRules = "";
@@ -117,10 +122,17 @@ public class RuleSet {
 
         String decls = "\n  " + declsForNs(namespaces);
         for (Rule r : rules) {
-            String output = oneRule
-                .replace("@@MATCH", matchForRule(r))
-                .replace("@@PREFIX", r.nsprefix)
-                .replace("@@NAMESPACE-DECL", decls);
+        	String output = null;
+        	if (!r.nsprefix.equalsIgnoreCase("NULL")) {
+	            output = oneRule
+	                    .replace("@@MATCH", matchForRule(r))
+	                    .replace("@@PREFIX", r.nsprefix)
+	                    .replace("@@NAMESPACE-DECL", decls);
+        	}
+        	else {
+        		output = twoRule
+        				.replaceAll("@@MATCH", matchForRule(r));
+        	}
             decls = "";
             xslTemplatesForRules += output + "\n\n";
         }

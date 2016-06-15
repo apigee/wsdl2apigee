@@ -1,0 +1,5 @@
+	<xsl:template match="@@MATCH">
+	  <xsl:element name="{local-name()}">
+	    <xsl:apply-templates select="node()|@*"/>
+	  </xsl:element>
+	</xsl:template>

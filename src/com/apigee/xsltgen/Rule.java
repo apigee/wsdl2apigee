@@ -36,4 +36,12 @@ public class Rule {
     	nsprefix = nsp;
     	namespace = ns;
     }
+    
+    public Rule(String xp, String nsp, String ns, String md) {
+    	mode = "self";
+    	xpath = xp;
+    	nsprefix = nsp;
+    	namespace = ns;
+    	mode = md;
+    }    
 }

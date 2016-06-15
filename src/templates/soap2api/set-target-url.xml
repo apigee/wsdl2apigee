@@ -7,6 +7,10 @@
         <Name>target.url</Name>
         <Ref>forward.target.url</Ref>
     </AssignVariable>
+	<AssignVariable> 
+		<Name>target.copy.pathsuffix</Name> 
+		<Value>false</Value> 
+	</AssignVariable>    
     <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
     <AssignTo createNew="false" transport="http" type="request"/>
 </AssignMessage>
