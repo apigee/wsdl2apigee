@@ -969,8 +969,9 @@ public class GenerateProxy {
 							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 						} 
 						if (e.getType() == null) {
-							// TODO: handle this
-							LOGGER.warning("unhandle conditions getRef() = null");
+							// TODO: handle this any anyType
+							buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
+							LOGGER.warning("Element "+e.getName()+" type was null; treating as anyType");
 						} else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
 								&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
 							buildXPath(e, rootElement, rootNamespace, rootPrefix);
@@ -1061,7 +1062,7 @@ public class GenerateProxy {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
 		}
 		
-		xpathString = xpathString +"/" + e.getName();
+		xpathString = xpathString +"/" + rootPrefix + ":" + e.getName();
 		
 		r = new Rule(xpathString, prefix, namespaceUri, "descendant");
 		ruleList.add(r);		
