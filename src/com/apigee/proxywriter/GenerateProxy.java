@@ -890,7 +890,7 @@ public class GenerateProxy {
             }
             else {
             	//TODO: handle this
-            	LOGGER.warning("unhandle conditions getRef() = null");
+            	LOGGER.warning("unhandled conditions getRef() = null");
             }
         }
         else {
@@ -906,15 +906,19 @@ public class GenerateProxy {
                 		if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
     							&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
                 			buildXPath(e, rootElement, rootNamespace, rootPrefix);
-                        }                		
+                        } 
                     	TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
                     	if (typeDefinition instanceof ComplexType) {
                     		parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
                     	} 
                 	}
                 	else  {
-                    	//TODO: handle this
-                    	LOGGER.warning("unhandle conditions - getRef() = null");
+                    	//handle this as anyType
+						buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
+						if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)) {
+							buildXPath(e, rootElement, rootNamespace, rootPrefix);
+						}
+                    	LOGGER.warning("Found element " + e.getName() + " with no type. Handling as xsd:anyType");
                     	
                     }
                 }
@@ -931,7 +935,7 @@ public class GenerateProxy {
                         return element;
                     }
                 } catch (Exception e) {
-                	LOGGER.warning("unhandle conditions: " + e.getMessage());
+                	LOGGER.warning("unhandled conditions: " + e.getMessage());
                 }
             }
         }
@@ -947,8 +951,17 @@ public class GenerateProxy {
 			Sequence seq = (Sequence) sc;
 			level ++;
 			for (com.predic8.schema.Element e : seq.getElements()) {
+				//System.out.println(e.getName() + " - " + " " + e.getType());
 				if (e.getName() == null) level --;
-				if (e.getName() != null) xpathElement.put(level, e.getName());
+				if (e.getName() != null) {
+					xpathElement.put(level, e.getName());
+					if (e.getType() != null) {
+						if (e.getType().getLocalPart().equalsIgnoreCase("anyType")) {
+							//found a anyType. remove namespaces for descendents
+							buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
+						}
+					}
+				}
 				parseElement(e, schemas, rootElement, rootNamespace, rootPrefix);
 			}
 			level --;
@@ -969,7 +982,7 @@ public class GenerateProxy {
 							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 						} 
 						if (e.getType() == null) {
-							// TODO: handle this any anyType
+							//handle this any anyType
 							buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
 							LOGGER.warning("Element "+e.getName()+" type was null; treating as anyType");
 						} else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
@@ -1013,7 +1026,7 @@ public class GenerateProxy {
             parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace, rootPrefix);
         } else if (sc != null) {
 			// TODO: handle this
-			LOGGER.warning("unhandle conditions - " + sc.getClass().getName());
+			LOGGER.warning("unhandled conditions - " + sc.getClass().getName());
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1058,12 +1071,17 @@ public class GenerateProxy {
 		String xpathString = "";
 		String prefix = "NULL";
 		String namespaceUri = "NULL";
+		String lastElement = "";
+		
 		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
+			lastElement = entry.getValue();
 		}
 		
-		xpathString = xpathString +"/" + rootPrefix + ":" + e.getName();
-		
+		//add the last element to xpath
+		if (!lastElement.equalsIgnoreCase(e.getName()))
+			xpathString = xpathString +"/" + rootPrefix + ":" + e.getName();
+
 		r = new Rule(xpathString, prefix, namespaceUri, "descendant");
 		ruleList.add(r);		
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
