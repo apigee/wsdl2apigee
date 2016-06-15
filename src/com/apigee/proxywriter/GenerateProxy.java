@@ -173,7 +173,7 @@ public class GenerateProxy {
 		vHosts = new ArrayList<String>();
 		vHosts.add("default");
 		
-		buildFolder = "." + File.separator + "build";
+		buildFolder = null;
 		soapVersion = "SOAP12";
 		ALLPOST = false;
 		PASSTHRU = false;
@@ -958,6 +958,10 @@ public class GenerateProxy {
 			Derivation derivation = complexContent.getDerivation();
 
 			if (derivation != null) {
+				TypeDefinition typeDefinition = getTypeFromSchema(derivation.getBase(), schemas);				
+				if (typeDefinition instanceof ComplexType) {
+					parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
+				}
 				if (derivation.getModel() instanceof Sequence) {
 					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 				} else if (derivation.getModel() instanceof ModelGroup) {
@@ -1307,8 +1311,10 @@ public class GenerateProxy {
         InputStream is = null;
 
 		try {
-            tempDirectory = Files.createTempDirectory(null);
-            buildFolder = tempDirectory.toAbsolutePath().toString();
+			if (buildFolder == null ) {
+	            tempDirectory = Files.createTempDirectory(null);
+	            buildFolder = tempDirectory.toAbsolutePath().toString();
+			}
             zipFolder = buildFolder + File.separator + "apiproxy";
             // prepare the target folder (create apiproxy folder and sub-folders
 			if (prepareTargetFolder()) {
@@ -1403,6 +1409,7 @@ public class GenerateProxy {
 		System.out.println("-opsmap=opsmapping.xml    mapping file that to map wsdl operation to http verb");
 		System.out.println("-allpost=<true|false>     set to true if all operations are http verb; default is false");
 		System.out.println("-vhosts=<comma separated values for virtuals hosts>");
+		System.out.println("-build=specify build folder   default is temp/tmp");		
 		System.out.println("-debug=<true|false>       default is false");
 		System.out.println("");
 		System.out.println("");
@@ -1465,6 +1472,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("allpost", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		//set virtual hosts
 		opt.getSet().addOption("vhosts", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//set build path
+		opt.getSet().addOption("build", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
@@ -1513,6 +1522,10 @@ public class GenerateProxy {
 		if (opt.getSet().isSet("vhosts")) {
 			genProxy.setVHost(opt.getSet().getOption("vhosts").getResultValue(0));
 		} 
+		
+		if (opt.getSet().isSet("build")) {
+			genProxy.setBuildFolder(opt.getSet().getOption("build").getResultValue(0));
+		} 		
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
