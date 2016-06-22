@@ -7,4 +7,5 @@ build/**
 .settings/**
 src/com/apigee/proxywriter/XSLGenerator.java
 apiproxy/**
+opsmapping.xml
 

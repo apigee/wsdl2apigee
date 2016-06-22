@@ -800,17 +800,20 @@ public class GenerateProxy {
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 
+			String operationName = entry.getKey();
+			APIMap apiMap = entry.getValue();
+			
 			flow = proxyDefault.createElement("Flow");
-			((Element) flow).setAttribute("name", entry.getKey());
+			((Element) flow).setAttribute("name", operationName);
 
 			flowDescription = proxyDefault.createElement("Description");
-			flowDescription.setTextContent(entry.getKey());
+			flowDescription.setTextContent(operationName);
 			flow.appendChild(flowDescription);
 
 			request = proxyDefault.createElement("Request");
 			response = proxyDefault.createElement("Response");
 			condition = proxyDefault.createElement("Condition");
-			condition.setTextContent(conditionText + entry.getKey() + "\")");
+			condition.setTextContent(conditionText + apiMap.getRootElement() + "\")");
 
 			flow.appendChild(request);
 			flow.appendChild(response);
@@ -1209,7 +1212,7 @@ public class GenerateProxy {
 		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
 
-		if (!binding.getStyle().equalsIgnoreCase("Document/Literal")) {
+		if (!binding.getStyle().contains("Document/Literal")) {
 			throw new UnSupportedWSDLException("Only Docuement/literal is supported");
 		}
 
@@ -1225,27 +1228,30 @@ public class GenerateProxy {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
 			try {
-				if (!PASSTHRU) {
+				
+				if (op.getInput().getMessage().getParts().size() < 1) {
+					LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
+				} else if (op.getInput().getMessage().getParts().size() > 1) {
+					LOGGER.warning(
+							"wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
+				} else {
+					com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
+							.getElement();
+					namespace = (Map<String, String>) requestElement.getNamespaceContext();
 					APIMap apiMap = null;
-					String resourcePath = OpsMap.getResourcePath(op.getName());
-					String verb = "";
 					
-					if (!ALLPOST) {
-						verb = OpsMap.getOpsMap(op.getName());
+					if (PASSTHRU) {
+						apiMap = new APIMap(null, null , null, "POST", requestElement.getName(), false);
+						messageTemplates.put(op.getName(), apiMap);
 					} else {
-						verb = "POST";
-					}
-					
-					if (op.getInput().getMessage().getParts().size() < 1) {
-						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
-					} else if (op.getInput().getMessage().getParts().size() > 1) {
-						LOGGER.warning(
-								"wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
-					} else {
-						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
-								.getElement();
-						namespace = (Map<String, String>) requestElement.getNamespaceContext();
+						String resourcePath = OpsMap.getResourcePath(op.getName());
+						String verb = "";
 						
+						if (!ALLPOST) {
+							verb = OpsMap.getOpsMap(op.getName());
+						} else {
+							verb = "POST";
+						}
 						if (verb.equalsIgnoreCase("GET")) {
 							creator.setCreator(new RequestTemplateCreator());
 							// use membrane SOAP to generate a SOAP Request
@@ -1289,12 +1295,9 @@ public class GenerateProxy {
 								apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), false);
 							}
 						}
-						messageTemplates.put(op.getName(), apiMap);
+						messageTemplates.put(op.getName(), apiMap);						
 					}
-				} else {
-					messageTemplates.put(op.getName(), null);
-				}
-
+				}				
 			} catch (Exception e) {
 				LOGGER.severe(e.getMessage());
 				e.printStackTrace();
@@ -1586,7 +1589,7 @@ public class GenerateProxy {
 		}
 		
 		if (opt.getSet().isSet("allpost")) {
-			GenerateProxy.OPSMAPPING_TEMPLATE = opt.getSet().getOption("allpost").getResultValue(0);
+			genProxy.setAllPost(new Boolean(opt.getSet().getOption("allpost").getResultValue(0)));
 		}		
 		
 		if (opt.getSet().isSet("vhosts")) {

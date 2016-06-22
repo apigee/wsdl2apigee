@@ -6,7 +6,7 @@
         <Request>
             <Step>
                 <Name>Invalid-SOAP</Name>
-                <Condition>(request.header.Content-Type != "text/xml") OR (request.header.Content-Type != "application/xml") OR (request.header.Content-Type != "application/*+xml")</Condition>
+                <Condition>!(request.header.Content-Type ~~ "(text|application)\/(xml|([a-z]*\+xml))(;(\w)*=(\S*))?")</Condition>
             </Step>
             <Step>
                 <Name>Extract-Operation-Name</Name>
