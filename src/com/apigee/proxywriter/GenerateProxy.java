@@ -101,6 +101,7 @@ public class GenerateProxy {
 	private static final String SOAP2API_XSLTPOLICY_TEMPLATE = "/templates/soap2api/add-namespace.xml";
 	private static final String SOAP2API_XSLT_TEMPLATE = "/templates/soap2api/add-namespace.xslt";
 	private static final String SOAP2API_JSON_TO_XML_TEMPLATE = "/templates/soap2api/json-to-xml.xml";
+	private static final String SOAP2API_ADD_SOAPACTION_TEMPLATE = "/templates/soap2api/add-soapaction.xml";
 
 	
 	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
@@ -285,6 +286,8 @@ public class GenerateProxy {
 		Document addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLTPOLICY_TEMPLATE);
 		
 		Document jsonXMLTemplate = xmlUtils.readXML(SOAP2API_JSON_TO_XML_TEMPLATE);
+		
+		Document addSoapActionTemplate = xmlUtils.readXML(SOAP2API_ADD_SOAPACTION_TEMPLATE);
 
 		Node policies = apiTemplateDocument.getElementsByTagName("Policies").item(0);
 
@@ -296,8 +299,8 @@ public class GenerateProxy {
 		Node request;
 		Node response;
 		Node condition;
-		Node step1, step2, step3, step4;
-		Node name1, name2, name3, name4;
+		Node step1, step2, step3, step4, step5;
+		Node name1, name2, name3, name4, name5;
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			String operationName = entry.getKey();
@@ -312,6 +315,7 @@ public class GenerateProxy {
 			String resourcePath = apiMap.getResourcePath();
 			String Condition = "(proxy.pathsuffix MatchesPath \"" + resourcePath + "\") and (request.verb = \""
 					+ httpVerb + "\")";
+			String addSoapAction = operationName+"-add-soapaction";
 
 			flow = proxyDefault.createElement("Flow");
 			((Element) flow).setAttribute("name", operationName);
@@ -335,6 +339,10 @@ public class GenerateProxy {
 
 			step4 = proxyDefault.createElement("Step");
 			name4 = proxyDefault.createElement("Name");
+			
+			step5 = proxyDefault.createElement("Step");
+			name5 = proxyDefault.createElement("Name");
+			
 
 			if (httpVerb.equalsIgnoreCase("get")) {
 				name1.setTextContent(extractPolicyName);
@@ -354,6 +362,7 @@ public class GenerateProxy {
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
 				request.appendChild(step1);
+				//TODO: add condition here to convert to XML only if Content-Type is json; 
 
 				name2.setTextContent(operationName + "-add-namespace");
 				step2.appendChild(name2);
@@ -374,8 +383,18 @@ public class GenerateProxy {
 					step3.appendChild(name3);
 					request.appendChild(step3);
 				}
+				//for soap 1.1 add soap action
+				if (soapVersion.equalsIgnoreCase("SOAP11")) {
+					step5 = proxyDefault.createElement("Step");
+					name5 = proxyDefault.createElement("Name");
+					name5.setTextContent(addSoapAction);
+					step5.appendChild(name5);
+					request.appendChild(step5);
+				}
+				
 			}
-
+			
+			
 			LOGGER.fine("Condition: " + Condition);
 			condition.setTextContent(Condition);
 
@@ -394,7 +413,7 @@ public class GenerateProxy {
 				policies.appendChild(policy1);
 				policies.appendChild(policy2);
 				// write Assign Message Policy
-				writeSOAP2APIAssignMessagePolicies(assignTemplate, operationName, buildSOAPPolicy);
+				writeSOAP2APIAssignMessagePolicies(assignTemplate, operationName, buildSOAPPolicy, apiMap.getSoapAction());
 				// write Extract Variable Policy
 				writeSOAP2APIExtractPolicy(extractTemplate, operationName, extractPolicyName);
 			} else {
@@ -432,6 +451,14 @@ public class GenerateProxy {
 				} else {
 					writeAddNamespace(addNamespaceTemplate, operationName, false);
 				}
+				//for soap 1.1 add soap action
+				if (soapVersion.equalsIgnoreCase("SOAP11")) {
+					// Add policy to proxy.xml
+					Node policy5 = apiTemplateDocument.createElement("Policy");
+					policy5.setTextContent(addSoapAction);
+					policies.appendChild(policy5);
+					writeAddSoapAction(addSoapActionTemplate, operationName, apiMap.getSoapAction());
+				}				
 			}
 		}
 
@@ -468,6 +495,36 @@ public class GenerateProxy {
 				+ File.separator + "default.xml");
 		LOGGER.fine("Edited target xml: " + buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
 				+ File.separator + "default.xml");
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+	}
+	
+	private void writeAddSoapAction(Document addSoapActionTemplate, String operationName, String soapAction) throws Exception{
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		try {
+			XMLUtils xmlUtils = new XMLUtils();
+			String policyName = operationName + "-add-soapaction";
+			Document soapActionPolicyXML = xmlUtils.cloneDocument(addSoapActionTemplate);
+
+			Node rootElement = soapActionPolicyXML.getFirstChild();
+			NamedNodeMap attr = rootElement.getAttributes();
+			Node nodeAttr = attr.getNamedItem("name");
+			nodeAttr.setNodeValue(policyName);
+
+			Node displayName = soapActionPolicyXML.getElementsByTagName("DisplayName").item(0);
+			displayName.setTextContent(operationName + " Add SOAPAction");
+			
+			Node header = soapActionPolicyXML.getElementsByTagName("Header").item(0);
+			header.setTextContent(soapAction);
+			
+			xmlUtils.writeXML(soapActionPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
+					+ File.separator + policyName + ".xml");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;			
+		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
@@ -564,7 +621,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeSOAP2APIAssignMessagePolicies(Document assignTemplate, String operationName, String policyName)
+	private void writeSOAP2APIAssignMessagePolicies(Document assignTemplate, String operationName, String policyName, String soapAction)
 			throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -580,7 +637,7 @@ public class GenerateProxy {
 
 		Node displayName = assignPolicyXML.getElementsByTagName("DisplayName").item(0);
 		displayName.setTextContent(operationName + " Build SOAP");
-
+		
 		Node payload = assignPolicyXML.getElementsByTagName("Payload").item(0);
 		NamedNodeMap payloadNodeMap = payload.getAttributes();
 		Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
@@ -595,6 +652,9 @@ public class GenerateProxy {
 
 			assignPolicyXML.getElementsByTagName("Header").item(1)
 					.setTextContent(StringEscapeUtils.escapeXml10(SOAP11_CONTENT_TYPE));
+
+			Node header = assignPolicyXML.getElementsByTagName("Header").item(0);
+			header.setTextContent(soapAction);
 		}
 
 		APIMap apiMap = messageTemplates.get(operationName);
@@ -1326,7 +1386,6 @@ public class GenerateProxy {
 				}
 			}
 		}
-
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
