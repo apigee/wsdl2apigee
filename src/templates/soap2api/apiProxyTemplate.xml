@@ -18,7 +18,13 @@
         <Policy>set-response-soap-body</Policy>
         <Policy>set-target-url</Policy>
         <Policy>unknown-resource</Policy>
-        <Policy>xml-to-json</Policy>    
+        <Policy>xml-to-json</Policy>
+        <Policy>remove-namespaces</Policy>   
+        <Policy>extract-format</Policy> 
+        <Policy>get-response-soap-body-xml</Policy>
+        <Policy>set-response-soap-body-accept</Policy>
+        <Policy>return-generic-error-accept</Policy>
+        <Policy>unknown-resource-xml</Policy>
     </Policies>
     <ProxyEndpoints>
         <ProxyEndpoint>default</ProxyEndpoint>

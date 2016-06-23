@@ -2,8 +2,8 @@
 <AssignMessage async="false" continueOnError="false" enabled="true" name="set-response-soap-body">
     <DisplayName>Set Response SOAP Body</DisplayName>
     <Set>
-        <Payload contentType="application/json">{soapresponse.body}</Payload>
+        <Payload contentType="{contentformat}">{soapresponse.body}</Payload>
     </Set>
     <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
-    <AssignTo createNew="false" transport="http" type="request"/>
+    <AssignTo createNew="false" transport="http" type="response"/>
 </AssignMessage>

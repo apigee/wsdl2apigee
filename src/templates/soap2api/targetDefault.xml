@@ -10,13 +10,27 @@
         </Request>
         <Response>
             <Step>
+                <Name>remove-namespaces</Name>
+            </Step>
+            <Step>
                 <Name>xml-to-json</Name>
+                <Condition>(verb != "GET" AND contentformat == "application/json") OR (verb == "GET" AND acceptformat !~ "*/xml")</Condition>
             </Step>
             <Step>
                 <Name>get-response-soap-body</Name>
+                <Condition>(verb != "GET" AND contentformat == "application/json") OR (verb == "GET" AND acceptformat !~ "*/xml")</Condition>
+            </Step>
+            <Step>
+                <Name>get-response-soap-body-xml</Name>
+                <Condition>(verb != "GET" AND contentformat != "application/json") OR (verb == "GET" AND acceptformat ~ "*/xml")</Condition>
             </Step>
             <Step>
                 <Name>set-response-soap-body</Name>
+                <Condition>(verb != "GET")</Condition>
+            </Step>
+            <Step>
+                <Name>set-response-soap-body-accept</Name>
+                <Condition>(verb == "GET")</Condition>
             </Step>
         </Response>
     </PreFlow>
@@ -27,15 +41,28 @@
     <Flows/>
     <DefaultFaultRule name="fault-rule">
         <Step>
+            <Name>remove-namespaces</Name>
+        </Step>
+        <Step>
             <Name>xml-to-json</Name>
+            <Condition>(verb != "GET" AND contentformat == "application/json") OR (verb == "GET" AND acceptformat !~ "*/xml")</Condition>
         </Step>
         <Step>
             <Name>get-response-soap-body</Name>
+            <Condition>(verb != "GET" AND contentformat == "application/json") OR (verb == "GET" AND acceptformat !~ "*/xml")</Condition>
+        </Step>
+        <Step>
+            <Name>get-response-soap-body-xml</Name>
+            <Condition>(verb != "GET" AND contentformat != "application/json") OR (verb == "GET" AND acceptformat ~ "*/xml")</Condition>
         </Step>
         <Step>
             <Name>return-generic-error</Name>
+            <Condition>(verb != "GET")</Condition>
         </Step>
-        
+        <Step>
+            <Name>return-generic-error-accept</Name>
+            <Condition>(verb == "GET")</Condition>
+        </Step>
     </DefaultFaultRule>    
     <HTTPTargetConnection>
         <Properties/>

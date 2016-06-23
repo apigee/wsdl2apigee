@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ExtractVariables async="false" continueOnError="false" enabled="true" name="extract-format">
+    <DisplayName>Extract Format</DisplayName>
+    <Properties/>
+    <Header name="Content-Type">
+        <Pattern ignoreCase="true">{contentformat}</Pattern>
+    </Header>
+    <Header name="Accept">
+        <Pattern ignoreCase="true">{acceptformat}</Pattern>
+    </Header>
+    <Variable name="request.verb">
+        <Pattern>{verb}</Pattern>
+    </Variable>
+</ExtractVariables>

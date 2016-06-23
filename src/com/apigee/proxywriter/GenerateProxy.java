@@ -298,7 +298,7 @@ public class GenerateProxy {
 		Node flowDescription;
 		Node request;
 		Node response;
-		Node condition;
+		Node condition, condition2;
 		Node step1, step2, step3, step4, step5;
 		Node name1, name2, name3, name4, name5;
 
@@ -308,6 +308,7 @@ public class GenerateProxy {
 			String buildSOAPPolicy = operationName + "-build-soap";
 			String extractPolicyName = operationName + "-extract-query-param";
 			String jsonToXML = operationName + "-json-to-xml";
+			String jsonToXMLCondition = "(request.header.Content-Type == \"application/json\")";
 			String soap12 = "add-soap12";
 			String soap11 = "add-soap11";
 
@@ -327,6 +328,8 @@ public class GenerateProxy {
 			request = proxyDefault.createElement("Request");
 			response = proxyDefault.createElement("Response");
 			condition = proxyDefault.createElement("Condition");
+			condition2 = proxyDefault.createElement("Condition");
+			condition2.setTextContent(jsonToXMLCondition);
 
 			step1 = proxyDefault.createElement("Step");
 			name1 = proxyDefault.createElement("Name");
@@ -361,6 +364,7 @@ public class GenerateProxy {
 			} else {
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
+				step1.appendChild(condition2);
 				request.appendChild(step1);
 				//TODO: add condition here to convert to XML only if Content-Type is json; 
 
@@ -474,11 +478,24 @@ public class GenerateProxy {
 		response = proxyDefault.createElement("Response");
 		condition = proxyDefault.createElement("Condition");
 
+		Node conditionA = proxyDefault.createElement("Condition");
+		conditionA.setTextContent("(verb != \"GET\" AND contentformat == \"application/json\") OR (verb == \"GET\" AND acceptformat !~ \"*/xml\")");
+		Node conditionB = proxyDefault.createElement("Condition");
+		conditionB.setTextContent("(verb != \"GET\" AND contentformat != \"application/json\") OR (verb == \"GET\" AND acceptformat ~ \"*/xml\")");
+		
 		step1 = proxyDefault.createElement("Step");
 		name1 = proxyDefault.createElement("Name");
 		name1.setTextContent("unknown-resource");
 		step1.appendChild(name1);
+		step1.appendChild(conditionA);//added
 		request.appendChild(step1);
+
+		step2 = proxyDefault.createElement("Step");
+		name2 = proxyDefault.createElement("Name");
+		name2.setTextContent("unknown-resource-xml");
+		step2.appendChild(name2);
+		step2.appendChild(conditionB);
+		request.appendChild(step2);
 
 		flow.appendChild(request);
 		flow.appendChild(response);
@@ -775,7 +792,7 @@ public class GenerateProxy {
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
 			if (PASSTHRU) {
-				sourcePath += "soappassthru/";
+				sourcePath += "soappassthru" + File.separator;
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -790,15 +807,27 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body-accept.xml"),
+						Paths.get(targetPath + "set-response-soap-body-accept.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "get-response-soap-body.xml"),
 						Paths.get(targetPath + "get-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "get-response-soap-body-xml.xml"),
+						Paths.get(targetPath + "get-response-soap-body-xml.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);			
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-target-url.xml"), 
 						Paths.get(targetPath + "set-target-url.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "extract-format.xml"), 
+						Paths.get(targetPath + "extract-format.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource.xml"),
 						Paths.get(targetPath + "unknown-resource.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource-xml.xml"),
+						Paths.get(targetPath + "unknown-resource-xml.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);				
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-empty-nodes.xml"),
 						Paths.get(targetPath + "remove-empty-nodes.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -808,6 +837,16 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "return-generic-error.xml"),
 						Paths.get(targetPath + "return-generic-error.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "return-generic-error-accept.xml"),
+						Paths.get(targetPath + "return-generic-error-accept.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xml"),
+						Paths.get(targetPath + "remove-namespaces.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xslt"),
+						Paths.get(xslResourcePath + "remove-namespaces.xslt"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				
 			}
 		} catch (IOException e) {
 			LOGGER.severe(e.getMessage());

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<RaiseFault async="false" continueOnError="false" enabled="true" name="return-generic-error">
-    <DisplayName>Return Generic Error</DisplayName>
+<RaiseFault async="false" continueOnError="false" enabled="true" name="return-generic-error-accept">
+    <DisplayName>Return Generic Error Accept</DisplayName>
     <Properties/>
     <FaultResponse>
         <Set>
-            <Payload contentType="{contentformat}">{soapresponse.body}</Payload>
+            <Payload contentType="{acceptformat}">{soapresponse.body}</Payload>
             <StatusCode>500</StatusCode>
             <ReasonPhrase>Server Error</ReasonPhrase>
         </Set>
