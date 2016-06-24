@@ -127,7 +127,7 @@ public class TransformerGenerator {
             throw new Exception("invalid ruleset");
         }
         rs.show();
-        String t = rs.getTransform();
+        String t = rs.getTransform("SOAP11");
         System.out.printf("%s\n", t);
     }
 

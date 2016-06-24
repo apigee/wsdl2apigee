@@ -1,0 +1,5 @@
+ <xsl:template match="@@MATCH">
+    <xsl:attribute name="@@PREFIX:{local-name()}">
+      <xsl:apply-templates select="@*"/>
+    </xsl:attribute>
+  </xsl:template>

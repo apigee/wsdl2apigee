@@ -98,8 +98,10 @@ public class GenerateProxy {
 	private static final String SOAP2API_TARGET_TEMPLATE = "/templates/soap2api/targetDefault.xml";
 	private static final String SOAP2API_EXTRACT_TEMPLATE = "/templates/soap2api/ExtractPolicy.xml";
 	private static final String SOAP2API_ASSIGN_TEMPLATE = "/templates/soap2api/AssignMessagePolicy.xml";
-	private static final String SOAP2API_XSLTPOLICY_TEMPLATE = "/templates/soap2api/add-namespace.xml";
-	private static final String SOAP2API_XSLT_TEMPLATE = "/templates/soap2api/add-namespace.xslt";
+	private static final String SOAP2API_XSLT11POLICY_TEMPLATE = "/templates/soap2api/add-namespace11.xml";
+	private static final String SOAP2API_XSLT11_TEMPLATE = "/templates/soap2api/add-namespace11.xslt";
+	private static final String SOAP2API_XSLT12POLICY_TEMPLATE = "/templates/soap2api/add-namespace12.xml";
+	private static final String SOAP2API_XSLT12_TEMPLATE = "/templates/soap2api/add-namespace12.xslt";
 	private static final String SOAP2API_JSON_TO_XML_TEMPLATE = "/templates/soap2api/json-to-xml.xml";
 	private static final String SOAP2API_ADD_SOAPACTION_TEMPLATE = "/templates/soap2api/add-soapaction.xml";
 
@@ -283,7 +285,12 @@ public class GenerateProxy {
 
 		Document assignTemplate = xmlUtils.readXML(SOAP2API_ASSIGN_TEMPLATE);
 
-		Document addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLTPOLICY_TEMPLATE);
+		Document addNamespaceTemplate = null;
+		if (soapVersion.equalsIgnoreCase("SOAP11")) {
+			addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLT11POLICY_TEMPLATE);
+		} else {
+			addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLT12POLICY_TEMPLATE);
+		}
 		
 		Document jsonXMLTemplate = xmlUtils.readXML(SOAP2API_JSON_TO_XML_TEMPLATE);
 		
@@ -291,16 +298,14 @@ public class GenerateProxy {
 
 		Node policies = apiTemplateDocument.getElementsByTagName("Policies").item(0);
 
-		boolean addSoapWrapperPolicy = false;
-
 		Node flows = proxyDefault.getElementsByTagName("Flows").item(0);
 		Node flow;
 		Node flowDescription;
 		Node request;
 		Node response;
 		Node condition, condition2;
-		Node step1, step2, step3, step4, step5;
-		Node name1, name2, name3, name4, name5;
+		Node step1, step2, step4, step5;
+		Node name1, name2, name4, name5;
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			String operationName = entry.getKey();
@@ -309,8 +314,6 @@ public class GenerateProxy {
 			String extractPolicyName = operationName + "-extract-query-param";
 			String jsonToXML = operationName + "-json-to-xml";
 			String jsonToXMLCondition = "(request.header.Content-Type == \"application/json\")";
-			String soap12 = "add-soap12";
-			String soap11 = "add-soap11";
 
 			String httpVerb = apiMap.getVerb();
 			String resourcePath = apiMap.getResourcePath();
@@ -336,9 +339,6 @@ public class GenerateProxy {
 
 			step2 = proxyDefault.createElement("Step");
 			name2 = proxyDefault.createElement("Name");
-
-			step3 = proxyDefault.createElement("Step");
-			name3 = proxyDefault.createElement("Name");
 
 			step4 = proxyDefault.createElement("Step");
 			name4 = proxyDefault.createElement("Name");
@@ -378,15 +378,6 @@ public class GenerateProxy {
 					request.appendChild(step4);
 				}
 
-				if (soapVersion.equalsIgnoreCase("SOAP12")) {
-					name3.setTextContent(soap12);
-					step3.appendChild(name3);
-					request.appendChild(step3);
-				} else {
-					name3.setTextContent(soap11);
-					step3.appendChild(name3);
-					request.appendChild(step3);
-				}
 				//for soap 1.1 add soap action
 				if (soapVersion.equalsIgnoreCase("SOAP11")) {
 					step5 = proxyDefault.createElement("Step");
@@ -425,19 +416,6 @@ public class GenerateProxy {
 				Node policy1 = apiTemplateDocument.createElement("Policy");
 				policy1.setTextContent(jsonToXML);
 				policies.appendChild(policy1);
-				
-				Node policy2 = apiTemplateDocument.createElement("Policy");
-				if (soapVersion.equalsIgnoreCase("SOAP12")) {
-					policy2.setTextContent(soap12);
-				} else {
-					policy2.setTextContent(soap11);
-				}
-				policies.appendChild(policy2);
-				
-				if (!addSoapWrapperPolicy) {
-					addSOAPWrapper();
-					addSoapWrapperPolicy = true;
-				}
 				
 				writeJsonToXMLPolicy(jsonXMLTemplate, operationName, apiMap.getRootElement());
 
@@ -748,38 +726,6 @@ public class GenerateProxy {
 			}.getClass().getEnclosingMethod().getName());
 	}
 	
-	private void addSOAPWrapper() throws Exception{
-
-		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-
-		String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
-				+ File.separator + "xsl" + File.separator;
-		String sourcePath = "/templates/soap2api/";
-
-		String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
-				+ File.separator;
-		
-		if (soapVersion.equalsIgnoreCase("SOAP12")) {
-			Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap12.xml"), 
-					Paths.get(targetPath + "add-soap12.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap12.xslt"), 
-					Paths.get(xslResourcePath + "add-soap12.xslt"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-		} else {
-			Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap11.xml"), 
-					Paths.get(targetPath + "add-soap11.xml"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(getClass().getResourceAsStream(sourcePath + "add-soap11.xslt"), 
-					Paths.get(xslResourcePath + "add-soap11.xslt"),
-					java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-		}
-
-		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-	}
-
 	private void writeStdPolicies() throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1173,6 +1119,7 @@ public class GenerateProxy {
 		String xpathString = "";
 		String prefix = "NULL";
 		String namespaceUri = "NULL";
+		String soapElements = "/soapenv:Envelope/soapenv:Body";
 		String lastElement = "";
 		
 		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
@@ -1184,7 +1131,7 @@ public class GenerateProxy {
 		if (!lastElement.equalsIgnoreCase(e.getName()))
 			xpathString = xpathString +"/" + rootPrefix + ":" + e.getName();
 
-		r = new Rule(xpathString, prefix, namespaceUri, "descendant");
+		r = new Rule(soapElements+xpathString, prefix, namespaceUri, "descendant");
 		ruleList.add(r);		
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1196,13 +1143,14 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		Rule r = null;
 		String xpathString = "";
+		String soapElements = "/soapenv:Envelope/soapenv:Body";
 		String prefix = getPrefix(e.getNamespaceUri());
 		String namespaceUri = e.getNamespaceUri();
 		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
 		}
 
-		r = new Rule(xpathString, prefix, namespaceUri);
+		r = new Rule(soapElements+xpathString, prefix, namespaceUri);
 		ruleList.add(r);
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1213,13 +1161,14 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		Rule r = null;
 		String prefix = getPrefix(namespaceUri);
+		String soapElements = "/soapenv:Envelope/soapenv:Body";
 		String xpathString = "";
 		
 		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
 		}		
 		
-		r = new Rule(xpathString+"/@*", prefix, namespaceUri);
+		r = new Rule(soapElements+xpathString+"/@*", prefix, namespaceUri);
 		ruleList.add(r);
 
 		cleanUpXPath();
@@ -1368,8 +1317,13 @@ public class GenerateProxy {
 								namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
 							}
 							String prefix = getPrefix(namespaceUri);
-							xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT_TEMPLATE, SOAP2API_XSL, op.getName(),
-									prefix, namespaceUri);
+							if (soapVersion.equalsIgnoreCase("SOAP11")) {
+								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(),
+										prefix, namespaceUri);
+							} else {
+								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(),
+										prefix, namespaceUri);
+							}
 
 			        		TypeDefinition typeDefinition = null;
 			        		
@@ -1387,7 +1341,7 @@ public class GenerateProxy {
 							if (ruleList.size() > 0) {
 								RuleSet rs = new RuleSet();
 								rs.addRuleList(ruleList);
-								xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform());
+								xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion));
 								ruleList.clear();
 								apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
 							} else {

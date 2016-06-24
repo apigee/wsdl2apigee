@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<XSL async="false" continueOnError="false" enabled="true" name="add-namespace12">
+    <DisplayName>Add Namespace12</DisplayName>
+    <Properties/>
+    <Source>request</Source>
+    <ResourceURL>xsl://add-namespace12.xslt</ResourceURL>
+    <Parameters ignoreUnresolvedVariables="true"/>
+</XSL>

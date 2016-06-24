@@ -1,14 +1,20 @@
-<xsl:stylesheet version="1.0"
+<xsl:stylesheet version="1.0" 
+                xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope" 
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
   <xsl:output indent="yes" method="xml" encoding="utf-8" omit-xml-declaration="yes"/>
 
   <!-- Stylesheet to inject namespaces into a document in specific places -->
-  <xsl:template match="node()">
-    <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>
-  </xsl:template>
+ <xsl:template match="/">
+    <soapenv:Envelope>
+        <soapenv:Header/>
+        <soapenv:Body>
+          <xsl:copy>
+            <xsl:apply-templates select="node()|@*"/>
+          </xsl:copy>
+        </soapenv:Body>
+    </soapenv:Envelope>
+ </xsl:template>
 
   <!-- template to copy attributes -->
   <xsl:template match="@*">

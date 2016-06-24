@@ -98,12 +98,20 @@ public class RuleSet {
         jaxbM.marshal(je, System.out);
     }
 
-    public String getTransform() throws Exception {
+    public String getTransform(String soapVersion) throws Exception {
         boolean firstTemplate = true;
         
-        String template = new Scanner(getClass()
-                .getResourceAsStream("/templates/xsltgen/transform.xsl.tmpl"), "UTF-8")
-        		.useDelimiter("\\A").next();
+        String template = null;
+        
+        if (soapVersion.equalsIgnoreCase("SOAP11")) {
+        	template = new Scanner(getClass()
+		                .getResourceAsStream("/templates/xsltgen/transform11.xsl.tmpl"), "UTF-8")
+		        		.useDelimiter("\\A").next();
+        } else {
+        	template = new Scanner(getClass()
+	                .getResourceAsStream("/templates/xsltgen/transform12.xsl.tmpl"), "UTF-8")
+	        		.useDelimiter("\\A").next();
+        }
 
         
         String oneRule = new Scanner(getClass()
@@ -112,7 +120,11 @@ public class RuleSet {
         
         String twoRule = new Scanner(getClass()
                 .getResourceAsStream("/templates/xsltgen/two-template.xml"), "UTF-8")
-                .useDelimiter("\\A").next();        
+                .useDelimiter("\\A").next();       
+        
+        String threeRule = new Scanner(getClass()
+                .getResourceAsStream("/templates/xsltgen/three-template.xml"), "UTF-8")
+                .useDelimiter("\\A").next();
 
         HashMap<String,String> namespaces = new HashMap<String,String>();
         String xslTemplatesForRules = "";
@@ -124,10 +136,17 @@ public class RuleSet {
         for (Rule r : rules) {
         	String output = null;
         	if (!r.nsprefix.equalsIgnoreCase("NULL")) {
-	            output = oneRule
-	                    .replace("@@MATCH", matchForRule(r))
-	                    .replace("@@PREFIX", r.nsprefix)
-	                    .replace("@@NAMESPACE-DECL", decls);
+        		//if there is no @ in xpath, it is a element; else attribute
+        		if (r.xpath.indexOf('@') == -1) {
+    	            output = oneRule
+    	                    .replace("@@MATCH", matchForRule(r))
+    	                    .replace("@@PREFIX", r.nsprefix)
+    	                    .replace("@@NAMESPACE-DECL", decls);
+        		} else {
+    	            output = threeRule
+    	                    .replace("@@MATCH", matchForRule(r))
+    	                    .replace("@@PREFIX", r.nsprefix);
+        		}
         	}
         	else {
         		output = twoRule
