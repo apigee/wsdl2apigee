@@ -720,6 +720,10 @@ public class GenerateProxy {
 			Node objectRootElement = jsonxmlPolicyXML.getElementsByTagName("ObjectRootElementName").item(0);
 			objectRootElement.setTextContent(rootElement);
 			
+			Node arrayRootElement = jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0);
+			arrayRootElement.setTextContent(rootElement);
+			
+			
 			xmlUtils.writeXML(jsonxmlPolicyXML, targetPath + operationName + "-json-to-xml.xml");
 
 			LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
