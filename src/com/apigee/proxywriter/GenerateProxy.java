@@ -124,6 +124,8 @@ public class GenerateProxy {
 	private boolean PASSTHRU;
 	//set this to true if all operations are to be consumed via POST verb
 	private boolean ALLPOST;
+	//set this to true if oauth should be added to the proxy
+	private boolean OAUTH;
 
 	private String targetEndpoint;
 
@@ -181,6 +183,7 @@ public class GenerateProxy {
 		soapVersion = "SOAP12";
 		ALLPOST = false;
 		PASSTHRU = false;
+		OAUTH = false;
 		level = 0;
 	}
 	
@@ -213,6 +216,10 @@ public class GenerateProxy {
 
 	public void setPort(String prt) {
 		portName = prt;
+	}
+	
+	public void setOAuth(boolean oauth) {
+		OAUTH = oauth;
 	}
 
 	private void writeAPIProxy(String proxyDescription) throws Exception {
@@ -297,7 +304,7 @@ public class GenerateProxy {
 		Document addSoapActionTemplate = xmlUtils.readXML(SOAP2API_ADD_SOAPACTION_TEMPLATE);
 
 		Node policies = apiTemplateDocument.getElementsByTagName("Policies").item(0);
-
+		
 		Node flows = proxyDefault.getElementsByTagName("Flows").item(0);
 		Node flow;
 		Node flowDescription;
@@ -306,6 +313,36 @@ public class GenerateProxy {
 		Node condition, condition2;
 		Node step1, step2, step4, step5;
 		Node name1, name2, name4, name5;
+
+		//add oauth policies if set
+		if (OAUTH) {
+			String oauthPolicy = "verify-oauth-v2-access-token";
+			String remoOAuthPolicy = "remove-header-authorization";
+			// Add policy to proxy.xml
+			Node policy1 = apiTemplateDocument.createElement("Policy");
+			policy1.setTextContent(oauthPolicy);
+			
+			Node policy2 = apiTemplateDocument.createElement("Policy");
+			policy2.setTextContent(remoOAuthPolicy);
+			
+			policies.appendChild(policy1);
+			policies.appendChild(policy2);
+			
+			Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
+
+			step1 = proxyDefault.createElement("Step");
+			name1 = proxyDefault.createElement("Name");
+			name1.setTextContent(oauthPolicy);
+			step1.appendChild(name1);
+
+			step2 = proxyDefault.createElement("Step");
+			name2 = proxyDefault.createElement("Name");
+			name2.setTextContent(remoOAuthPolicy);
+			step2.appendChild(name2);
+
+			preFlowRequest.appendChild(step1);
+			preFlowRequest.appendChild(step2);
+		}		
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			String operationName = entry.getKey();
@@ -796,6 +833,14 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xslt"),
 						Paths.get(xslResourcePath + "remove-namespaces.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				if (OAUTH) {
+					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
+							Paths.get(targetPath + "verify-oauth-v2-access-token.xml"),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(getClass().getResourceAsStream(sourcePath + "remove-header-authorization.xml"),
+							Paths.get(targetPath + "remove-header-authorization.xml"),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				}
 				
 			}
 		} catch (IOException e) {
@@ -1538,7 +1583,8 @@ public class GenerateProxy {
 		System.out.println("-opsmap=opsmapping.xml    mapping file that to map wsdl operation to http verb");
 		System.out.println("-allpost=<true|false>     set to true if all operations are http verb; default is false");
 		System.out.println("-vhosts=<comma separated values for virtuals hosts>");
-		System.out.println("-build=specify build folder   default is temp/tmp");		
+		System.out.println("-build=specify build folder   default is temp/tmp");	
+		System.out.println("-oauth=<true|false>       default is false");
 		System.out.println("-debug=<true|false>       default is false");
 		System.out.println("");
 		System.out.println("");
@@ -1603,6 +1649,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("vhosts", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		//set build path
 		opt.getSet().addOption("build", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//add verify oauth policy
+		opt.getSet().addOption("oauth", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);		
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
@@ -1655,6 +1703,10 @@ public class GenerateProxy {
 		if (opt.getSet().isSet("build")) {
 			genProxy.setBuildFolder(opt.getSet().getOption("build").getResultValue(0));
 		} 		
+		
+		if (opt.getSet().isSet("oauth")) {
+			genProxy.setOAuth(new Boolean(opt.getSet().getOption("oauth").getResultValue(0)));
+		}		
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug

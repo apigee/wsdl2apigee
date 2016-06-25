@@ -1,6 +1,6 @@
 # wsdl2apigee
 This application  can:
-1) Expose a SOAP Service as a REST API (over JSON) or 
+1) Expose a SOAP Service as a REST API (over JSON or XML) or 
 2) Expose a SOAP Service in a pass through mode for deployment on Apigee Edge
 
 ## Install
@@ -15,7 +15,7 @@ java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl=<wsdl URL o
 
 ### Other Options
 ```
-java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl=<wsdl URL or Path> -passthru=<true|false> -desc=<description> -allpost=<true|false> -opsmap=<opsmapping.xml> -service=<service name> -port=<port name> -debug=<true|false>
+java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl=<wsdl URL or Path> -passthru=<true|false> -desc=<description> -allpost=<true|false> -opsmap=<opsmapping.xml> -service=<service name> -port=<port name> -debug=<true|false> -oauth=<true|false> -vhosts=comma separated values for virtuals hosts> -build=<build folder name>
 
 Defaults:
 passthru=false; Do not convert to API/JSON. Treat as SOAP
@@ -23,6 +23,9 @@ allpost=false; Treat all wsdls operations as HTTP POST
 service=If the wsdl contains > 1 service, specify the name. Otherwise, the first service is selected
 port=If the service contains > 1 port, specify the port name. Otherwise, the first port is selected
 debug=false; Set to true to enable trace.
+vhosts=default
+oauth=false; Don't add the oauth policy
+build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
 ``` 
 OpsMap:
 A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:
