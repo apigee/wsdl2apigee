@@ -104,6 +104,7 @@ public class GenerateProxy {
 	private static final String SOAP2API_XSLT12_TEMPLATE = "/templates/soap2api/add-namespace12.xslt";
 	private static final String SOAP2API_JSON_TO_XML_TEMPLATE = "/templates/soap2api/json-to-xml.xml";
 	private static final String SOAP2API_ADD_SOAPACTION_TEMPLATE = "/templates/soap2api/add-soapaction.xml";
+	private static final String SOAP2API_JSPOLICY_TEMPLATE = "/templates/soap2api/root-wrapper.xml";
 
 	
 	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
@@ -291,6 +292,8 @@ public class GenerateProxy {
 		Document extractTemplate = xmlUtils.readXML(SOAP2API_EXTRACT_TEMPLATE);
 
 		Document assignTemplate = xmlUtils.readXML(SOAP2API_ASSIGN_TEMPLATE);
+		
+		Document jsPolicyTemplate = xmlUtils.readXML(SOAP2API_JSPOLICY_TEMPLATE);
 
 		Document addNamespaceTemplate = null;
 		if (soapVersion.equalsIgnoreCase("SOAP11")) {
@@ -311,8 +314,8 @@ public class GenerateProxy {
 		Node request;
 		Node response;
 		Node condition, condition2;
-		Node step1, step2, step4, step5;
-		Node name1, name2, name4, name5;
+		Node step1, step2, step3, step4, step5;
+		Node name1, name2, name3, name4, name5;
 
 		//add oauth policies if set
 		if (OAUTH) {
@@ -350,6 +353,7 @@ public class GenerateProxy {
 			String buildSOAPPolicy = operationName + "-build-soap";
 			String extractPolicyName = operationName + "-extract-query-param";
 			String jsonToXML = operationName + "-json-to-xml";
+			String jsPolicyName = operationName + "-root-wrapper";
 			String jsonToXMLCondition = "(request.header.Content-Type == \"application/json\")";
 
 			String httpVerb = apiMap.getVerb();
@@ -376,6 +380,9 @@ public class GenerateProxy {
 
 			step2 = proxyDefault.createElement("Step");
 			name2 = proxyDefault.createElement("Name");
+			
+			step3 = proxyDefault.createElement("Step");
+			name3 = proxyDefault.createElement("Name");
 
 			step4 = proxyDefault.createElement("Step");
 			name4 = proxyDefault.createElement("Name");
@@ -399,6 +406,12 @@ public class GenerateProxy {
 				LOGGER.fine("Extract Variable: " + extractPolicyName);
 
 			} else {
+				//add root wrapper policy
+				name3.setTextContent(jsPolicyName);
+				step3.appendChild(name3);
+				step3.appendChild(condition2.cloneNode(true));
+				request.appendChild(step3);
+				
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
 				step1.appendChild(condition2);
@@ -449,6 +462,12 @@ public class GenerateProxy {
 				// write Extract Variable Policy
 				writeSOAP2APIExtractPolicy(extractTemplate, operationName, extractPolicyName);
 			} else {
+				
+				Node policy2 = apiTemplateDocument.createElement("Policy");
+				policy2.setTextContent(jsPolicyName);
+				policies.appendChild(policy2);
+				
+				writeRootWrapper(jsPolicyTemplate, operationName, apiMap.getRootElement());
 
 				Node policy1 = apiTemplateDocument.createElement("Policy");
 				policy1.setTextContent(jsonToXML);
@@ -530,6 +549,34 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
+	
+	private void writeRootWrapper(Document rootWrapperTemplate, String operationName, String rootElement) throws Exception {
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+
+		String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
+				+ File.separator;
+		
+		XMLUtils xmlUtils = new XMLUtils();
+		Document jsPolicyXML = xmlUtils.cloneDocument(rootWrapperTemplate);
+
+		Node root= jsPolicyXML.getFirstChild();
+		NamedNodeMap attr = root.getAttributes();
+		Node nodeAttr = attr.getNamedItem("name");
+		nodeAttr.setNodeValue(operationName+"-root-wrapper");
+		
+		Node displayName = jsPolicyXML.getElementsByTagName("DisplayName").item(0);
+		displayName.setTextContent(operationName + " Root Wrapper");
+		
+		Node propertyElement = jsPolicyXML.getElementsByTagName("Property").item(0);
+		propertyElement.setTextContent(rootElement);
+		
+		xmlUtils.writeXML(jsPolicyXML, targetPath + operationName + "-root-wrapper.xml");
+
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+	}
+
 	
 	private void writeAddSoapAction(Document addSoapActionTemplate, String operationName, String soapAction) throws Exception{
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -760,7 +807,6 @@ public class GenerateProxy {
 			Node arrayRootElement = jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0);
 			arrayRootElement.setTextContent(rootElement);
 			
-			
 			xmlUtils.writeXML(jsonxmlPolicyXML, targetPath + operationName + "-json-to-xml.xml");
 
 			LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
@@ -776,6 +822,9 @@ public class GenerateProxy {
 					+ File.separator;
 			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
+			String jsResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
+					+ File.separator + "jsc" + File.separator;
+			
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
 			if (PASSTHRU) {
@@ -832,6 +881,9 @@ public class GenerateProxy {
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xslt"),
 						Paths.get(xslResourcePath + "remove-namespaces.xslt"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "root-wrapper.js"),
+						Paths.get(jsResourcePath + "root-wrapper.js"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				if (OAUTH) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
@@ -1459,6 +1511,11 @@ public class GenerateProxy {
 							apiproxy.getAbsolutePath() + File.separator + "resources" + File.separator + "xsl");
 					xsltFolder.mkdirs();
 					SOAP2API_XSL = xsltFolder.getAbsolutePath() + File.separator;
+					
+					File jsFolder = new File(
+							apiproxy.getAbsolutePath() + File.separator + "resources" + File.separator + "jsc");
+					jsFolder.mkdirs();
+					
 					LOGGER.fine("created resources folder");
 				}
 				LOGGER.info("Target proxy folder setup complete");
