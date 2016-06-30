@@ -8,4 +8,4 @@ build/**
 src/com/apigee/proxywriter/XSLGenerator.java
 apiproxy/**
 opsmapping.xml
-
+.idea/**

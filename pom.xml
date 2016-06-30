@@ -26,6 +26,7 @@
 	</organization>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test</testSourceDirectory>
 		<resources>
 			<resource>
 				<directory>src</directory>
@@ -112,5 +113,16 @@
 			<artifactId>soa-model-core</artifactId>
 			<version>1.5.4</version>
 		</dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20160212</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 </project>

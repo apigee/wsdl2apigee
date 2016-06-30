@@ -157,7 +157,7 @@ public class GenerateProxy {
 	//List of rules to generate XSLT
 	private ArrayList<Rule> ruleList = new ArrayList<Rule>();
 
-	public static Map<String, String> namespace = new LinkedHashMap<String, String>();
+	public Map<String, String> namespace = new LinkedHashMap<String, String>();
 
 	// initialize the logger
 	static {
@@ -1002,7 +1002,7 @@ public class GenerateProxy {
 
 	}
 
-	public static String getPrefix(String namespaceUri) {
+	public String getPrefix(String namespaceUri) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
@@ -1019,16 +1019,6 @@ public class GenerateProxy {
 		return "ns";
 	}
 
-	public static String getNamespaceUri(String prefix) {
-		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
-		for (Map.Entry<String, String> entry : namespace.entrySet()) {
-			if (entry.getKey().equalsIgnoreCase(prefix)) {
-				return entry.getValue();
-			}
-		}
-		return "ns";
-	}
 
     private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix) {
         if (e.getName() == null) {
@@ -1420,10 +1410,10 @@ public class GenerateProxy {
 							String prefix = getPrefix(namespaceUri);
 							if (soapVersion.equalsIgnoreCase("SOAP11")) {
 								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(),
-										prefix, namespaceUri);
+										prefix, namespaceUri, namespace);
 							} else {
 								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(),
-										prefix, namespaceUri);
+										prefix, namespaceUri, namespace);
 							}
 
 			        		TypeDefinition typeDefinition = null;
@@ -1442,7 +1432,7 @@ public class GenerateProxy {
 							if (ruleList.size() > 0) {
 								RuleSet rs = new RuleSet();
 								rs.addRuleList(ruleList);
-								xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion));
+								xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion), namespace);
 								ruleList.clear();
 								apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
 							} else {

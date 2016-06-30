@@ -133,7 +133,7 @@ public class XMLUtils {
 		}
 	}
 
-	public void generateOtherNamespacesXSLT(String filePath, String operationName, String xsltTemplate) throws Exception {
+	public void generateOtherNamespacesXSLT(String filePath, String operationName, String xsltTemplate, Map<String, String> namespace) throws Exception {
 		LOGGER.entering(XMLUtils.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
@@ -144,7 +144,7 @@ public class XMLUtils {
 		Document document = docBuilder.parse(new InputSource(new StringReader(xsltTemplate)));
 
 		Node stylesheet = document.getDocumentElement();
-		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
+		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
 			if (!blacklist.contains(value)) {
@@ -310,7 +310,7 @@ public class XMLUtils {
 	}
 
 	public void generateRootNamespaceXSLT(String xsltTemplate, String target, String operationName, String prefix,
-			String namespaceUri) throws Exception {
+                                          String namespaceUri, Map<String, String> namespace) throws Exception {
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		docBuilderFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
@@ -318,7 +318,7 @@ public class XMLUtils {
 		Document document = docBuilder.parse(getClass().getResourceAsStream(xsltTemplate));
 
 		Node stylesheet = document.getDocumentElement();
-		for (Map.Entry<String, String> entry : GenerateProxy.namespace.entrySet()) {
+		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
 			if (!blacklist.contains(value)) {
