@@ -37,6 +37,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import com.apigee.proxywriter.exception.*;
+import com.apigee.utils.*;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import org.w3c.dom.Document;
@@ -44,18 +46,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
-import com.apigee.proxywriter.exception.BindingNotFoundException;
-import com.apigee.proxywriter.exception.NoServicesFoundException;
-import com.apigee.proxywriter.exception.TargetFolderException;
-import com.apigee.proxywriter.exception.UnSupportedWSDLException;
-import com.apigee.utils.APIMap;
-import com.apigee.utils.KeyValue;
-import com.apigee.utils.OpsMap;
-import com.apigee.utils.Options;
 import com.apigee.utils.Options.Multiplicity;
 import com.apigee.utils.Options.Separator;
-import com.apigee.utils.StringUtils;
-import com.apigee.utils.XMLUtils;
 import com.apigee.xsltgen.Rule;
 import com.apigee.xsltgen.RuleSet;
 import com.predic8.schema.Choice;
@@ -74,7 +66,6 @@ import com.predic8.wsdl.Binding;
 import com.predic8.wsdl.BindingOperation;
 import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Operation;
-import com.predic8.wsdl.Port;
 import com.predic8.wsdl.PortType;
 import com.predic8.wsdl.Service;
 import com.predic8.wsdl.WSDLParser;
@@ -1291,7 +1282,7 @@ public class GenerateProxy {
 		Definitions wsdl = null;
 		SOARequestCreator creator = null;
 		Service service = null;
-		Port port = null;
+		com.predic8.wsdl.Port port = null;
 		String bindingName;
 
 		try {
@@ -1336,7 +1327,7 @@ public class GenerateProxy {
 		}
 
 		if (portName != null) {
-			for (Port prt : service.getPorts()) {
+			for (com.predic8.wsdl.Port prt : service.getPorts()) {
 				if (prt.getName().equalsIgnoreCase(portName)) {
 					port = prt;
 				}
@@ -1681,6 +1672,52 @@ public class GenerateProxy {
 		System.out.println("\t\t</delete>");
 		System.out.println("\t</proxywriter>");
 	}
+
+    private static List<WsdlDefinitions.Port> convertPorts(List<com.predic8.wsdl.Port> ports, List<PortType> portTypes) {
+        List<WsdlDefinitions.Port> list = new ArrayList<>(ports.size());
+        for (com.predic8.wsdl.Port port : ports) {
+            list.add(new WsdlDefinitions.Port(port.getName(),
+                    convertOperations(port.getBinding(), portTypes)));
+        }
+        return list;
+    }
+
+    private static List<WsdlDefinitions.Operation> convertOperations(Binding binding, List<PortType> portTypes) {
+        List<WsdlDefinitions.Operation> list = new ArrayList<>();
+        binding.getOperations();
+        for (BindingOperation bindingOperation : binding.getOperations()) {
+            final String operationName = bindingOperation.getName();
+            final WsdlDefinitions.Operation operation = new WsdlDefinitions.Operation(
+                    operationName,
+                    findDocForOperation(operationName, portTypes),
+                    OpsMap.getOpsMap(operationName),
+                    OpsMap.getResourcePath(operationName),
+                    null);
+            list.add(operation);
+        }
+        return list;
+    }
+
+    private static String findDocForOperation(String operationName, List<PortType> portTypes) {
+        for (PortType portType : portTypes) {
+            final Operation operation = portType.getOperation(operationName);
+            if (operation != null) {
+                return operation.getDocumentation() != null ? operation.getDocumentation().getContent() : "";
+            }
+        }
+        return "";
+    }
+
+    private static WsdlDefinitions definitionsToWsdlDefinitions(Definitions definitions) {
+        List<WsdlDefinitions.Service> services = new ArrayList<>();
+        definitions.getServices();
+        for (Service service : definitions.getServices()) {
+            final WsdlDefinitions.Service service1 = new WsdlDefinitions.Service(service.getName(),
+                    convertPorts(service.getPorts(), definitions.getPortTypes()));
+            services.add(service1);
+        }
+        return new WsdlDefinitions(services);
+    }
 	
 	public static void main(String[] args) throws Exception {
 
@@ -1787,5 +1824,42 @@ public class GenerateProxy {
         GenerateProxy genProxy = new GenerateProxy();
         genProxy.setPassThru(passthrough);
         return genProxy.begin(description != null ? description : "Generated SOAP to API proxy", wsdl);
+    }
+
+    public static WsdlDefinitions parseWsdl(String wsdl) throws ErrorParsingWsdlException {
+        final WSDLParser wsdlParser = new WSDLParser();
+        try {
+            final Definitions definitions = wsdlParser.parse(wsdl);
+            return definitionsToWsdlDefinitions(definitions);
+        }
+        catch (com.predic8.xml.util.ResourceDownloadException e) {
+            String message = formatResourceError(e);
+            throw new ErrorParsingWsdlException(message, e);
+        }
+        catch (Throwable t) {
+            String message = t.getLocalizedMessage();
+            if (message == null) {
+                message = t.getMessage();
+            }
+            if (message == null) {
+                message = "Error processing WSDL.";
+            }
+            throw new ErrorParsingWsdlException(message, t);
+        }
+    }
+
+
+    private static String formatResourceError(com.predic8.xml.util.ResourceDownloadException e) {
+        StringBuffer errorMessage = new StringBuffer("Could not download resource.");
+        String rootCause = e.getRootCause().getLocalizedMessage();
+        if (!rootCause.isEmpty()) {
+            int pos = rootCause.indexOf("status for class:");
+            if (pos == -1) {
+                errorMessage.append(" " + rootCause + ".");
+            }
+        }
+
+        return(errorMessage.toString());
+
     }
 }

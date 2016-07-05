@@ -1,5 +1,7 @@
 package com.apigee.proxywriter;
 
+import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
+import com.apigee.utils.WsdlDefinitions;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,6 +14,8 @@ import java.util.zip.ZipInputStream;
 
 public class GenerateProxyTest {
 
+
+    public static final String WEATHER_WSDL = "http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
 
     private void checkForFilesInBundle(List<String> filenames, InputStream inputStream) throws IOException {
         final ZipInputStream zipInputStream = new ZipInputStream(inputStream);
@@ -52,7 +56,7 @@ public class GenerateProxyTest {
                 "apiproxy/proxies/default.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/Weather.xml");
-        final InputStream inputStream = GenerateProxy.generateProxy("http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL", true, "");
+        final InputStream inputStream = GenerateProxy.generateProxy(WEATHER_WSDL, true, "");
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/Extract-Operation-Name.xml", inputStream);
@@ -107,7 +111,7 @@ public class GenerateProxyTest {
                 "apiproxy/resources/xsl/remove-namespaces.xslt",
                 "apiproxy/targets/default.xml",
                 "apiproxy/Weather.xml");
-        final InputStream inputStream = GenerateProxy.generateProxy("http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL", false, "");
+        final InputStream inputStream = GenerateProxy.generateProxy(WEATHER_WSDL, false, "");
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/extract-format.xml", inputStream);
@@ -125,5 +129,26 @@ public class GenerateProxyTest {
                 "        <Pattern>{verb}</Pattern>\n" +
                 "    </Variable>\n" +
                 "</ExtractVariables>");
+    }
+
+    @Test
+    public void testParseWsdl() throws ErrorParsingWsdlException {
+        final WsdlDefinitions wsdlDefinitions = GenerateProxy.parseWsdl(WEATHER_WSDL);
+        Assert.assertTrue(1 == wsdlDefinitions.getServices().size());
+        final WsdlDefinitions.Service service = wsdlDefinitions.getServices().get(0);
+        Assert.assertEquals("Weather", service.getName());
+        final List<WsdlDefinitions.Port> portTypes = service.getPorts();
+        Assert.assertEquals(portTypes.size(), 4);
+        final WsdlDefinitions.Port weatherSoap = portTypes.get(0);
+        Assert.assertEquals(weatherSoap.getName(), "WeatherSoap");
+        final WsdlDefinitions.Operation getWeatherInformationOperation = weatherSoap.getOperations().get(0);
+        Assert.assertEquals(getWeatherInformationOperation.getDescription(), "Gets Information for each WeatherID");
+        Assert.assertEquals(getWeatherInformationOperation.getMethod(), "GET");
+        Assert.assertEquals(getWeatherInformationOperation.getName(), "GetWeatherInformation");
+        Assert.assertEquals(getWeatherInformationOperation.getPath(), "/weatherinformation");
+        Assert.assertEquals(portTypes.get(1).getName(), "WeatherSoap12");
+        Assert.assertEquals(portTypes.get(2).getName(), "WeatherHttpGet");
+        Assert.assertEquals(portTypes.get(3).getName(), "WeatherHttpPost");
+        Assert.assertEquals(weatherSoap.getOperations().size(), 3);
     }
 }
