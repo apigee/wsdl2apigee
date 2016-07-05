@@ -127,6 +127,8 @@ public class GenerateProxy {
 	private boolean ALLPOST;
 	//set this to true if oauth should be added to the proxy
 	private boolean OAUTH;
+	
+	private boolean RPCSTYLE;
 
 	private String targetEndpoint;
 
@@ -185,6 +187,7 @@ public class GenerateProxy {
 		ALLPOST = false;
 		PASSTHRU = false;
 		OAUTH = false;
+		RPCSTYLE = false;
 		level = 0;
 	}
 	
@@ -1352,7 +1355,11 @@ public class GenerateProxy {
 		soapVersion = binding.getProtocol().toString();
 
 		if (!binding.getStyle().contains("Document/Literal")) {
-			throw new UnSupportedWSDLException("Only Docuement/literal is supported");
+			RPCSTYLE = true;
+		}
+
+		if (!PASSTHRU && RPCSTYLE == true) {
+			throw new UnSupportedWSDLException("Only Docuement/literal is supported for SOAP to REST");
 		}
 
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
@@ -1362,86 +1369,91 @@ public class GenerateProxy {
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
 
 		PortType portType = binding.getPortType();
+		APIMap apiMap = null;
+
 		
 		for (Operation op : portType.getOperations()) {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
 			try {
-				
-				if (op.getInput().getMessage().getParts().size() < 1) {
-					LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
-				} else if (op.getInput().getMessage().getParts().size() > 1) {
-					LOGGER.warning(
-							"wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
+				if (RPCSTYLE) {
+					apiMap = new APIMap(null, null , null, "POST", op.getName(), false);
+					messageTemplates.put(op.getName(), apiMap);
 				} else {
-					com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
-							.getElement();
-					namespace = (Map<String, String>) requestElement.getNamespaceContext();
-					APIMap apiMap = null;
-					
-					if (PASSTHRU) {
-						apiMap = new APIMap(null, null , null, "POST", requestElement.getName(), false);
-						messageTemplates.put(op.getName(), apiMap);
+					if (op.getInput().getMessage().getParts().size() < 1) {
+						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
+					} else if (op.getInput().getMessage().getParts().size() > 1) {
+						LOGGER.warning(
+								"wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
 					} else {
-						String resourcePath = OpsMap.getResourcePath(op.getName());
-						String verb = "";
+						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
+								.getElement();
+						namespace = (Map<String, String>) requestElement.getNamespaceContext();
 						
-						if (!ALLPOST) {
-							verb = OpsMap.getOpsMap(op.getName());
+						if (PASSTHRU) {
+							apiMap = new APIMap(null, null , null, "POST", requestElement.getName(), false);
+							messageTemplates.put(op.getName(), apiMap);
 						} else {
-							verb = "POST";
-						}
-						if (verb.equalsIgnoreCase("GET")) {
-							creator.setCreator(new RequestTemplateCreator());
-							// use membrane SOAP to generate a SOAP Request
-							creator.createRequest(port.getName(), op.getName(), binding.getName());
-							// store the operation name, SOAP Request and the
-							// expected JSON Body in the map
-							KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
-							apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb, requestElement.getName(), false);
-							writer.getBuffer().setLength(0);
-						} else {
-							String namespaceUri = null;
-							if (requestElement.getType() != null) {
-								namespaceUri = requestElement.getType().getNamespaceURI();
+							String resourcePath = OpsMap.getResourcePath(op.getName());
+							String verb = "";
+							
+							if (!ALLPOST) {
+								verb = OpsMap.getOpsMap(op.getName());
 							} else {
-								namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
+								verb = "POST";
 							}
-							String prefix = getPrefix(namespaceUri);
-							if (soapVersion.equalsIgnoreCase("SOAP11")) {
-								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(),
-										prefix, namespaceUri, namespace);
+							if (verb.equalsIgnoreCase("GET")) {
+								creator.setCreator(new RequestTemplateCreator());
+								// use membrane SOAP to generate a SOAP Request
+								creator.createRequest(port.getName(), op.getName(), binding.getName());
+								// store the operation name, SOAP Request and the
+								// expected JSON Body in the map
+								KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
+								apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb, requestElement.getName(), false);
+								writer.getBuffer().setLength(0);
 							} else {
-								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(),
-										prefix, namespaceUri, namespace);
-							}
+								String namespaceUri = null;
+								if (requestElement.getType() != null) {
+									namespaceUri = requestElement.getType().getNamespaceURI();
+								} else {
+									namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
+								}
+								String prefix = getPrefix(namespaceUri);
+								if (soapVersion.equalsIgnoreCase("SOAP11")) {
+									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(),
+											prefix, namespaceUri, namespace);
+								} else {
+									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(),
+											prefix, namespaceUri, namespace);
+								}
 
-			        		TypeDefinition typeDefinition = null;
-			        		
-			        		if ( requestElement.getEmbeddedType() != null) {
-			        			typeDefinition = requestElement.getEmbeddedType();
-			        		} else {
-			        			typeDefinition = getTypeFromSchema(requestElement.getType(), wsdl.getSchemas());
-			        		}
-			        		if (typeDefinition instanceof ComplexType) {
-			        			ComplexType ct = (ComplexType)typeDefinition;
-			            		xpathElement.put(level, requestElement.getName());        			
-			            		parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(), 
-			            				namespaceUri, prefix);
-			        		}
-							if (ruleList.size() > 0) {
-								RuleSet rs = new RuleSet();
-								rs.addRuleList(ruleList);
-								xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion), namespace);
-								ruleList.clear();
-								apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
-							} else {
-								apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), false);
+				        		TypeDefinition typeDefinition = null;
+				        		
+				        		if ( requestElement.getEmbeddedType() != null) {
+				        			typeDefinition = requestElement.getEmbeddedType();
+				        		} else {
+				        			typeDefinition = getTypeFromSchema(requestElement.getType(), wsdl.getSchemas());
+				        		}
+				        		if (typeDefinition instanceof ComplexType) {
+				        			ComplexType ct = (ComplexType)typeDefinition;
+				            		xpathElement.put(level, requestElement.getName());        			
+				            		parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(), 
+				            				namespaceUri, prefix);
+				        		}
+								if (ruleList.size() > 0) {
+									RuleSet rs = new RuleSet();
+									rs.addRuleList(ruleList);
+									xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion), namespace);
+									ruleList.clear();
+									apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
+								} else {
+									apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), false);
+								}
 							}
+							messageTemplates.put(op.getName(), apiMap);						
 						}
-						messageTemplates.put(op.getName(), apiMap);						
-					}
-				}				
+					}				
+				}
 			} catch (Exception e) {
 				LOGGER.severe(e.getMessage());
 				e.printStackTrace();
