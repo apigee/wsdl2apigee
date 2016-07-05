@@ -23,18 +23,20 @@ public class StringUtils {
 	
 	public static KeyValue<String, String> proxyNameAndBasePath(String url) {
 
-		KeyValue<String, String> map;
-		int endIndex = url.indexOf(".wsdl");
+        final String lowercaseUrl = url.toLowerCase();
+        KeyValue<String, String> map;
+		int endIndex = lowercaseUrl.indexOf(".wsdl");
 		
 		if (endIndex == -1) {
-			endIndex = url.indexOf("?wsdl");
+			endIndex = lowercaseUrl.indexOf("?wsdl");
 			if (endIndex == -1) {
 				LOGGER.warning("Unable to get proxy name from WSDL. Generating default name");
 				map = new KeyValue<String,String>("SOAP2REST","/soap2rest");
+                return map;
 			}
 		}
 		
-		int beginIndex = url.lastIndexOf("/");
+		int beginIndex = lowercaseUrl.lastIndexOf("/");
 		
 		map = new KeyValue<String,String>(url.substring(beginIndex+1, endIndex), url.substring(beginIndex, endIndex).toLowerCase());
 		
