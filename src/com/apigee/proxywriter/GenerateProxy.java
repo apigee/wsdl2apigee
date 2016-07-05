@@ -118,6 +118,14 @@ public class GenerateProxy {
 	private boolean ALLPOST;
 	//set this to true if oauth should be added to the proxy
 	private boolean OAUTH;
+	//set this to true if apikey should be added to the proxy	
+	private boolean APIKEY;
+	
+	private boolean QUOTAAPIKEY;
+	
+	private boolean QUOTAOAUTH;
+	
+	private boolean CORS;
 	
 	private boolean RPCSTYLE;
 
@@ -165,8 +173,9 @@ public class GenerateProxy {
 		LOGGER.addHandler(handler);
 	}
 
-	// initialize hashmap
+
 	public GenerateProxy() {
+		// initialize hashmap		
 		messageTemplates = new HashMap<String, APIMap>();
 		xpathElement = new HashMap<Integer, String>();
 		
@@ -178,8 +187,33 @@ public class GenerateProxy {
 		ALLPOST = false;
 		PASSTHRU = false;
 		OAUTH = false;
+		APIKEY = false;
+		QUOTAAPIKEY = false;
+		QUOTAOAUTH = false;
+		CORS = false;
 		RPCSTYLE = false;
+		basePath = null;
 		level = 0;
+	}
+	
+	public void setCORS(boolean cors) {
+		CORS = cors;
+	}
+	
+	public void setBasePath(String bp) {
+		basePath = bp;
+	}
+	
+	public void setQuotaAPIKey(boolean quotaAPIKey) {
+		QUOTAAPIKEY = quotaAPIKey;
+	}
+	
+	public void setQuotaOAuth(boolean quotaOAuth) {
+		QUOTAOAUTH = quotaOAuth;
+	}
+	
+	public void setAPIKey(boolean apikey) {
+		APIKEY = apikey;
 	}
 	
 	public void setVHost (String vhosts) {
@@ -315,6 +349,8 @@ public class GenerateProxy {
 		if (OAUTH) {
 			String oauthPolicy = "verify-oauth-v2-access-token";
 			String remoOAuthPolicy = "remove-header-authorization";
+			String quota = "impose-quota-oauth";
+			
 			// Add policy to proxy.xml
 			Node policy1 = apiTemplateDocument.createElement("Policy");
 			policy1.setTextContent(oauthPolicy);
@@ -336,10 +372,110 @@ public class GenerateProxy {
 			name2 = proxyDefault.createElement("Name");
 			name2.setTextContent(remoOAuthPolicy);
 			step2.appendChild(name2);
+			
+			preFlowRequest.appendChild(step1);
+			preFlowRequest.appendChild(step2);
+			
+			if (QUOTAOAUTH) {			
+				Node policy3 = apiTemplateDocument.createElement("Policy");
+				policy2.setTextContent(quota);
+				policies.appendChild(policy3);
+				step3 = proxyDefault.createElement("Step");
+				name3 = proxyDefault.createElement("Name");
+				name3.setTextContent(quota);
+				step3.appendChild(name3);
+				preFlowRequest.appendChild(step3);
+			}
+		}
+		
+		if (APIKEY) {
+			String apiKeyPolicy = "verify-api-key";
+			String remoAPIKeyPolicy = "remove-query-param-apikey";
+			String quota = "impose-quota-apikey";
+
+			// Add policy to proxy.xml
+			Node policy1 = apiTemplateDocument.createElement("Policy");
+			policy1.setTextContent(apiKeyPolicy);
+			
+			Node policy2 = apiTemplateDocument.createElement("Policy");
+			policy2.setTextContent(remoAPIKeyPolicy);
+			
+			policies.appendChild(policy1);
+			policies.appendChild(policy2);
+			
+			Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
+
+			step1 = proxyDefault.createElement("Step");
+			name1 = proxyDefault.createElement("Name");
+			name1.setTextContent(apiKeyPolicy);
+			step1.appendChild(name1);
+
+			step2 = proxyDefault.createElement("Step");
+			name2 = proxyDefault.createElement("Name");
+			name2.setTextContent(remoAPIKeyPolicy);
+			step2.appendChild(name2);
 
 			preFlowRequest.appendChild(step1);
 			preFlowRequest.appendChild(step2);
-		}		
+			
+			if (QUOTAAPIKEY) {
+				Node policy3 = apiTemplateDocument.createElement("Policy");
+				policy2.setTextContent(quota);
+				policies.appendChild(policy3);
+				step3 = proxyDefault.createElement("Step");
+				name3 = proxyDefault.createElement("Name");
+				name3.setTextContent(quota);
+				step3.appendChild(name3);
+				preFlowRequest.appendChild(step3);
+			}
+			
+		}
+		
+		if (CORS) {
+			Node proxyEndpoint = proxyDefault.getElementsByTagName("ProxyEndpoint").item(0);
+			Node routeRule = proxyDefault.createElement("RouteRule");
+			((Element) routeRule).setAttribute("name", "NoRoute");
+
+			Node routeCondition = proxyDefault.createElement("Condition");
+			routeCondition.setTextContent("request.verb == \"OPTIONS\"");
+			routeRule.appendChild(routeCondition);			
+			proxyEndpoint.appendChild(routeRule);
+			
+			String cors = "add-cors";
+			String corsCondition = "request.verb == \"OPTIONS\"";
+			
+			// Add policy to proxy.xml
+			Node policy1 = apiTemplateDocument.createElement("Policy");
+			policy1.setTextContent(cors);
+			policies.appendChild(policy1);
+
+			flow = proxyDefault.createElement("Flow");
+			((Element) flow).setAttribute("name", "OptionsPreFlight");
+
+			flowDescription = proxyDefault.createElement("Description");
+			flowDescription.setTextContent("OptionsPreFlight");
+			flow.appendChild(flowDescription);
+
+			request = proxyDefault.createElement("Request");
+			response = proxyDefault.createElement("Response");
+			condition = proxyDefault.createElement("Condition");
+			
+			step1 = proxyDefault.createElement("Step");
+			name1 = proxyDefault.createElement("Name");
+			
+			name1.setTextContent(cors);
+			step1.appendChild(name1);
+			
+			response.appendChild(step1);
+
+			condition.setTextContent(corsCondition);
+
+			flow.appendChild(request);
+			flow.appendChild(response);
+			flow.appendChild(condition);
+
+			flows.appendChild(flow);	
+		}
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			String operationName = entry.getKey();
@@ -879,6 +1015,7 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "root-wrapper.js"),
 						Paths.get(jsResourcePath + "root-wrapper.js"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				
 				if (OAUTH) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
 							Paths.get(targetPath + "verify-oauth-v2-access-token.xml"),
@@ -886,8 +1023,32 @@ public class GenerateProxy {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "remove-header-authorization.xml"),
 							Paths.get(targetPath + "remove-header-authorization.xml"),
 							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					if (QUOTAOAUTH) {
+						Files.copy(getClass().getResourceAsStream(sourcePath + "impose-quota-oauth.xml"),
+								Paths.get(targetPath + "impose-quota-oauth.xml"),
+								java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					}
 				}
 				
+				if (APIKEY) {
+					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-api-key.xml"),
+							Paths.get(targetPath + "verify-api-key.xml"),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					Files.copy(getClass().getResourceAsStream(sourcePath + "remove-query-param-apikey.xml"),
+							Paths.get(targetPath + "remove-query-param-apikey.xml"),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					if (QUOTAAPIKEY) {
+						Files.copy(getClass().getResourceAsStream(sourcePath + "impose-quota-apikey.xml"),
+								Paths.get(targetPath + "impose-quota-apikey.xml"),
+								java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+					}
+				}
+				
+				if (CORS) {
+					Files.copy(getClass().getResourceAsStream(sourcePath + "add-cors.xml"),
+							Paths.get(targetPath + "add-cors.xml"),
+							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				}
 			}
 		} catch (IOException e) {
 			LOGGER.severe(e.getMessage());
@@ -1316,14 +1477,20 @@ public class GenerateProxy {
 
 		LOGGER.fine("Found Service: " + service.getName());
 		String serviceName = service.getName();
-
+		KeyValue<String, String> map = StringUtils.proxyNameAndBasePath(wsdlPath);
+		
 		if (serviceName != null) {
 			proxyName = serviceName;
-			basePath = "/" + serviceName.toLowerCase();
 		} else {
-			KeyValue<String, String> map = StringUtils.proxyNameAndBasePath(wsdlPath);
 			proxyName = map.getKey();
-			basePath = map.getValue();
+		}
+
+		if (basePath == null ) {
+			if (serviceName != null) {
+				basePath = "/" + serviceName.toLowerCase();
+			} else {
+				basePath = map.getValue();
+			}
 		}
 
 		if (portName != null) {
@@ -1635,6 +1802,10 @@ public class GenerateProxy {
 		System.out.println("-vhosts=<comma separated values for virtuals hosts>");
 		System.out.println("-build=specify build folder   default is temp/tmp");	
 		System.out.println("-oauth=<true|false>       default is false");
+		System.out.println("-apikey=<true|false>      default is false");
+		System.out.println("-quota=<true|false>       default is false; works only if apikey or oauth is set");
+		System.out.println("-basepath=specify base path");		
+		System.out.println("-cors=<true|false>        default is false");
 		System.out.println("-debug=<true|false>       default is false");
 		System.out.println("");
 		System.out.println("");
@@ -1746,7 +1917,15 @@ public class GenerateProxy {
 		//set build path
 		opt.getSet().addOption("build", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		//add verify oauth policy
-		opt.getSet().addOption("oauth", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);		
+		opt.getSet().addOption("oauth", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//add verify apikey policy
+		opt.getSet().addOption("apikey", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//add impose quota policy
+		opt.getSet().addOption("quota", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//set basepath
+		opt.getSet().addOption("basepath", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//add enable cors conditions
+		opt.getSet().addOption("cors", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
@@ -1800,10 +1979,32 @@ public class GenerateProxy {
 			genProxy.setBuildFolder(opt.getSet().getOption("build").getResultValue(0));
 		} 		
 		
+		if (opt.getSet().isSet("basepath")) {
+			genProxy.setBasePath(opt.getSet().getOption("basepath").getResultValue(0));
+		}		
+		
+		if (opt.getSet().isSet("cors")) {
+			genProxy.setCORS(new Boolean(opt.getSet().getOption("cors").getResultValue(0)));
+		}		
+		
 		if (opt.getSet().isSet("oauth")) {
 			genProxy.setOAuth(new Boolean(opt.getSet().getOption("oauth").getResultValue(0)));
+			if (opt.getSet().isSet("quota")) {
+				genProxy.setQuotaOAuth(new Boolean(opt.getSet().getOption("quota").getResultValue(0)));
+			}		
 		}		
-
+		
+		if (opt.getSet().isSet("apikey")) {
+			genProxy.setAPIKey(new Boolean(opt.getSet().getOption("apikey").getResultValue(0)));
+			if (opt.getSet().isSet("quota")) {
+				genProxy.setQuotaAPIKey(new Boolean(opt.getSet().getOption("quota").getResultValue(0)));
+			}		
+		}		
+		
+		if (!opt.getSet().isSet("apikey") && !opt.getSet().isSet("oauth") && opt.getSet().isSet("quota")) {
+			LOGGER.warning("WARNING: Quota is applicable with apikey or oauth flags. This flag will be ignored");
+		}
+		
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
 			LOGGER.setLevel(Level.FINEST);
