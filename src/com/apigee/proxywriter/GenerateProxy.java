@@ -905,6 +905,14 @@ public class GenerateProxy {
 			targetDefault = xmlUtils.readXML(SOAPPASSTHRU_TARGET_TEMPLATE);
 		} else {
 			targetDefault = xmlUtils.readXML(SOAP2API_TARGET_TEMPLATE);
+			if (CORS) {
+				Node response = targetDefault.getElementsByTagName("Response").item(0);
+				Node step = targetDefault.createElement("Step");
+				Node name = targetDefault.createElement("Name");
+				name.setTextContent("add-cors");
+				step.appendChild(name);
+				response.appendChild(step);
+			}
 		}
 
 		Node urlNode = targetDefault.getElementsByTagName("URL").item(0);
@@ -1487,25 +1495,13 @@ public class GenerateProxy {
 				throw new NoServicesFoundException("No matching services were found in the WSDL");
 			} else {
 				proxyName = serviceName;
-				
 			}
 		} else {
 			service = wsdl.getServices().get(0); // get the first service
 			LOGGER.fine("Found Service: " + service.getName());
 			serviceName = service.getName();
-			proxyName = map.getKey();
-			
-		}
-
-		//LOGGER.fine("Found Service: " + service.getName());
-		//serviceName = service.getName();
-		//KeyValue<String, String> map = StringUtils.proxyNameAndBasePath(wsdlPath);
-		
-		/*if (serviceName != null) {
 			proxyName = serviceName;
-		} else {
-			proxyName = map.getKey();
-		}*/
+		}
 
 		if (basePath == null ) {
 			if (serviceName != null) {
@@ -1970,6 +1966,9 @@ public class GenerateProxy {
 		if (opt.getSet().isSet("passthru")) {
 			// React to option -passthru
 			genProxy.setPassThru(Boolean.parseBoolean(opt.getSet().getOption("passthru").getResultValue(0)));
+			if (opt.getSet().isSet("cors")) {
+				LOGGER.warning("WARNING: cors can only be enabled for SOAP to REST. This flag will be ignored.");
+			}
 			if (opt.getSet().isSet("desc")) {
 				// React to option -des
 				proxyDescription = opt.getSet().getOption("desc").getResultValue(0);
