@@ -120,14 +120,16 @@ public class GenerateProxy {
 	private boolean OAUTH;
 	//set this to true if apikey should be added to the proxy	
 	private boolean APIKEY;
-	
+	//enable this flag if api key based quota is enabled
 	private boolean QUOTAAPIKEY;
-	
+	//enable this flag if oauth based quota is enabled
 	private boolean QUOTAOAUTH;
-	
+	//enable this flag is cors is enabled
 	private boolean CORS;
-	
+	//enable this flag if wsdl is of rpc style
 	private boolean RPCSTYLE;
+	//enable this flag if user sets desc
+	private boolean DESCSET;
 
 	private String targetEndpoint;
 
@@ -192,8 +194,13 @@ public class GenerateProxy {
 		QUOTAOAUTH = false;
 		CORS = false;
 		RPCSTYLE = false;
+		DESCSET = false;
 		basePath = null;
 		level = 0;
+	}
+	
+	public void setDesc(boolean descset) {
+		DESCSET = descset;
 	}
 	
 	public void setCORS(boolean cors) {
@@ -257,7 +264,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		XMLUtils xmlUtils = new XMLUtils();
 		Document apiTemplateDocument;
-
+		
 		if (PASSTHRU) {
 			apiTemplateDocument = xmlUtils.readXML(SOAPPASSTHRU_APIPROXY_TEMPLATE);
 		} else {
@@ -275,7 +282,7 @@ public class GenerateProxy {
 		displayName.setTextContent(proxyName);
 		LOGGER.fine("Set proxy display name: " + proxyName);
 
-		Node description = apiTemplateDocument.getElementsByTagName("Description").item(0);
+		Node description = apiTemplateDocument.getElementsByTagName("Description").item(0);		
 		description.setTextContent(proxyDescription);
 		LOGGER.fine("Set proxy description: " + proxyDescription);
 
@@ -293,7 +300,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeSOAP2APIProxyEndpoint() throws Exception {
+	private void writeSOAP2APIProxyEndpoint(String proxyDescription) throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -333,6 +340,9 @@ public class GenerateProxy {
 		Document jsonXMLTemplate = xmlUtils.readXML(SOAP2API_JSON_TO_XML_TEMPLATE);
 		
 		Document addSoapActionTemplate = xmlUtils.readXML(SOAP2API_ADD_SOAPACTION_TEMPLATE);
+		
+		Node description = proxyDefault.getElementsByTagName("Description").item(0);		
+		description.setTextContent(proxyDescription);
 
 		Node policies = apiTemplateDocument.getElementsByTagName("Policies").item(0);
 		
@@ -1059,7 +1069,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeSOAPPassThruProxyEndpointConditions() throws Exception {
+	private void writeSOAPPassThruProxyEndpointConditions(String proxyDescription) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
@@ -1080,7 +1090,9 @@ public class GenerateProxy {
 			virtualHost.setTextContent(vHost);
 			httpProxyConnection.appendChild(virtualHost);
 		}
-		
+
+		Node description = proxyDefault.getElementsByTagName("Description").item(0);		
+		description.setTextContent(proxyDescription);
 
 		Node soapCondition = proxyDefault.getElementsByTagName("Condition").item(1);
 		if (soapVersion.equalsIgnoreCase("SOAP11")) {
@@ -1460,9 +1472,12 @@ public class GenerateProxy {
 			throw e;
 		}
 
+		KeyValue<String, String> map = StringUtils.proxyNameAndBasePath(wsdlPath);
+
 		if (serviceName != null) {
 			for (Service svc : wsdl.getServices()) {
 				if (svc.getName().equalsIgnoreCase(serviceName)) {
+					LOGGER.fine("Found Service: " + service.getName());
 					service = svc;
 					break;
 				}
@@ -1470,20 +1485,27 @@ public class GenerateProxy {
 			if (service == null) { // didn't find any service matching name
 				LOGGER.severe("No matching services were found in the WSDL");
 				throw new NoServicesFoundException("No matching services were found in the WSDL");
+			} else {
+				proxyName = serviceName;
+				
 			}
 		} else {
 			service = wsdl.getServices().get(0); // get the first service
+			LOGGER.fine("Found Service: " + service.getName());
+			serviceName = service.getName();
+			proxyName = map.getKey();
+			
 		}
 
-		LOGGER.fine("Found Service: " + service.getName());
-		String serviceName = service.getName();
-		KeyValue<String, String> map = StringUtils.proxyNameAndBasePath(wsdlPath);
+		//LOGGER.fine("Found Service: " + service.getName());
+		//serviceName = service.getName();
+		//KeyValue<String, String> map = StringUtils.proxyNameAndBasePath(wsdlPath);
 		
-		if (serviceName != null) {
+		/*if (serviceName != null) {
 			proxyName = serviceName;
 		} else {
 			proxyName = map.getKey();
-		}
+		}*/
 
 		if (basePath == null ) {
 			if (serviceName != null) {
@@ -1721,6 +1743,11 @@ public class GenerateProxy {
 				// parse the wsdl
 				parseWSDL(wsdlPath);
 				LOGGER.info("Parsed WSDL Successfully.");
+				
+				if (!DESCSET) {
+					proxyDescription += serviceName;
+				}
+				
 				LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
 				LOGGER.info("Build Folder: " + buildFolder + "\nSOAP Version: " + soapVersion);
 				LOGGER.info("Proxy Name: " + proxyName + "\nProxy Description: " + proxyDescription);
@@ -1732,7 +1759,7 @@ public class GenerateProxy {
 
 				if (!PASSTHRU) {
 					LOGGER.info("Generated SOAP Message Templates.");
-					writeSOAP2APIProxyEndpoint();
+					writeSOAP2APIProxyEndpoint(proxyDescription);
 					LOGGER.info("Generated proxies XML.");
 					writeStdPolicies();
 					LOGGER.info("Copied standard policies.");
@@ -1743,7 +1770,7 @@ public class GenerateProxy {
 					LOGGER.info("Copied standard policies.");
 					writeTargetEndpoint();
 					LOGGER.info("Generated target XML.");
-					writeSOAPPassThruProxyEndpointConditions();
+					writeSOAPPassThruProxyEndpointConditions(proxyDescription);
 				}
 
 				File file = GenerateBundle.build(zipFolder, proxyName);
@@ -1943,15 +1970,22 @@ public class GenerateProxy {
 		if (opt.getSet().isSet("passthru")) {
 			// React to option -passthru
 			genProxy.setPassThru(Boolean.parseBoolean(opt.getSet().getOption("passthru").getResultValue(0)));
+			if (opt.getSet().isSet("desc")) {
+				// React to option -des
+				proxyDescription = opt.getSet().getOption("desc").getResultValue(0);
+				genProxy.setDesc(true);
+			} else {
+				proxyDescription = "Generated SOAP proxy from ";
+			}			
 		} else {
 			genProxy.setPassThru(false);
-		}
-
-		if (opt.getSet().isSet("desc")) {
-			// React to option -des
-			proxyDescription = opt.getSet().getOption("desc").getResultValue(0);
-		} else {
-			proxyDescription = "Generated SOAP to API proxy";
+			if (opt.getSet().isSet("desc")) {
+				// React to option -des
+				proxyDescription = opt.getSet().getOption("desc").getResultValue(0);
+				genProxy.setDesc(true);
+			} else {
+				proxyDescription = "Generated SOAP to API proxy from ";
+			}			
 		}
 
 		if (opt.getSet().isSet("service")) {
