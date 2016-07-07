@@ -50,6 +50,7 @@ import com.apigee.utils.Options.Multiplicity;
 import com.apigee.utils.Options.Separator;
 import com.apigee.xsltgen.Rule;
 import com.apigee.xsltgen.RuleSet;
+import com.predic8.schema.All;
 import com.predic8.schema.Choice;
 import com.predic8.schema.ComplexContent;
 import com.predic8.schema.ComplexType;
@@ -1338,6 +1339,16 @@ public class GenerateProxy {
 			level ++;
 			xpathElement.put(level, ((com.predic8.schema.Element)sc).getName());
             parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace, rootPrefix);
+        } else if (sc instanceof All) {
+        	All all = (All)sc;
+			level ++;
+			for (com.predic8.schema.Element e : all.getElements()) {
+				if (e.getName() == null) level --;
+				if (e.getName() != null) xpathElement.put(level, e.getName());
+				parseElement(e, schemas, rootElement, rootNamespace, rootPrefix);
+			}
+			level --;
+			cleanUpXPath();
         } else if (sc != null) {
 			// TODO: handle this
 			LOGGER.warning("unhandled conditions - " + sc.getClass().getName());
@@ -1530,12 +1541,12 @@ public class GenerateProxy {
 		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
 
-		if (!binding.getStyle().contains("Document/Literal")) {
+		if (!binding.getStyle().toLowerCase().contains("document/literal")) {
 			RPCSTYLE = true;
 		}
 
 		if (!PASSTHRU && RPCSTYLE == true) {
-			throw new UnSupportedWSDLException("Only Docuement/literal is supported for SOAP to REST");
+			throw new UnSupportedWSDLException("Only Docuement/Literal is supported for SOAP to REST");
 		}
 
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
