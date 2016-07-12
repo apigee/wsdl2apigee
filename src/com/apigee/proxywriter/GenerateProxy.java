@@ -2089,6 +2089,7 @@ public class GenerateProxy {
 			throws FileNotFoundException {
 		GenerateProxy genProxy = new GenerateProxy();
 		genProxy.setPassThru(passthrough);
+		genProxy.setOpsMap(OPSMAPPING_TEMPLATE);
 		return genProxy.begin(description != null ? description : "Generated SOAP to API proxy", wsdl);
 	}
 
