@@ -2085,13 +2085,21 @@ public class GenerateProxy {
 
 	}
 
-	public static InputStream generateProxy(String wsdl, boolean passthrough, String description)
-			throws FileNotFoundException {
-		GenerateProxy genProxy = new GenerateProxy();
-		genProxy.setPassThru(passthrough);
-		genProxy.setOpsMap(OPSMAPPING_TEMPLATE);
-		return genProxy.begin(description != null ? description : "Generated SOAP to API proxy", wsdl);
-	}
+    public static InputStream generateProxy(GenerateProxyOptions generateProxyOptions) throws FileNotFoundException {
+        GenerateProxy genProxy = new GenerateProxy();
+        genProxy.setOpsMap(OPSMAPPING_TEMPLATE);
+
+        genProxy.setPassThru(generateProxyOptions.isPassthrough());
+        genProxy.setBasePath(generateProxyOptions.getBasepath());
+        genProxy.setVHost(generateProxyOptions.getvHosts());
+        genProxy.setPort(generateProxyOptions.getPort());
+        genProxy.setCORS(generateProxyOptions.isCors());
+        genProxy.setAPIKey(generateProxyOptions.isApiKey());
+        genProxy.setOAuth(generateProxyOptions.isOauth());
+        genProxy.setQuotaAPIKey(generateProxyOptions.isApiKey() && generateProxyOptions.isQuota());
+        genProxy.setQuotaOAuth(generateProxyOptions.isOauth() && generateProxyOptions.isQuota());
+        return genProxy.begin(generateProxyOptions.getDescription() != null ? generateProxyOptions.getDescription() : "Generated SOAP to API proxy", generateProxyOptions.getWsdl());
+    }
 
 	public static WsdlDefinitions parseWsdl(String wsdl) throws ErrorParsingWsdlException {
 		final WSDLParser wsdlParser = new WSDLParser();
