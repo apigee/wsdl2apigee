@@ -20,8 +20,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.apigee.proxywriter.GenerateProxy;
-
+import org.json.JSONObject;
 import org.json.XML;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -175,6 +174,11 @@ public class XMLUtils {
 			throw e;
 		}
 	}
+	
+	public Document getXMLFromJSONString(String jsonString) throws Exception {
+		JSONObject json = new JSONObject(jsonString);
+		return getXMLFromString(XML.toString(json));
+    }
 
 	private String extractElement(String fullElementName) {
 		if (fullElementName.indexOf(":") != -1) {

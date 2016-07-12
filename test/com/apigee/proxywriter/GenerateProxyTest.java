@@ -151,4 +151,27 @@ public class GenerateProxyTest {
         Assert.assertEquals(portTypes.get(3).getName(), "WeatherHttpPost");
         Assert.assertEquals(weatherSoap.getOperations().size(), 3);
     }
+    
+    @Test
+    public void testOpsMap1 () throws Exception {
+     	
+    	GenerateProxy genProxy = new GenerateProxy();
+    	String oMap = "<proxywriter><get><operation><name>get</name><location>beginsWith</location></operation><operation><name>inq</name><location>beginsWith</location></operation><operation><name>search</name><location>beginsWith</location></operation><operation><name>list</name><location>beginsWith</location></operation><operation><name>retrieve</name><location>beginsWith</location></operation></get><post><operation><name>create</name><location>contains</location></operation><operation><name>add</name><location>beginsWith</location></operation><operation><name>process</name><location>beginsWith</location></operation></post><put><operation><name>update</name><location>beginsWith</location></operation><operation><name>change</name><location>beginsWith</location></operation><operation><name>modify</name><location>beginsWith</location></operation><operation><name>set</name><location>beginsWith</location></operation></put><delete><operation><name>delete</name><location>beginsWith</location></operation><operation><name>remove</name><location>beginsWith</location></operation><operation><name>del</name><location>beginsWith</location></operation></delete></proxywriter>";
+    	genProxy.setOpsMap(oMap);
+    	genProxy.setPassThru(false);
+    	final InputStream inputStream = genProxy.begin("test case", WEATHER_WSDL);
+        inputStream.reset();
+    }
+    
+    @Test 
+    public void testOpsMap2 () throws Exception {
+     	
+    	GenerateProxy genProxy = new GenerateProxy();
+    	String oMap = "{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"name\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"name\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"name\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"name\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"name\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"name\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}";
+    	genProxy.setOpsMap(oMap);
+    	genProxy.setPassThru(false);
+    	final InputStream inputStream = genProxy.begin("test case", WEATHER_WSDL);
+        inputStream.reset();   	
+    }
+    
 }

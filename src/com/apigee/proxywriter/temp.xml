@@ -1,0 +1,422 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:apachesoap="http://xml.apache.org/xml-soap"
+	xmlns:impl="http://ws.konakart.com" xmlns:intf="http://ws.konakart.com"
+	xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="http://wsapp.konakart.com"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soapenv:Body>
+		<impl:editDigitalDownload
+			soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+			<sessionId xsi:type="soapenc:string">?</sessionId>
+			<digitalDownload xsi:type="tns1:DigitalDownload"
+				xmlns:tns1="http://wsapp.konakart.com">
+				<custom1 xmlns:tns1='http://wsapp.konakart.com'
+					xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/' ns1:id='???'
+					ns1:href='???'>?XXX?</custom1>
+				<!-- This element may be left empty if xsi:nil='true' is set. -->
+				<custom2 xmlns:tns1='http://wsapp.konakart.com'
+					xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/' ns1:id='???'
+					ns1:href='???'>?XXX?</custom2>
+				<!-- This element may be left empty if xsi:nil='true' is set. -->
+				<custom3 xmlns:tns1='http://wsapp.konakart.com'
+					xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/' ns1:id='???'
+					ns1:href='???'>?XXX?</custom3>
+				<customerId xmlns:tns1='http://wsapp.konakart.com'>?999?</customerId>
+				<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+				<dateAdded xmlns:tns1='http://wsapp.konakart.com'>2008-12-31T23:59:00.000-05:00
+				</dateAdded>
+				<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+				<expirationDate xmlns:tns1='http://wsapp.konakart.com'>2008-12-31T23:59:00.000-05:00
+				</expirationDate>
+				<!-- This element may be left empty if xsi:nil='true' is set. -->
+				<filePath xmlns:tns1='http://wsapp.konakart.com'
+					xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/' ns1:id='???'
+					ns1:href='???'>?XXX?</filePath>
+				<id xmlns:tns1='http://wsapp.konakart.com'>?999?</id>
+				<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+				<lastModified xmlns:tns1='http://wsapp.konakart.com'>2008-12-31T23:59:00.000-05:00
+				</lastModified>
+				<maxDownloads xmlns:tns1='http://wsapp.konakart.com'>?999?</maxDownloads>
+				<!-- This element may be left empty if xsi:nil='true' is set. -->
+				<product xmlns:tns1='http://wsapp.konakart.com'>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<addresses xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</addresses>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<bookableProd>
+						<bookingsMade>?999?</bookingsMade>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom1>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom2>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom3>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom4 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom4>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom5 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom5>
+						<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+						<endDate>2008-12-31T23:59:00.000-05:00</endDate>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<friday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</friday>
+						<maxNumBookings>?999?</maxNumBookings>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<monday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</monday>
+						<productId>?999?</productId>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<saturday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</saturday>
+						<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+						<startDate>2008-12-31T23:59:00.000-05:00</startDate>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<sunday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</sunday>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<thursday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</thursday>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<tuesday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</tuesday>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<wednesday xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</wednesday>
+					</bookableProd>
+					<bundledProdQuantity>?999?</bundledProdQuantity>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<bundledProducts xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</bundledProducts>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<canOrderWhenNotInStock xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?true?</canOrderWhenNotInStock>
+					<categoryId>?999?</categoryId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<comparison xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</comparison>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<contentType xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</contentType>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom1>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom10 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom10>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom1Dec xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</custom1Dec>
+					<custom1Int>?999?</custom1Int>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom2>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom2Dec xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</custom2Dec>
+					<custom2Int>?999?</custom2Int>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom3>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom4 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom4>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom5 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom5>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom6 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom6>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom7 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom7>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom8 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom8>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<custom9 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</custom9>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customAttrArray xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</customAttrArray>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customAttrs xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customAttrs>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customd1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customd1>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customd2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customd2>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customd3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customd3>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customd4 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customd4>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customd5 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customd5>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<customd6 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</customd6>
+					<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+					<dateAdded>2008-12-31T23:59:00.000-05:00</dateAdded>
+					<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+					<dateAvailable>2008-12-31T23:59:00.000-05:00</dateAvailable>
+					<depth>?999?</depth>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<description xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</description>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<encodedOptionValues xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</encodedOptionValues>
+					<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+					<expiryDate>2008-12-31T23:59:00.000-05:00</expiryDate>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<filePath xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</filePath>
+					<id>?999?</id>
+					<ignoreProductQuantityStock>?true?</ignoreProductQuantityStock>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<image xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</image>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<image2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</image2>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<image3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</image3>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<image4 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</image4>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<imageDir xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</imageDir>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<images>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<imgNames xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- 
+								This element can be extended by any element from ##any namespace -->
+						</imgNames>
+					</images>
+					<indexAttachment>?true?</indexAttachment>
+					<invisible>???</invisible>
+					<length>?999?</length>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<manufacturer>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<addresses xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- 
+								This element can be extended by any element from ##any namespace -->
+						</addresses>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom1>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom2>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom3>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom4 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom4>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom5 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom5>
+						<id>?999?</id>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<image xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</image>
+						<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+						<lastClick>2008-12-31T23:59:00.000-05:00</lastClick>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<name xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</name>
+						<numberOfProducts>?999?</numberOfProducts>
+						<selected>?true?</selected>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<url xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</url>
+						<urlClicked>?999?</urlClicked>
+					</manufacturer>
+					<manufacturerId>?999?</manufacturerId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<manufacturerName xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</manufacturerName>
+					<maxDownloadDays>?999?</maxDownloadDays>
+					<maxNumDownloads>?999?</maxNumDownloads>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<miscItems xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</miscItems>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<miscPrices xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</miscPrices>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<model xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</model>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<name xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</name>
+					<numberReviews>?999?</numberReviews>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<opts xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</opts>
+					<ordered>?999?</ordered>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<paymentSchedule>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom1>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom2>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom3>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom4 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom4>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<custom5 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</custom5>
+						<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+						<dateAdded>2008-12-31T23:59:00.000-05:00</dateAdded>
+						<dayOfMonth>?999?</dayOfMonth>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<description xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</description>
+						<id>?999?</id>
+						<!-- This element may be left empty if xsi:nil='true' is set. -->
+						<name xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+							ns1:id='???' ns1:href='???'>?XXX?</name>
+						<numPayments>?999?</numPayments>
+						<numTrialPayments>?999?</numTrialPayments>
+						<timeLength>?999?</timeLength>
+						<timeUnit>?999?</timeUnit>
+					</paymentSchedule>
+					<paymentScheduleId>?999?</paymentScheduleId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<price0 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</price0>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<price1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</price1>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<price2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</price2>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<price3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</price3>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<priceExTax xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</priceExTax>
+					<priceId>?999?</priceId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<priceIncTax xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</priceIncTax>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<prodRelationTypeArray>?999?</prodRelationTypeArray>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<productQuantities xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</productQuantities>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<promotionResults xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</promotionResults>
+					<quantity>?999?</quantity>
+					<quantityReserved>?999?</quantityReserved>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<rating xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</rating>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<searchScore xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</searchScore>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<sku xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</sku>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<snippets xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</snippets>
+					<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+					<specialExpiryDate>2008-12-31T23:59:00.000-05:00
+					</specialExpiryDate>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<specialPriceExTax xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</specialPriceExTax>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<specialPriceIncTax xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</specialPriceIncTax>
+					<!-- This element may be left empty if xsi:nil='true' is set. --><!--dateTime -->
+					<specialStartDate>2008-12-31T23:59:00.000-05:00</specialStartDate>
+					<specialStatus>???</specialStatus>
+					<status>???</status>
+					<stockReorderLevel>?999?</stockReorderLevel>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<storeCustom1 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</storeCustom1>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<storeCustom2 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</storeCustom2>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<storeCustom3 xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</storeCustom3>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<storeId xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</storeId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<tags xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</tags>
+					<taxClassId>?999?</taxClassId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<taxCode xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</taxCode>
+					<templateId>?999?</templateId>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<tierPrices xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:arrayType='?XXX?' ns1:offset='???' ns1:id='???' ns1:href='???'><!-- This 
+							element can be extended by any element from ##any namespace -->
+					</tierPrices>
+					<type>?999?</type>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<url xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</url>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<uuid xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?XXX?</uuid>
+					<viewedCount>?999?</viewedCount>
+					<!-- This element may be left empty if xsi:nil='true' is set. -->
+					<weight xmlns:ns1='http://schemas.xmlsoap.org/soap/encoding/'
+						ns1:id='???' ns1:href='???'>?999.99?</weight>
+					<width>?999?</width>
+				</product>
+				<productId xmlns:tns1='http://wsapp.konakart.com'>?999?</productId>
+				<timesDownloaded xmlns:tns1='http://wsapp.konakart.com'>?999?</timesDownloaded>
+			</digitalDownload>
+		</impl:editDigitalDownload>
+	</soapenv:Body>
+</soapenv:Envelope>

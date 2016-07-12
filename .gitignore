@@ -6,6 +6,11 @@ build/**
 .classpath
 .settings/**
 src/com/apigee/proxywriter/XSLGenerator.java
+src/com/apigee/proxywriter/Temp.java
+src/com/apigee/proxywriter/Temp2.java
+src/com/apigee/proxywriter/test.xml
+src/com/apigee/proxywriter/temp1.txt
+src/com/apigee/proxywriter/temp2.txt
 apiproxy/**
 opsmapping.xml
 .idea/**

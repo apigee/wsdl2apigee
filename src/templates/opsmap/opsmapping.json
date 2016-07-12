@@ -1,0 +1,80 @@
+{
+  "proxywriter": {
+    "get": {
+      "operation": [
+        {
+          "name": "get",
+          "location": "beginsWith"
+        },
+        {
+          "name": "inq",
+          "location": "beginsWith"
+        },
+        {
+          "name": "search",
+          "location": "beginsWith"
+        },
+        {
+          "name": "list",
+          "location": "beginsWith"
+        },
+        {
+          "name": "retrieve",
+          "location": "beginsWith"
+        }
+      ]
+    },
+    "post": {
+      "operation": [
+        {
+          "name": "create",
+          "location": "contains"
+        },
+        {
+          "name": "add",
+          "location": "beginsWith"
+        },
+        {
+          "name": "process",
+          "location": "beginsWith"
+        }
+      ]
+    },
+    "put": {
+      "operation": [
+        {
+          "name": "update",
+          "location": "beginsWith"
+        },
+        {
+          "name": "change",
+          "location": "beginsWith"
+        },
+        {
+          "name": "modify",
+          "location": "beginsWith"
+        },
+        {
+          "name": "set",
+          "location": "beginsWith"
+        }
+      ]
+    },
+    "delete": {
+      "operation": [
+        {
+          "name": "delete",
+          "location": "beginsWith"
+        },
+        {
+          "name": "remove",
+          "location": "beginsWith"
+        },
+        {
+          "name": "del",
+          "location": "beginsWith"
+        }
+      ]
+    }
+  }
+}

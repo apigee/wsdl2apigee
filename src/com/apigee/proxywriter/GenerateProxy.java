@@ -84,7 +84,7 @@ public class GenerateProxy {
 	public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";
 
 	private static String SOAP2API_XSL = "";
-	
+
 	private static final String SOAP2API_APIPROXY_TEMPLATE = "/templates/soap2api/apiProxyTemplate.xml";
 	private static final String SOAP2API_PROXY_TEMPLATE = "/templates/soap2api/proxyDefault.xml";
 	private static final String SOAP2API_TARGET_TEMPLATE = "/templates/soap2api/targetDefault.xml";
@@ -98,7 +98,6 @@ public class GenerateProxy {
 	private static final String SOAP2API_ADD_SOAPACTION_TEMPLATE = "/templates/soap2api/add-soapaction.xml";
 	private static final String SOAP2API_JSPOLICY_TEMPLATE = "/templates/soap2api/root-wrapper.xml";
 
-	
 	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
 	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
@@ -115,21 +114,21 @@ public class GenerateProxy {
 
 	// set this to true if SOAP passthru is needed
 	private boolean PASSTHRU;
-	//set this to true if all operations are to be consumed via POST verb
+	// set this to true if all operations are to be consumed via POST verb
 	private boolean ALLPOST;
-	//set this to true if oauth should be added to the proxy
+	// set this to true if oauth should be added to the proxy
 	private boolean OAUTH;
-	//set this to true if apikey should be added to the proxy	
+	// set this to true if apikey should be added to the proxy
 	private boolean APIKEY;
-	//enable this flag if api key based quota is enabled
+	// enable this flag if api key based quota is enabled
 	private boolean QUOTAAPIKEY;
-	//enable this flag if oauth based quota is enabled
+	// enable this flag if oauth based quota is enabled
 	private boolean QUOTAOAUTH;
-	//enable this flag is cors is enabled
+	// enable this flag is cors is enabled
 	private boolean CORS;
-	//enable this flag if wsdl is of rpc style
+	// enable this flag if wsdl is of rpc style
 	private boolean RPCSTYLE;
-	//enable this flag if user sets desc
+	// enable this flag if user sets desc
 	private boolean DESCSET;
 
 	private String targetEndpoint;
@@ -144,7 +143,11 @@ public class GenerateProxy {
 
 	private String proxyName;
 	
+	private String opsMap;
+
 	private List<String> vHosts;
+	
+	private OpsMap operationsMap;
 
 	// default build folder is ./build
 	private String buildFolder;
@@ -154,11 +157,11 @@ public class GenerateProxy {
 	// and JSON Equivalent of SOAP (without the SOAP Envelope) as values.
 	// private Map<String, KeyValue<String, String>> messageTemplates;
 	private Map<String, APIMap> messageTemplates;
-	//tree to hold elements to build an xpath
-	private HashMap<Integer, String>xpathElement;	
-	//xpath tree element level
-	private int level;	
-	//List of rules to generate XSLT
+	// tree to hold elements to build an xpath
+	private HashMap<Integer, String> xpathElement;
+	// xpath tree element level
+	private int level;
+	// List of rules to generate XSLT
 	private ArrayList<Rule> ruleList = new ArrayList<Rule>();
 
 	public Map<String, String> namespace = new LinkedHashMap<String, String>();
@@ -176,15 +179,14 @@ public class GenerateProxy {
 		LOGGER.addHandler(handler);
 	}
 
-
 	public GenerateProxy() {
-		// initialize hashmap		
+		// initialize hashmap
 		messageTemplates = new HashMap<String, APIMap>();
 		xpathElement = new HashMap<Integer, String>();
-		
+		operationsMap = new OpsMap();
 		vHosts = new ArrayList<String>();
 		vHosts.add("default");
-		
+
 		buildFolder = null;
 		soapVersion = "SOAP12";
 		ALLPOST = false;
@@ -199,46 +201,49 @@ public class GenerateProxy {
 		basePath = null;
 		level = 0;
 	}
-	
+
 	public void setDesc(boolean descset) {
 		DESCSET = descset;
 	}
-	
+
 	public void setCORS(boolean cors) {
 		CORS = cors;
 	}
-	
+
 	public void setBasePath(String bp) {
 		basePath = bp;
 	}
-	
+
 	public void setQuotaAPIKey(boolean quotaAPIKey) {
 		QUOTAAPIKEY = quotaAPIKey;
 	}
-	
+
 	public void setQuotaOAuth(boolean quotaOAuth) {
 		QUOTAOAUTH = quotaOAuth;
 	}
-	
+
 	public void setAPIKey(boolean apikey) {
 		APIKEY = apikey;
 	}
 	
-	public void setVHost (String vhosts) {
+	public void setOpsMap(String oMap) {
+		opsMap = oMap;
+	}
+
+	public void setVHost(String vhosts) {
 		if (vhosts.indexOf(",") != -1) {
-			//contains > 1 vhosts
+			// contains > 1 vhosts
 			vHosts = Arrays.asList(vhosts.split(","));
-		}
-		else {
-			vHosts.remove(0);//remove default
+		} else {
+			vHosts.remove(0);// remove default
 			vHosts.add(vhosts);
 		}
 	}
-	
-	public void setAllPost (boolean allPost) {
+
+	public void setAllPost(boolean allPost) {
 		ALLPOST = allPost;
 	}
-	
+
 	public void setBuildFolder(String folder) {
 		buildFolder = folder;
 	}
@@ -254,7 +259,7 @@ public class GenerateProxy {
 	public void setPort(String prt) {
 		portName = prt;
 	}
-	
+
 	public void setOAuth(boolean oauth) {
 		OAUTH = oauth;
 	}
@@ -265,7 +270,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 		XMLUtils xmlUtils = new XMLUtils();
 		Document apiTemplateDocument;
-		
+
 		if (PASSTHRU) {
 			apiTemplateDocument = xmlUtils.readXML(SOAPPASSTHRU_APIPROXY_TEMPLATE);
 		} else {
@@ -283,7 +288,7 @@ public class GenerateProxy {
 		displayName.setTextContent(proxyName);
 		LOGGER.fine("Set proxy display name: " + proxyName);
 
-		Node description = apiTemplateDocument.getElementsByTagName("Description").item(0);		
+		Node description = apiTemplateDocument.getElementsByTagName("Description").item(0);
 		description.setTextContent(proxyDescription);
 		LOGGER.fine("Set proxy description: " + proxyDescription);
 
@@ -313,7 +318,7 @@ public class GenerateProxy {
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
 			basePathNode.setTextContent(basePath);
 		}
-		
+
 		Node httpProxyConnection = proxyDefault.getElementsByTagName("HTTPProxyConnection").item(0);
 		Node virtualHost = null;
 		for (String vHost : vHosts) {
@@ -321,14 +326,14 @@ public class GenerateProxy {
 			virtualHost.setTextContent(vHost);
 			httpProxyConnection.appendChild(virtualHost);
 		}
-		
+
 		Document apiTemplateDocument = xmlUtils
 				.readXML(buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 
 		Document extractTemplate = xmlUtils.readXML(SOAP2API_EXTRACT_TEMPLATE);
 
 		Document assignTemplate = xmlUtils.readXML(SOAP2API_ASSIGN_TEMPLATE);
-		
+
 		Document jsPolicyTemplate = xmlUtils.readXML(SOAP2API_JSPOLICY_TEMPLATE);
 
 		Document addNamespaceTemplate = null;
@@ -337,16 +342,16 @@ public class GenerateProxy {
 		} else {
 			addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLT12POLICY_TEMPLATE);
 		}
-		
+
 		Document jsonXMLTemplate = xmlUtils.readXML(SOAP2API_JSON_TO_XML_TEMPLATE);
-		
+
 		Document addSoapActionTemplate = xmlUtils.readXML(SOAP2API_ADD_SOAPACTION_TEMPLATE);
-		
-		Node description = proxyDefault.getElementsByTagName("Description").item(0);		
+
+		Node description = proxyDefault.getElementsByTagName("Description").item(0);
 		description.setTextContent(proxyDescription);
 
 		Node policies = apiTemplateDocument.getElementsByTagName("Policies").item(0);
-		
+
 		Node flows = proxyDefault.getElementsByTagName("Flows").item(0);
 		Node flow;
 		Node flowDescription;
@@ -356,22 +361,22 @@ public class GenerateProxy {
 		Node step1, step2, step3, step4, step5;
 		Node name1, name2, name3, name4, name5;
 
-		//add oauth policies if set
+		// add oauth policies if set
 		if (OAUTH) {
 			String oauthPolicy = "verify-oauth-v2-access-token";
 			String remoOAuthPolicy = "remove-header-authorization";
 			String quota = "impose-quota-oauth";
-			
+
 			// Add policy to proxy.xml
 			Node policy1 = apiTemplateDocument.createElement("Policy");
 			policy1.setTextContent(oauthPolicy);
-			
+
 			Node policy2 = apiTemplateDocument.createElement("Policy");
 			policy2.setTextContent(remoOAuthPolicy);
-			
+
 			policies.appendChild(policy1);
 			policies.appendChild(policy2);
-			
+
 			Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
 
 			step1 = proxyDefault.createElement("Step");
@@ -383,11 +388,11 @@ public class GenerateProxy {
 			name2 = proxyDefault.createElement("Name");
 			name2.setTextContent(remoOAuthPolicy);
 			step2.appendChild(name2);
-			
+
 			preFlowRequest.appendChild(step1);
 			preFlowRequest.appendChild(step2);
-			
-			if (QUOTAOAUTH) {			
+
+			if (QUOTAOAUTH) {
 				Node policy3 = apiTemplateDocument.createElement("Policy");
 				policy2.setTextContent(quota);
 				policies.appendChild(policy3);
@@ -398,7 +403,7 @@ public class GenerateProxy {
 				preFlowRequest.appendChild(step3);
 			}
 		}
-		
+
 		if (APIKEY) {
 			String apiKeyPolicy = "verify-api-key";
 			String remoAPIKeyPolicy = "remove-query-param-apikey";
@@ -407,13 +412,13 @@ public class GenerateProxy {
 			// Add policy to proxy.xml
 			Node policy1 = apiTemplateDocument.createElement("Policy");
 			policy1.setTextContent(apiKeyPolicy);
-			
+
 			Node policy2 = apiTemplateDocument.createElement("Policy");
 			policy2.setTextContent(remoAPIKeyPolicy);
-			
+
 			policies.appendChild(policy1);
 			policies.appendChild(policy2);
-			
+
 			Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
 
 			step1 = proxyDefault.createElement("Step");
@@ -428,7 +433,7 @@ public class GenerateProxy {
 
 			preFlowRequest.appendChild(step1);
 			preFlowRequest.appendChild(step2);
-			
+
 			if (QUOTAAPIKEY) {
 				Node policy3 = apiTemplateDocument.createElement("Policy");
 				policy2.setTextContent(quota);
@@ -439,9 +444,9 @@ public class GenerateProxy {
 				step3.appendChild(name3);
 				preFlowRequest.appendChild(step3);
 			}
-			
+
 		}
-		
+
 		if (CORS) {
 			Node proxyEndpoint = proxyDefault.getElementsByTagName("ProxyEndpoint").item(0);
 			Node routeRule = proxyDefault.createElement("RouteRule");
@@ -449,12 +454,12 @@ public class GenerateProxy {
 
 			Node routeCondition = proxyDefault.createElement("Condition");
 			routeCondition.setTextContent("request.verb == \"OPTIONS\"");
-			routeRule.appendChild(routeCondition);			
+			routeRule.appendChild(routeCondition);
 			proxyEndpoint.appendChild(routeRule);
-			
+
 			String cors = "add-cors";
 			String corsCondition = "request.verb == \"OPTIONS\"";
-			
+
 			// Add policy to proxy.xml
 			Node policy1 = apiTemplateDocument.createElement("Policy");
 			policy1.setTextContent(cors);
@@ -470,13 +475,13 @@ public class GenerateProxy {
 			request = proxyDefault.createElement("Request");
 			response = proxyDefault.createElement("Response");
 			condition = proxyDefault.createElement("Condition");
-			
+
 			step1 = proxyDefault.createElement("Step");
 			name1 = proxyDefault.createElement("Name");
-			
+
 			name1.setTextContent(cors);
 			step1.appendChild(name1);
-			
+
 			response.appendChild(step1);
 
 			condition.setTextContent(corsCondition);
@@ -485,7 +490,7 @@ public class GenerateProxy {
 			flow.appendChild(response);
 			flow.appendChild(condition);
 
-			flows.appendChild(flow);	
+			flows.appendChild(flow);
 		}
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
@@ -501,7 +506,7 @@ public class GenerateProxy {
 			String resourcePath = apiMap.getResourcePath();
 			String Condition = "(proxy.pathsuffix MatchesPath \"" + resourcePath + "\") and (request.verb = \""
 					+ httpVerb + "\")";
-			String addSoapAction = operationName+"-add-soapaction";
+			String addSoapAction = operationName + "-add-soapaction";
 
 			flow = proxyDefault.createElement("Flow");
 			((Element) flow).setAttribute("name", operationName);
@@ -521,16 +526,15 @@ public class GenerateProxy {
 
 			step2 = proxyDefault.createElement("Step");
 			name2 = proxyDefault.createElement("Name");
-			
+
 			step3 = proxyDefault.createElement("Step");
 			name3 = proxyDefault.createElement("Name");
 
 			step4 = proxyDefault.createElement("Step");
 			name4 = proxyDefault.createElement("Name");
-			
+
 			step5 = proxyDefault.createElement("Step");
 			name5 = proxyDefault.createElement("Name");
-			
 
 			if (httpVerb.equalsIgnoreCase("get")) {
 				name1.setTextContent(extractPolicyName);
@@ -547,29 +551,30 @@ public class GenerateProxy {
 				LOGGER.fine("Extract Variable: " + extractPolicyName);
 
 			} else {
-				//add root wrapper policy
+				// add root wrapper policy
 				name3.setTextContent(jsPolicyName);
 				step3.appendChild(name3);
 				step3.appendChild(condition2.cloneNode(true));
 				request.appendChild(step3);
-				
+
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
 				step1.appendChild(condition2);
 				request.appendChild(step1);
-				//TODO: add condition here to convert to XML only if Content-Type is json; 
+				// TODO: add condition here to convert to XML only if
+				// Content-Type is json;
 
 				name2.setTextContent(operationName + "-add-namespace");
 				step2.appendChild(name2);
 				request.appendChild(step2);
-				
+
 				if (apiMap.getOthernamespaces()) {
 					name4.setTextContent(operationName + "-add-other-namespaces");
 					step4.appendChild(name4);
 					request.appendChild(step4);
 				}
 
-				//for soap 1.1 add soap action
+				// for soap 1.1 add soap action
 				if (soapVersion.equalsIgnoreCase("SOAP11")) {
 					step5 = proxyDefault.createElement("Step");
 					name5 = proxyDefault.createElement("Name");
@@ -577,10 +582,9 @@ public class GenerateProxy {
 					step5.appendChild(name5);
 					request.appendChild(step5);
 				}
-				
+
 			}
-			
-			
+
 			LOGGER.fine("Condition: " + Condition);
 			condition.setTextContent(Condition);
 
@@ -599,21 +603,22 @@ public class GenerateProxy {
 				policies.appendChild(policy1);
 				policies.appendChild(policy2);
 				// write Assign Message Policy
-				writeSOAP2APIAssignMessagePolicies(assignTemplate, operationName, buildSOAPPolicy, apiMap.getSoapAction());
+				writeSOAP2APIAssignMessagePolicies(assignTemplate, operationName, buildSOAPPolicy,
+						apiMap.getSoapAction());
 				// write Extract Variable Policy
 				writeSOAP2APIExtractPolicy(extractTemplate, operationName, extractPolicyName);
 			} else {
-				
+
 				Node policy2 = apiTemplateDocument.createElement("Policy");
 				policy2.setTextContent(jsPolicyName);
 				policies.appendChild(policy2);
-				
+
 				writeRootWrapper(jsPolicyTemplate, operationName, apiMap.getRootElement());
 
 				Node policy1 = apiTemplateDocument.createElement("Policy");
 				policy1.setTextContent(jsonToXML);
 				policies.appendChild(policy1);
-				
+
 				writeJsonToXMLPolicy(jsonXMLTemplate, operationName, apiMap.getRootElement());
 
 				Node policy3 = apiTemplateDocument.createElement("Policy");
@@ -630,14 +635,14 @@ public class GenerateProxy {
 				} else {
 					writeAddNamespace(addNamespaceTemplate, operationName, false);
 				}
-				//for soap 1.1 add soap action
+				// for soap 1.1 add soap action
 				if (soapVersion.equalsIgnoreCase("SOAP11")) {
 					// Add policy to proxy.xml
 					Node policy5 = apiTemplateDocument.createElement("Policy");
 					policy5.setTextContent(addSoapAction);
 					policies.appendChild(policy5);
 					writeAddSoapAction(addSoapActionTemplate, operationName, apiMap.getSoapAction());
-				}				
+				}
 			}
 		}
 
@@ -654,15 +659,17 @@ public class GenerateProxy {
 		condition = proxyDefault.createElement("Condition");
 
 		Node conditionA = proxyDefault.createElement("Condition");
-		conditionA.setTextContent("(verb != \"GET\" AND contentformat == \"application/json\") OR (verb == \"GET\" AND acceptformat !~ \"*/xml\")");
+		conditionA.setTextContent(
+				"(verb != \"GET\" AND contentformat == \"application/json\") OR (verb == \"GET\" AND acceptformat !~ \"*/xml\")");
 		Node conditionB = proxyDefault.createElement("Condition");
-		conditionB.setTextContent("(verb != \"GET\" AND contentformat != \"application/json\") OR (verb == \"GET\" AND acceptformat ~ \"*/xml\")");
-		
+		conditionB.setTextContent(
+				"(verb != \"GET\" AND contentformat != \"application/json\") OR (verb == \"GET\" AND acceptformat ~ \"*/xml\")");
+
 		step1 = proxyDefault.createElement("Step");
 		name1 = proxyDefault.createElement("Name");
 		name1.setTextContent("unknown-resource");
 		step1.appendChild(name1);
-		step1.appendChild(conditionA);//added
+		step1.appendChild(conditionA);// added
 		request.appendChild(step1);
 
 		step2 = proxyDefault.createElement("Step");
@@ -678,8 +685,8 @@ public class GenerateProxy {
 
 		flows.appendChild(flow);
 
-		LOGGER.fine("Edited proxy xml: " + buildFolder + File.separator + "apiproxy" + File.separator + proxyName
-				+ ".xml");
+		LOGGER.fine(
+				"Edited proxy xml: " + buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 		xmlUtils.writeXML(apiTemplateDocument,
 				buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
 
@@ -690,36 +697,36 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
-	
-	private void writeRootWrapper(Document rootWrapperTemplate, String operationName, String rootElement) throws Exception {
+
+	private void writeRootWrapper(Document rootWrapperTemplate, String operationName, String rootElement)
+			throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
-		String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
-				+ File.separator;
-		
+		String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies" + File.separator;
+
 		XMLUtils xmlUtils = new XMLUtils();
 		Document jsPolicyXML = xmlUtils.cloneDocument(rootWrapperTemplate);
 
-		Node root= jsPolicyXML.getFirstChild();
+		Node root = jsPolicyXML.getFirstChild();
 		NamedNodeMap attr = root.getAttributes();
 		Node nodeAttr = attr.getNamedItem("name");
-		nodeAttr.setNodeValue(operationName+"-root-wrapper");
-		
+		nodeAttr.setNodeValue(operationName + "-root-wrapper");
+
 		Node displayName = jsPolicyXML.getElementsByTagName("DisplayName").item(0);
 		displayName.setTextContent(operationName + " Root Wrapper");
-		
+
 		Node propertyElement = jsPolicyXML.getElementsByTagName("Property").item(0);
 		propertyElement.setTextContent(rootElement);
-		
+
 		xmlUtils.writeXML(jsPolicyXML, targetPath + operationName + "-root-wrapper.xml");
 
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	
-	private void writeAddSoapAction(Document addSoapActionTemplate, String operationName, String soapAction) throws Exception{
+	private void writeAddSoapAction(Document addSoapActionTemplate, String operationName, String soapAction)
+			throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		try {
@@ -734,22 +741,23 @@ public class GenerateProxy {
 
 			Node displayName = soapActionPolicyXML.getElementsByTagName("DisplayName").item(0);
 			displayName.setTextContent(operationName + " Add SOAPAction");
-			
+
 			Node header = soapActionPolicyXML.getElementsByTagName("Header").item(0);
 			header.setTextContent(soapAction);
-			
-			xmlUtils.writeXML(soapActionPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
-					+ File.separator + policyName + ".xml");
-			
+
+			xmlUtils.writeXML(soapActionPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator
+					+ "policies" + File.separator + policyName + ".xml");
+
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw e;			
+			throw e;
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeAddNamespace(Document namespaceTemplate, String operationName, boolean addOtherNamespaces) throws Exception {
+	private void writeAddNamespace(Document namespaceTemplate, String operationName, boolean addOtherNamespaces)
+			throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -787,8 +795,8 @@ public class GenerateProxy {
 				Node resourceURLOther = xslPolicyXMLOther.getElementsByTagName("ResourceURL").item(0);
 				resourceURLOther.setTextContent("xsl://" + policyNameOther + ".xslt");
 
-				xmlUtils.writeXML(xslPolicyXMLOther, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
-						+ File.separator + policyNameOther + ".xml");
+				xmlUtils.writeXML(xslPolicyXMLOther, buildFolder + File.separator + "apiproxy" + File.separator
+						+ "policies" + File.separator + policyNameOther + ".xml");
 			}
 
 		} catch (Exception e) {
@@ -841,8 +849,8 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeSOAP2APIAssignMessagePolicies(Document assignTemplate, String operationName, String policyName, String soapAction)
-			throws Exception {
+	private void writeSOAP2APIAssignMessagePolicies(Document assignTemplate, String operationName, String policyName,
+			String soapAction) throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -857,7 +865,7 @@ public class GenerateProxy {
 
 		Node displayName = assignPolicyXML.getElementsByTagName("DisplayName").item(0);
 		displayName.setTextContent(operationName + " Build SOAP");
-		
+
 		Node payload = assignPolicyXML.getElementsByTagName("Payload").item(0);
 		NamedNodeMap payloadNodeMap = payload.getAttributes();
 		Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
@@ -885,8 +893,8 @@ public class GenerateProxy {
 		Node value = assignPolicyXML.getElementsByTagName("Value").item(0);
 		value.setTextContent(targetEndpoint);
 
-		LOGGER.fine("Generated resource xml: " + buildFolder + File.separator + "apiproxy" + File.separator
-				+ "policies" + File.separator + policyName + ".xml");
+		LOGGER.fine("Generated resource xml: " + buildFolder + File.separator + "apiproxy" + File.separator + "policies"
+				+ File.separator + policyName + ".xml");
 
 		xmlUtils.writeXML(assignPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 				+ File.separator + policyName + ".xml");
@@ -932,36 +940,36 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 
-	private void writeJsonToXMLPolicy(Document jsonXMLTemplate, String operationName, String rootElement) throws Exception {
+	private void writeJsonToXMLPolicy(Document jsonXMLTemplate, String operationName, String rootElement)
+			throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
-			String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies"
-					+ File.separator;
-			
-			XMLUtils xmlUtils = new XMLUtils();
-			Document jsonxmlPolicyXML = xmlUtils.cloneDocument(jsonXMLTemplate);
+		String targetPath = buildFolder + File.separator + "apiproxy" + File.separator + "policies" + File.separator;
 
-			Node root= jsonxmlPolicyXML.getFirstChild();
-			NamedNodeMap attr = root.getAttributes();
-			Node nodeAttr = attr.getNamedItem("name");
-			nodeAttr.setNodeValue(operationName+"-json-to-xml");
-			
-			Node displayName = jsonxmlPolicyXML.getElementsByTagName("DisplayName").item(0);
-			displayName.setTextContent(operationName + " JSON TO XML");
-			
-			Node objectRootElement = jsonxmlPolicyXML.getElementsByTagName("ObjectRootElementName").item(0);
-			objectRootElement.setTextContent(rootElement);
-			
-			Node arrayRootElement = jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0);
-			arrayRootElement.setTextContent(rootElement);
-			
-			xmlUtils.writeXML(jsonxmlPolicyXML, targetPath + operationName + "-json-to-xml.xml");
+		XMLUtils xmlUtils = new XMLUtils();
+		Document jsonxmlPolicyXML = xmlUtils.cloneDocument(jsonXMLTemplate);
 
-			LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-			}.getClass().getEnclosingMethod().getName());
+		Node root = jsonxmlPolicyXML.getFirstChild();
+		NamedNodeMap attr = root.getAttributes();
+		Node nodeAttr = attr.getNamedItem("name");
+		nodeAttr.setNodeValue(operationName + "-json-to-xml");
+
+		Node displayName = jsonxmlPolicyXML.getElementsByTagName("DisplayName").item(0);
+		displayName.setTextContent(operationName + " JSON TO XML");
+
+		Node objectRootElement = jsonxmlPolicyXML.getElementsByTagName("ObjectRootElementName").item(0);
+		objectRootElement.setTextContent(rootElement);
+
+		Node arrayRootElement = jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0);
+		arrayRootElement.setTextContent(rootElement);
+
+		xmlUtils.writeXML(jsonxmlPolicyXML, targetPath + operationName + "-json-to-xml.xml");
+
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
 	}
-	
+
 	private void writeStdPolicies() throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -973,7 +981,7 @@ public class GenerateProxy {
 					+ File.separator + "xsl" + File.separator;
 			String jsResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "jsc" + File.separator;
-			
+
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
 			if (PASSTHRU) {
@@ -981,14 +989,12 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"), 
-						Paths.get(targetPath + "Invalid-SOAP.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"),
+						Paths.get(targetPath + "Invalid-SOAP.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} else {
 				sourcePath += "soap2api" + File.separator;
-				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"), 
-						Paths.get(targetPath + "xml-to-json.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
+						Paths.get(targetPath + "xml-to-json.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -1000,11 +1006,11 @@ public class GenerateProxy {
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "get-response-soap-body-xml.xml"),
 						Paths.get(targetPath + "get-response-soap-body-xml.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);			
-				Files.copy(getClass().getResourceAsStream(sourcePath + "set-target-url.xml"), 
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(getClass().getResourceAsStream(sourcePath + "set-target-url.xml"),
 						Paths.get(targetPath + "set-target-url.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(getClass().getResourceAsStream(sourcePath + "extract-format.xml"), 
+				Files.copy(getClass().getResourceAsStream(sourcePath + "extract-format.xml"),
 						Paths.get(targetPath + "extract-format.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource.xml"),
@@ -1012,7 +1018,7 @@ public class GenerateProxy {
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource-xml.xml"),
 						Paths.get(targetPath + "unknown-resource-xml.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);				
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-empty-nodes.xml"),
 						Paths.get(targetPath + "remove-empty-nodes.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -1034,7 +1040,7 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "root-wrapper.js"),
 						Paths.get(jsResourcePath + "root-wrapper.js"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				
+
 				if (OAUTH) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
 							Paths.get(targetPath + "verify-oauth-v2-access-token.xml"),
@@ -1048,7 +1054,7 @@ public class GenerateProxy {
 								java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 					}
 				}
-				
+
 				if (APIKEY) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-api-key.xml"),
 							Paths.get(targetPath + "verify-api-key.xml"),
@@ -1062,11 +1068,10 @@ public class GenerateProxy {
 								java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 					}
 				}
-				
+
 				if (CORS) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "add-cors.xml"),
-							Paths.get(targetPath + "add-cors.xml"),
-							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+							Paths.get(targetPath + "add-cors.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				}
 			}
 		} catch (IOException e) {
@@ -1091,7 +1096,7 @@ public class GenerateProxy {
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
 			basePathNode.setTextContent(basePath);
 		}
-		
+
 		Node httpProxyConnection = proxyDefault.getElementsByTagName("HTTPProxyConnection").item(0);
 		Node virtualHost = null;
 		for (String vHost : vHosts) {
@@ -1100,7 +1105,7 @@ public class GenerateProxy {
 			httpProxyConnection.appendChild(virtualHost);
 		}
 
-		Node description = proxyDefault.getElementsByTagName("Description").item(0);		
+		Node description = proxyDefault.getElementsByTagName("Description").item(0);
 		description.setTextContent(proxyDescription);
 
 		Node soapCondition = proxyDefault.getElementsByTagName("Condition").item(1);
@@ -1124,7 +1129,7 @@ public class GenerateProxy {
 
 			String operationName = entry.getKey();
 			APIMap apiMap = entry.getValue();
-			
+
 			flow = proxyDefault.createElement("Flow");
 			((Element) flow).setAttribute("name", operationName);
 
@@ -1195,95 +1200,96 @@ public class GenerateProxy {
 		return "ns";
 	}
 
-
-    private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix) {
-        if (e.getName() == null) {
-            if (e.getRef() != null) {
-                final String localPart = e.getRef().getLocalPart();
-                final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
-                parseSchema(element, schemas, rootElement, rootNamespace, rootPrefix);
-            }
-            else {
-            	//TODO: handle this
-            	LOGGER.warning("unhandled conditions getRef() = null");
-            }
-        }
-        else {
-            if (!e.getName().equalsIgnoreCase(rootElement)) {
-                if (e.getEmbeddedType() instanceof ComplexType) {
-                    ComplexType ct = (ComplexType)e.getEmbeddedType();
-                    if (!e.getNamespaceUri().equalsIgnoreCase(rootNamespace)) {
-                    	buildXPath(e, rootElement, rootNamespace, rootPrefix);
-                    }
-                    parseSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-                } else {
-                	if (e.getType() != null){
-                		if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
-    							&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
-                			buildXPath(e, rootElement, rootNamespace, rootPrefix);
-                        } 
-                    	TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
-                    	if (typeDefinition instanceof ComplexType) {
-                    		parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-                    	} 
-                	}
-                	else  {
-                    	//handle this as anyType
+	private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement,
+			String rootNamespace, String rootPrefix) {
+		if (e.getName() == null) {
+			if (e.getRef() != null) {
+				final String localPart = e.getRef().getLocalPart();
+				final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
+				parseSchema(element, schemas, rootElement, rootNamespace, rootPrefix);
+			} else {
+				// fail silently
+				LOGGER.warning("unhandled conditions getRef() = null");
+			}
+		} else {
+			if (!e.getName().equalsIgnoreCase(rootElement)) {
+				if (e.getEmbeddedType() instanceof ComplexType) {
+					ComplexType ct = (ComplexType) e.getEmbeddedType();
+					if (!e.getNamespaceUri().equalsIgnoreCase(rootNamespace)) {
+						buildXPath(e, rootElement, rootNamespace, rootPrefix);
+					}
+					parseSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
+				} else {
+					if (e.getType() != null) {
+						if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
+								&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
+							buildXPath(e, rootElement, rootNamespace, rootPrefix);
+						}
+						TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
+						if (typeDefinition instanceof ComplexType) {
+							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace,
+									rootPrefix);
+						}
+					} else {
+						// handle this as anyType
 						buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
 						if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)) {
 							buildXPath(e, rootElement, rootNamespace, rootPrefix);
 						}
-                    	LOGGER.warning("Found element " + e.getName() + " with no type. Handling as xsd:anyType");
-                    	
-                    }
-                }
-            }
-        }
-    }
+						LOGGER.warning("Found element " + e.getName() + " with no type. Handling as xsd:anyType");
 
-    private com.predic8.schema.Element elementFromSchema(String name, List<Schema> schemas) {
-        if (name != null) {
-            for (Schema schema: schemas) {
-                try {
-                    final com.predic8.schema.Element element = schema.getElement(name);
-                    if (element != null) {
-                        return element;
-                    }
-                } catch (Exception e) {
-                	LOGGER.warning("unhandled conditions: " + e.getMessage());
-                }
-            }
-        }
-        return null;
-    }
+					}
+				}
+			}
+		}
+	}
 
-	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix) {
+	private com.predic8.schema.Element elementFromSchema(String name, List<Schema> schemas) {
+		if (name != null) {
+			for (Schema schema : schemas) {
+				try {
+					final com.predic8.schema.Element element = schema.getElement(name);
+					if (element != null) {
+						return element;
+					}
+				} catch (Exception e) {
+					LOGGER.warning("unhandled conditions: " + e.getMessage());
+				}
+			}
+		}
+		return null;
+	}
+
+	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace,
+			String rootPrefix) {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
 		if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
-			level ++;
+			level++;
 			for (com.predic8.schema.Element e : seq.getElements()) {
-				//System.out.println(e.getName() + " - " + " " + e.getType());
-				if (e.getName() == null) level --;
+				// System.out.println(e.getName() + " - " + " " + e.getType());
+				if (e.getName() == null)
+					level--;
 				if (e.getName() != null) {
 					xpathElement.put(level, e.getName());
 					if (e.getType() != null) {
 						if (e.getType().getLocalPart().equalsIgnoreCase("anyType")) {
-							//found a anyType. remove namespaces for descendents
+							// found a anyType. remove namespaces for
+							// descendents
 							buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
 						}
 					}
 				}
 				parseElement(e, schemas, rootElement, rootNamespace, rootPrefix);
 			}
-			level --;
+			level--;
 			cleanUpXPath();
 		} else if (sc instanceof Choice) {
 			Choice ch = (Choice) sc;
-			level ++;
+			level++;
 			for (com.predic8.schema.Element e : ch.getElements()) {
 				if (!e.getName().equalsIgnoreCase(rootElement)) {
 					if (e.getEmbeddedType() instanceof ComplexType) {
@@ -1294,63 +1300,68 @@ public class GenerateProxy {
 						final TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
 						if (typeDefinition instanceof ComplexType) {
 							xpathElement.put(level, e.getName());
-							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-						} 
+							parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace,
+									rootPrefix);
+						}
 						if (e.getType() == null) {
-							//handle this any anyType
+							// handle this any anyType
 							buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
-							LOGGER.warning("Element "+e.getName()+" type was null; treating as anyType");
+							LOGGER.warning("Element " + e.getName() + " type was null; treating as anyType");
 						} else if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
 								&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
 							buildXPath(e, rootElement, rootNamespace, rootPrefix);
 						} else if (e.getType().getLocalPart().equalsIgnoreCase("anyType")) {
-							//if you find a anyType, remove namespace for the descendents.
+							// if you find a anyType, remove namespace for the
+							// descendents.
 							buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
 						}
 					}
 				}
 			}
-			level --;
+			level--;
 			cleanUpXPath();
 		} else if (sc instanceof ComplexContent) {
 			ComplexContent complexContent = (ComplexContent) sc;
 			Derivation derivation = complexContent.getDerivation();
 
 			if (derivation != null) {
-				TypeDefinition typeDefinition = getTypeFromSchema(derivation.getBase(), schemas);				
+				TypeDefinition typeDefinition = getTypeFromSchema(derivation.getBase(), schemas);
 				if (typeDefinition instanceof ComplexType) {
-					parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix);
+					parseSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace,
+							rootPrefix);
 				}
 				if (derivation.getModel() instanceof Sequence) {
 					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
 				} else if (derivation.getModel() instanceof ModelGroup) {
 					parseSchema(derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix);
-				} 
-			} 
+				}
+			}
 		} else if (sc instanceof SimpleContent) {
 			SimpleContent simpleContent = (SimpleContent) sc;
 			Derivation derivation = (Derivation) simpleContent.getDerivation();
 
 			if (derivation.getAllAttributes().size() > 0) {
-				//has attributes
+				// has attributes
 				buildXPath(derivation.getNamespaceUri(), rootElement, rootNamespace, rootPrefix);
-			} 
+			}
 		} else if (sc instanceof com.predic8.schema.Element) {
-			level ++;
-			xpathElement.put(level, ((com.predic8.schema.Element)sc).getName());
-            parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace, rootPrefix);
-        } else if (sc instanceof All) {
-        	All all = (All)sc;
-			level ++;
+			level++;
+			xpathElement.put(level, ((com.predic8.schema.Element) sc).getName());
+			parseElement((com.predic8.schema.Element) sc, schemas, rootElement, rootNamespace, rootPrefix);
+		} else if (sc instanceof All) {
+			All all = (All) sc;
+			level++;
 			for (com.predic8.schema.Element e : all.getElements()) {
-				if (e.getName() == null) level --;
-				if (e.getName() != null) xpathElement.put(level, e.getName());
+				if (e.getName() == null)
+					level--;
+				if (e.getName() != null)
+					xpathElement.put(level, e.getName());
 				parseElement(e, schemas, rootElement, rootNamespace, rootPrefix);
 			}
-			level --;
+			level--;
 			cleanUpXPath();
-        } else if (sc != null) {
-			// TODO: handle this
+		} else if (sc != null) {
+			// fail silently
 			LOGGER.warning("unhandled conditions - " + sc.getClass().getName());
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
@@ -1377,18 +1388,19 @@ public class GenerateProxy {
 		return null;
 	}
 
-	private void cleanUpXPath () {
+	private void cleanUpXPath() {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		for (Integer key : xpathElement.keySet()) {
 			if (key > level)
 				xpathElement.remove(key);
-		}		
+		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
-	
-	private void buildXPath (com.predic8.schema.Element e, String rootElement, String rootNamespace, String rootPrefix, boolean removeNamespace) {
+
+	private void buildXPath(com.predic8.schema.Element e, String rootElement, String rootNamespace, String rootPrefix,
+			boolean removeNamespace) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
@@ -1398,24 +1410,24 @@ public class GenerateProxy {
 		String namespaceUri = "NULL";
 		String soapElements = "/soapenv:Envelope/soapenv:Body";
 		String lastElement = "";
-		
+
 		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
 			lastElement = entry.getValue();
 		}
-		
-		//add the last element to xpath
-		if (!lastElement.equalsIgnoreCase(e.getName()))
-			xpathString = xpathString +"/" + rootPrefix + ":" + e.getName();
 
-		r = new Rule(soapElements+xpathString, prefix, namespaceUri, "descendant");
-		ruleList.add(r);		
+		// add the last element to xpath
+		if (!lastElement.equalsIgnoreCase(e.getName()))
+			xpathString = xpathString + "/" + rootPrefix + ":" + e.getName();
+
+		r = new Rule(soapElements + xpathString, prefix, namespaceUri, "descendant");
+		ruleList.add(r);
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		
+
 	}
-	
-	private void buildXPath (com.predic8.schema.Element e, String rootElement, String rootNamespace, String rootPrefix) {
+
+	private void buildXPath(com.predic8.schema.Element e, String rootElement, String rootNamespace, String rootPrefix) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		Rule r = null;
@@ -1427,12 +1439,12 @@ public class GenerateProxy {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
 		}
 
-		r = new Rule(soapElements+xpathString, prefix, namespaceUri);
+		r = new Rule(soapElements + xpathString, prefix, namespaceUri);
 		ruleList.add(r);
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-	}	
-	
+	}
+
 	private void buildXPath(String namespaceUri, String rootElement, String rootNamespace, String rootPrefix) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1440,32 +1452,33 @@ public class GenerateProxy {
 		String prefix = getPrefix(namespaceUri);
 		String soapElements = "/soapenv:Envelope/soapenv:Body";
 		String xpathString = "";
-		
+
 		for (Map.Entry<Integer, String> entry : xpathElement.entrySet()) {
 			xpathString = xpathString + "/" + rootPrefix + ":" + entry.getValue();
-		}		
-		
-		r = new Rule(soapElements+xpathString+"/@*", prefix, namespaceUri);
+		}
+
+		r = new Rule(soapElements + xpathString + "/@*", prefix, namespaceUri);
 		ruleList.add(r);
 
 		cleanUpXPath();
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-	}	
-	
+	}
+
 	private String getParentNamepace(com.predic8.schema.Element e) {
 		XMLElement parent = e.getParent();
-		
+
 		try {
 			return parent.getNamespaceUri();
 		} catch (NullPointerException npe) {
 			if (e.getNamespaceUri() != null)
 				return e.getNamespaceUri();
-			else 
+			else
 				return null;
 		}
 	}
-
+	
+	@SuppressWarnings("unchecked")
 	private void parseWSDL(String wsdlPath) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1496,8 +1509,8 @@ public class GenerateProxy {
 		if (serviceName != null) {
 			for (Service svc : wsdl.getServices()) {
 				if (svc.getName().equalsIgnoreCase(serviceName)) {
-					LOGGER.fine("Found Service: " + service.getName());
 					service = svc;
+					LOGGER.fine("Found Service: " + service.getName());
 					break;
 				}
 			}
@@ -1514,7 +1527,7 @@ public class GenerateProxy {
 			proxyName = serviceName;
 		}
 
-		if (basePath == null ) {
+		if (basePath == null) {
 			if (serviceName != null) {
 				basePath = "/" + serviceName.toLowerCase();
 			} else {
@@ -1558,13 +1571,12 @@ public class GenerateProxy {
 		PortType portType = binding.getPortType();
 		APIMap apiMap = null;
 
-		
 		for (Operation op : portType.getOperations()) {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
 			try {
 				if (RPCSTYLE) {
-					apiMap = new APIMap(null, null , null, "POST", op.getName(), false);
+					apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
 					messageTemplates.put(op.getName(), apiMap);
 				} else {
 					if (op.getInput().getMessage().getParts().size() < 1) {
@@ -1576,16 +1588,16 @@ public class GenerateProxy {
 						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
 								.getElement();
 						namespace = (Map<String, String>) requestElement.getNamespaceContext();
-						
+
 						if (PASSTHRU) {
-							apiMap = new APIMap(null, null , null, "POST", requestElement.getName(), false);
+							apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
 							messageTemplates.put(op.getName(), apiMap);
 						} else {
-							String resourcePath = OpsMap.getResourcePath(op.getName());
+							String resourcePath = operationsMap.getResourcePath(op.getName());
 							String verb = "";
-							
+
 							if (!ALLPOST) {
-								verb = OpsMap.getOpsMap(op.getName());
+								verb = operationsMap.getVerb(op.getName());
 							} else {
 								verb = "POST";
 							}
@@ -1593,10 +1605,12 @@ public class GenerateProxy {
 								creator.setCreator(new RequestTemplateCreator());
 								// use membrane SOAP to generate a SOAP Request
 								creator.createRequest(port.getName(), op.getName(), binding.getName());
-								// store the operation name, SOAP Request and the
+								// store the operation name, SOAP Request and
+								// the
 								// expected JSON Body in the map
 								KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
-								apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb, requestElement.getName(), false);
+								apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
+										requestElement.getName(), false);
 								writer.getBuffer().setLength(0);
 							} else {
 								String namespaceUri = null;
@@ -1607,39 +1621,40 @@ public class GenerateProxy {
 								}
 								String prefix = getPrefix(namespaceUri);
 								if (soapVersion.equalsIgnoreCase("SOAP11")) {
-									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(),
-											prefix, namespaceUri, namespace);
+									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+											op.getName(), prefix, namespaceUri, namespace);
 								} else {
-									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(),
-											prefix, namespaceUri, namespace);
+									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
+											op.getName(), prefix, namespaceUri, namespace);
 								}
 
-				        		TypeDefinition typeDefinition = null;
-				        		
-				        		if ( requestElement.getEmbeddedType() != null) {
-				        			typeDefinition = requestElement.getEmbeddedType();
-				        		} else {
-				        			typeDefinition = getTypeFromSchema(requestElement.getType(), wsdl.getSchemas());
-				        		}
-				        		if (typeDefinition instanceof ComplexType) {
-				        			ComplexType ct = (ComplexType)typeDefinition;
-				            		xpathElement.put(level, requestElement.getName());        			
-				            		parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(), 
-				            				namespaceUri, prefix);
-				        		}
+								TypeDefinition typeDefinition = null;
+
+								if (requestElement.getEmbeddedType() != null) {
+									typeDefinition = requestElement.getEmbeddedType();
+								} else {
+									typeDefinition = getTypeFromSchema(requestElement.getType(), wsdl.getSchemas());
+								}
+								if (typeDefinition instanceof ComplexType) {
+									ComplexType ct = (ComplexType) typeDefinition;
+									xpathElement.put(level, requestElement.getName());
+									parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(),
+											namespaceUri, prefix);
+								}
 								if (ruleList.size() > 0) {
 									RuleSet rs = new RuleSet();
 									rs.addRuleList(ruleList);
-									xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion), namespace);
+									xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
+											rs.getTransform(soapVersion), namespace);
 									ruleList.clear();
 									apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
 								} else {
 									apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), false);
 								}
 							}
-							messageTemplates.put(op.getName(), apiMap);						
+							messageTemplates.put(op.getName(), apiMap);
 						}
-					}				
+					}
 				}
 			} catch (Exception e) {
 				LOGGER.severe(e.getMessage());
@@ -1700,11 +1715,11 @@ public class GenerateProxy {
 							apiproxy.getAbsolutePath() + File.separator + "resources" + File.separator + "xsl");
 					xsltFolder.mkdirs();
 					SOAP2API_XSL = xsltFolder.getAbsolutePath() + File.separator;
-					
+
 					File jsFolder = new File(
 							apiproxy.getAbsolutePath() + File.separator + "resources" + File.separator + "jsc");
 					jsFolder.mkdirs();
-					
+
 					LOGGER.fine("created resources folder");
 				}
 				LOGGER.info("Target proxy folder setup complete");
@@ -1727,38 +1742,36 @@ public class GenerateProxy {
 
 		LOGGER.fine("Preparing target folder");
 		String zipFolder = null;
-        Path tempDirectory = null;
-        InputStream is = null;
+		Path tempDirectory = null;
+		InputStream is = null;
 
 		try {
-			if (buildFolder == null ) {
-	            tempDirectory = Files.createTempDirectory(null);
-	            buildFolder = tempDirectory.toAbsolutePath().toString();
+			if (buildFolder == null) {
+				tempDirectory = Files.createTempDirectory(null);
+				buildFolder = tempDirectory.toAbsolutePath().toString();
 			}
-            zipFolder = buildFolder + File.separator + "apiproxy";
-            // prepare the target folder (create apiproxy folder and sub-folders
+			zipFolder = buildFolder + File.separator + "apiproxy";
+			// prepare the target folder (create apiproxy folder and sub-folders
 			if (prepareTargetFolder()) {
 
 				// if not passthru read conf file to interpret soap operations
 				// to resources
 				if (!PASSTHRU) {
-					OpsMap.readOperationsMap(OPSMAPPING_TEMPLATE);
+					operationsMap.readOperationsMap(opsMap);
 					LOGGER.info("Read operations map");
 				}
-
 
 				// parse the wsdl
 				parseWSDL(wsdlPath);
 				LOGGER.info("Parsed WSDL Successfully.");
-				
+
 				if (!DESCSET) {
 					proxyDescription += serviceName;
 				}
-				
+
 				LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
 				LOGGER.info("Build Folder: " + buildFolder + "\nSOAP Version: " + soapVersion);
 				LOGGER.info("Proxy Name: " + proxyName + "\nProxy Description: " + proxyDescription);
-
 
 				// create the basic proxy structure from templates
 				writeAPIProxy(proxyDescription);
@@ -1784,7 +1797,7 @@ public class GenerateProxy {
 				LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
-                return new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+				return new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
 			} else {
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
@@ -1796,30 +1809,29 @@ public class GenerateProxy {
 			LOGGER.severe(e.getMessage());
 		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
+		} finally {
+			if (tempDirectory != null) {
+				try {
+					Files.walkFileTree(tempDirectory, new SimpleFileVisitor<Path>() {
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+							Files.delete(file);
+							return FileVisitResult.CONTINUE;
+						}
+
+						@Override
+						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+							Files.delete(dir);
+							return FileVisitResult.CONTINUE;
+						}
+
+					});
+				} catch (IOException e) {
+					LOGGER.severe(e.getMessage());
+				}
+			}
 		}
-        finally {
-            if (tempDirectory != null) {
-                try {
-                    Files.walkFileTree(tempDirectory, new SimpleFileVisitor<Path>() {
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            Files.delete(file);
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                            Files.delete(dir);
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                    });
-                } catch (IOException e) {
-                    LOGGER.severe(e.getMessage());
-                }
-            }
-        }
-        return is;
+		return is;
 	}
 
 	public static void usage() {
@@ -1834,19 +1846,21 @@ public class GenerateProxy {
 		System.out.println("-opsmap=opsmapping.xml    mapping file that to map wsdl operation to http verb");
 		System.out.println("-allpost=<true|false>     set to true if all operations are http verb; default is false");
 		System.out.println("-vhosts=<comma separated values for virtuals hosts>");
-		System.out.println("-build=specify build folder   default is temp/tmp");	
+		System.out.println("-build=specify build folder   default is temp/tmp");
 		System.out.println("-oauth=<true|false>       default is false");
 		System.out.println("-apikey=<true|false>      default is false");
 		System.out.println("-quota=<true|false>       default is false; works only if apikey or oauth is set");
-		System.out.println("-basepath=specify base path");		
+		System.out.println("-basepath=specify base path");
 		System.out.println("-cors=<true|false>        default is false");
 		System.out.println("-debug=<true|false>       default is false");
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Examples:");
 		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\"");
-		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\" -passthru=true");
-		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\" -vhosts=secure");
+		System.out.println(
+				"$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\" -passthru=true");
+		System.out.println(
+				"$ java -jar wsdl2apigee.jar -wsdl=\"https://paypalobjects.com/wsdl/PayPalSvc.wsdl\" -vhosts=secure");
 		System.out.println("");
 		System.out.println("OpsMap:");
 		System.out.println("A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:");
@@ -1878,52 +1892,56 @@ public class GenerateProxy {
 		System.out.println("\t</proxywriter>");
 	}
 
-    private static List<WsdlDefinitions.Port> convertPorts(List<com.predic8.wsdl.Port> ports, List<PortType> portTypes) {
-        List<WsdlDefinitions.Port> list = new ArrayList<>(ports.size());
-        for (com.predic8.wsdl.Port port : ports) {
-            list.add(new WsdlDefinitions.Port(port.getName(),
-                    convertOperations(port.getBinding(), portTypes)));
-        }
-        return list;
-    }
+	private static List<WsdlDefinitions.Port> convertPorts(List<com.predic8.wsdl.Port> ports,
+			List<PortType> portTypes) {
+		List<WsdlDefinitions.Port> list = new ArrayList<>(ports.size());
+		for (com.predic8.wsdl.Port port : ports) {
+			list.add(new WsdlDefinitions.Port(port.getName(), convertOperations(port.getBinding(), portTypes)));
+		}
+		return list;
+	}
 
-    private static List<WsdlDefinitions.Operation> convertOperations(Binding binding, List<PortType> portTypes) {
-        List<WsdlDefinitions.Operation> list = new ArrayList<>();
-        binding.getOperations();
-        for (BindingOperation bindingOperation : binding.getOperations()) {
-            final String operationName = bindingOperation.getName();
-            final WsdlDefinitions.Operation operation = new WsdlDefinitions.Operation(
-                    operationName,
-                    findDocForOperation(operationName, portTypes),
-                    OpsMap.getOpsMap(operationName),
-                    OpsMap.getResourcePath(operationName),
-                    null);
-            list.add(operation);
-        }
-        return list;
-    }
+	private static List<WsdlDefinitions.Operation> convertOperations(Binding binding, List<PortType> portTypes) {
+		List<WsdlDefinitions.Operation> list = new ArrayList<>();
+		//TODO: ops map should be passed as a param
+		OpsMap opsMap = null;
+		try {
+			opsMap = new OpsMap(OPSMAPPING_TEMPLATE);
+		} catch (Exception e) {
+		}
+		
+		binding.getOperations();
+		for (BindingOperation bindingOperation : binding.getOperations()) {
+			final String operationName = bindingOperation.getName();
+			final WsdlDefinitions.Operation operation = new WsdlDefinitions.Operation(operationName,
+					findDocForOperation(operationName, portTypes), opsMap.getVerb(operationName),
+					opsMap.getResourcePath(operationName), null);
+			list.add(operation);
+		}
+		return list;
+	}
 
-    private static String findDocForOperation(String operationName, List<PortType> portTypes) {
-        for (PortType portType : portTypes) {
-            final Operation operation = portType.getOperation(operationName);
-            if (operation != null) {
-                return operation.getDocumentation() != null ? operation.getDocumentation().getContent() : "";
-            }
-        }
-        return "";
-    }
+	private static String findDocForOperation(String operationName, List<PortType> portTypes) {
+		for (PortType portType : portTypes) {
+			final Operation operation = portType.getOperation(operationName);
+			if (operation != null) {
+				return operation.getDocumentation() != null ? operation.getDocumentation().getContent() : "";
+			}
+		}
+		return "";
+	}
 
-    private static WsdlDefinitions definitionsToWsdlDefinitions(Definitions definitions) {
-        List<WsdlDefinitions.Service> services = new ArrayList<>();
-        definitions.getServices();
-        for (Service service : definitions.getServices()) {
-            final WsdlDefinitions.Service service1 = new WsdlDefinitions.Service(service.getName(),
-                    convertPorts(service.getPorts(), definitions.getPortTypes()));
-            services.add(service1);
-        }
-        return new WsdlDefinitions(services);
-    }
-	
+	private static WsdlDefinitions definitionsToWsdlDefinitions(Definitions definitions) {
+		List<WsdlDefinitions.Service> services = new ArrayList<>();
+		definitions.getServices();
+		for (Service service : definitions.getServices()) {
+			final WsdlDefinitions.Service service1 = new WsdlDefinitions.Service(service.getName(),
+					convertPorts(service.getPorts(), definitions.getPortTypes()));
+			services.add(service1);
+		}
+		return new WsdlDefinitions(services);
+	}
+
 	public static void main(String[] args) throws Exception {
 
 		GenerateProxy genProxy = new GenerateProxy();
@@ -1946,19 +1964,19 @@ public class GenerateProxy {
 		opt.getSet().addOption("opsmap", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to handle all operations via post verb
 		opt.getSet().addOption("allpost", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//set virtual hosts
+		// set virtual hosts
 		opt.getSet().addOption("vhosts", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//set build path
+		// set build path
 		opt.getSet().addOption("build", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//add verify oauth policy
+		// add verify oauth policy
 		opt.getSet().addOption("oauth", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//add verify apikey policy
+		// add verify apikey policy
 		opt.getSet().addOption("apikey", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//add impose quota policy
+		// add impose quota policy
 		opt.getSet().addOption("quota", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//set basepath
+		// set basepath
 		opt.getSet().addOption("basepath", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//add enable cors conditions
+		// add enable cors conditions
 		opt.getSet().addOption("cors", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
@@ -1986,7 +2004,7 @@ public class GenerateProxy {
 				genProxy.setDesc(true);
 			} else {
 				proxyDescription = "Generated SOAP proxy from ";
-			}			
+			}
 		} else {
 			genProxy.setPassThru(false);
 			if (opt.getSet().isSet("desc")) {
@@ -1995,7 +2013,7 @@ public class GenerateProxy {
 				genProxy.setDesc(true);
 			} else {
 				proxyDescription = "Generated SOAP to API proxy from ";
-			}			
+			}
 		}
 
 		if (opt.getSet().isSet("service")) {
@@ -2006,49 +2024,51 @@ public class GenerateProxy {
 				genProxy.setPort(opt.getSet().getOption("port").getResultValue(0));
 			}
 		}
-		
+
 		if (opt.getSet().isSet("opsmap")) {
-			GenerateProxy.OPSMAPPING_TEMPLATE = opt.getSet().getOption("opsmap").getResultValue(0);
+			genProxy.setOpsMap(opt.getSet().getOption("opsmap").getResultValue(0));
+		} else {
+			genProxy.setOpsMap(GenerateProxy.OPSMAPPING_TEMPLATE);
 		}
-		
+
 		if (opt.getSet().isSet("allpost")) {
 			genProxy.setAllPost(new Boolean(opt.getSet().getOption("allpost").getResultValue(0)));
-		}		
-		
+		}
+
 		if (opt.getSet().isSet("vhosts")) {
 			genProxy.setVHost(opt.getSet().getOption("vhosts").getResultValue(0));
-		} 
-		
+		}
+
 		if (opt.getSet().isSet("build")) {
 			genProxy.setBuildFolder(opt.getSet().getOption("build").getResultValue(0));
-		} 		
-		
+		}
+
 		if (opt.getSet().isSet("basepath")) {
 			genProxy.setBasePath(opt.getSet().getOption("basepath").getResultValue(0));
-		}		
-		
+		}
+
 		if (opt.getSet().isSet("cors")) {
 			genProxy.setCORS(new Boolean(opt.getSet().getOption("cors").getResultValue(0)));
-		}		
-		
+		}
+
 		if (opt.getSet().isSet("oauth")) {
 			genProxy.setOAuth(new Boolean(opt.getSet().getOption("oauth").getResultValue(0)));
 			if (opt.getSet().isSet("quota")) {
 				genProxy.setQuotaOAuth(new Boolean(opt.getSet().getOption("quota").getResultValue(0)));
-			}		
-		}		
-		
+			}
+		}
+
 		if (opt.getSet().isSet("apikey")) {
 			genProxy.setAPIKey(new Boolean(opt.getSet().getOption("apikey").getResultValue(0)));
 			if (opt.getSet().isSet("quota")) {
 				genProxy.setQuotaAPIKey(new Boolean(opt.getSet().getOption("quota").getResultValue(0)));
-			}		
-		}		
-		
+			}
+		}
+
 		if (!opt.getSet().isSet("apikey") && !opt.getSet().isSet("oauth") && opt.getSet().isSet("quota")) {
 			LOGGER.warning("WARNING: Quota is applicable with apikey or oauth flags. This flag will be ignored");
 		}
-		
+
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
 			LOGGER.setLevel(Level.FINEST);
@@ -2058,53 +2078,51 @@ public class GenerateProxy {
 			handler.setLevel(Level.INFO);
 		}
 
-        final InputStream begin = genProxy.begin(proxyDescription, wsdlPath);
-        if (begin != null) {
-            Files.copy(begin, new File(genProxy.proxyName + ".zip").toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
+		final InputStream begin = genProxy.begin(proxyDescription, wsdlPath);
+		if (begin != null) {
+			Files.copy(begin, new File(genProxy.proxyName + ".zip").toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 
-    }
+	}
 
-    public static InputStream generateProxy(String wsdl, boolean passthrough, String description) throws FileNotFoundException {
-        GenerateProxy genProxy = new GenerateProxy();
-        genProxy.setPassThru(passthrough);
-        return genProxy.begin(description != null ? description : "Generated SOAP to API proxy", wsdl);
-    }
+	public static InputStream generateProxy(String wsdl, boolean passthrough, String description)
+			throws FileNotFoundException {
+		GenerateProxy genProxy = new GenerateProxy();
+		genProxy.setPassThru(passthrough);
+		return genProxy.begin(description != null ? description : "Generated SOAP to API proxy", wsdl);
+	}
 
-    public static WsdlDefinitions parseWsdl(String wsdl) throws ErrorParsingWsdlException {
-        final WSDLParser wsdlParser = new WSDLParser();
-        try {
-            final Definitions definitions = wsdlParser.parse(wsdl);
-            return definitionsToWsdlDefinitions(definitions);
-        }
-        catch (com.predic8.xml.util.ResourceDownloadException e) {
-            String message = formatResourceError(e);
-            throw new ErrorParsingWsdlException(message, e);
-        }
-        catch (Throwable t) {
-            String message = t.getLocalizedMessage();
-            if (message == null) {
-                message = t.getMessage();
-            }
-            if (message == null) {
-                message = "Error processing WSDL.";
-            }
-            throw new ErrorParsingWsdlException(message, t);
-        }
-    }
+	public static WsdlDefinitions parseWsdl(String wsdl) throws ErrorParsingWsdlException {
+		final WSDLParser wsdlParser = new WSDLParser();
+		try {
+			final Definitions definitions = wsdlParser.parse(wsdl);
+			return definitionsToWsdlDefinitions(definitions);
+		} catch (com.predic8.xml.util.ResourceDownloadException e) {
+			String message = formatResourceError(e);
+			throw new ErrorParsingWsdlException(message, e);
+		} catch (Throwable t) {
+			String message = t.getLocalizedMessage();
+			if (message == null) {
+				message = t.getMessage();
+			}
+			if (message == null) {
+				message = "Error processing WSDL.";
+			}
+			throw new ErrorParsingWsdlException(message, t);
+		}
+	}
 
+	private static String formatResourceError(com.predic8.xml.util.ResourceDownloadException e) {
+		StringBuffer errorMessage = new StringBuffer("Could not download resource.");
+		String rootCause = e.getRootCause().getLocalizedMessage();
+		if (!rootCause.isEmpty()) {
+			int pos = rootCause.indexOf("status for class:");
+			if (pos == -1) {
+				errorMessage.append(" " + rootCause + ".");
+			}
+		}
 
-    private static String formatResourceError(com.predic8.xml.util.ResourceDownloadException e) {
-        StringBuffer errorMessage = new StringBuffer("Could not download resource.");
-        String rootCause = e.getRootCause().getLocalizedMessage();
-        if (!rootCause.isEmpty()) {
-            int pos = rootCause.indexOf("status for class:");
-            if (pos == -1) {
-                errorMessage.append(" " + rootCause + ".");
-            }
-        }
+		return (errorMessage.toString());
 
-        return(errorMessage.toString());
-
-    }
+	}
 }

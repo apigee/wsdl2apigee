@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -24,14 +24,23 @@ public class OpsMap {
 		LOGGER.addHandler(handler);
 	}
 
-	private static List<Operation> opsMap = new ArrayList<Operation>();
+	private List<Operation> opsMap;
+	
+	public OpsMap() {
+		opsMap = new ArrayList<Operation>();
+	}
+	
+	public OpsMap(String OPSMAPPING_TEMPLATE) throws Exception{
+		opsMap = new ArrayList<Operation>();
+		readOperationsMap(OPSMAPPING_TEMPLATE);
+	}
 
-	public static void addOps (String operationName, String location, String verb) {
+	private void addOps (String operationName, String location, String verb) {
 		Operation o = new Operation(operationName, location, verb);
 		opsMap.add(o);
 	}
 	
-	public static String getOpsMap(String operationName) {
+	public String getVerb(String operationName) {
 		String lcOperationName = operationName.toLowerCase();
 		for (Operation o : opsMap) {
 			//found key in the operation name
@@ -52,7 +61,7 @@ public class OpsMap {
 		return "GET";
 	}
 	
-	public static String getResourcePath (String operationName) {
+	public String getResourcePath (String operationName) {
 
 		String resourcePath = operationName;
 		
@@ -67,69 +76,47 @@ public class OpsMap {
 		return "/" + resourcePath.toLowerCase();
 	}
 	
-	public static void readOperationsMap(String OPSMAPPING_TEMPLATE) throws Exception {
+	private void readOperation (String verb, Document opsMappingXML) throws Exception {
+		Node verbNode = opsMappingXML.getElementsByTagName(verb).item(0);
+		if (verbNode != null) {
+			NodeList getOpsList = verbNode.getChildNodes();
+			for (int i = 0; i < getOpsList.getLength(); i++) {
+				if (getOpsList.item(i).getNodeType() == Node.ELEMENT_NODE) {
+					Element operation = (Element)getOpsList.item(i);
+					String name = operation.getElementsByTagName("name").item(0).getTextContent();
+					String location = operation.getElementsByTagName("name").item(0).getTextContent();
+					addOps (name, location, verb.toUpperCase());
+				}
+			}
+		}
+	}
+	
+	public void readOperationsMap(String OPSMAPPING_TEMPLATE) throws Exception {
 		
 		LOGGER.entering(OpsMap.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
 		XMLUtils xmlUtils = new XMLUtils();
-		Document opsMappingXML = xmlUtils.readXML(OPSMAPPING_TEMPLATE);
-
-		Node getNode = opsMappingXML.getElementsByTagName("get").item(0);
-		if (getNode != null) {
-			NodeList getOpsList = getNode.getChildNodes();
-			for (int i = 0; i < getOpsList.getLength(); i++) {
-				Node currentNode = getOpsList.item(i);
-				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-					NamedNodeMap locationNodeMap = currentNode.getAttributes();
-					Node locationAttr = locationNodeMap.getNamedItem("location");
-					LOGGER.fine("Found GET: " + currentNode.getTextContent());
-					addOps(currentNode.getTextContent(), locationAttr.getNodeValue(), "GET");
-				}
+		Document opsMappingXML = null; 
+		String[] verbs = {"get", "post", "put", "delete"};
+		
+		try {
+			//first try to read it as a file containing xml
+			opsMappingXML = xmlUtils.readXML(OPSMAPPING_TEMPLATE);
+		} catch (Exception e) {
+			//second try to read it as a string containing xml
+			try {
+				opsMappingXML = xmlUtils.getXMLFromString(OPSMAPPING_TEMPLATE);
+			} catch (Exception ex) {
+				//third try to read it as a string containing json representation of xml
+				opsMappingXML = xmlUtils.getXMLFromJSONString(OPSMAPPING_TEMPLATE);
 			}
 		}
-
-		Node postNode = opsMappingXML.getElementsByTagName("post").item(0);
-		if (postNode != null) {
-			NodeList postOpsList = postNode.getChildNodes();
-			for (int i = 0; i < postOpsList.getLength(); i++) {
-				Node currentNode = postOpsList.item(i);
-				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-					NamedNodeMap locationNodeMap = currentNode.getAttributes();
-					Node locationAttr = locationNodeMap.getNamedItem("location");
-					LOGGER.fine("Found POST: " + currentNode.getTextContent());
-					addOps(currentNode.getTextContent(), locationAttr.getNodeValue(), "POST");
-				}
-			}
+		
+		for (String v : verbs) {
+			readOperation(v, opsMappingXML);
 		}
 
-		Node putNode = opsMappingXML.getElementsByTagName("put").item(0);
-		if (putNode != null) {
-			NodeList putOpsList = putNode.getChildNodes();
-			for (int i = 0; i < putOpsList.getLength(); i++) {
-				Node currentNode = putOpsList.item(i);
-				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-					NamedNodeMap locationNodeMap = currentNode.getAttributes();
-					Node locationAttr = locationNodeMap.getNamedItem("location");
-					LOGGER.fine("Found PUT: " + currentNode.getTextContent());
-					addOps(currentNode.getTextContent(), locationAttr.getNodeValue(), "PUT");
-				}
-			}
-		}
-
-		Node deleteNode = opsMappingXML.getElementsByTagName("delete").item(0);
-		if (deleteNode != null) {
-			NodeList deleteOpsList = deleteNode.getChildNodes();
-			for (int i = 0; i < deleteOpsList.getLength(); i++) {
-				Node currentNode = deleteOpsList.item(i);
-				if (currentNode.getNodeType() == Node.ELEMENT_NODE) {
-					NamedNodeMap locationNodeMap = currentNode.getAttributes();
-					Node locationAttr = locationNodeMap.getNamedItem("location");
-					LOGGER.fine("Found DELETE: " + currentNode.getTextContent());
-					addOps(currentNode.getTextContent(), locationAttr.getNodeValue(), "DELETE");
-				}
-			}
-		}
 		LOGGER.entering(OpsMap.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
