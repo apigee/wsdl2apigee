@@ -56,7 +56,7 @@ public class GenerateProxyTest {
                 "apiproxy/proxies/default.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/Weather.xml");
-        final InputStream inputStream = GenerateProxy.generateProxy(WEATHER_WSDL, true, "");
+        final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", true, "", "/foo", "default,secure", false, false, false, false));
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/Extract-Operation-Name.xml", inputStream);
@@ -111,7 +111,7 @@ public class GenerateProxyTest {
                 "apiproxy/resources/xsl/remove-namespaces.xslt",
                 "apiproxy/targets/default.xml",
                 "apiproxy/Weather.xml");
-        final InputStream inputStream = GenerateProxy.generateProxy(WEATHER_WSDL, false, "");
+        final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false));
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/extract-format.xml", inputStream);
@@ -129,6 +129,26 @@ public class GenerateProxyTest {
                 "        <Pattern>{verb}</Pattern>\n" +
                 "    </Variable>\n" +
                 "</ExtractVariables>");
+    }
+
+    @Test
+    public void testVHosts() throws IOException {
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false));
+        String entry = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
+        Assert.assertTrue(entry.contains("<VirtualHost>default</VirtualHost"));
+        Assert.assertTrue(entry.contains("<VirtualHost>secure</VirtualHost"));
+
+        inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default", false, false, false, false));
+        entry = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
+        Assert.assertTrue(entry.contains("<VirtualHost>default</VirtualHost"));
+        Assert.assertFalse(entry.contains("<VirtualHost>secure</VirtualHost"));
+    }
+
+    @Test
+    public void testCors() throws IOException {
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false));
+        final String entry = readZipFileEntry("apiproxy/policies/add-cors.xml", inputStream);
+        Assert.assertTrue(entry.length() > 0);
     }
 
     @Test
