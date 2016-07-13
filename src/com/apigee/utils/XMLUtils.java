@@ -94,7 +94,10 @@ public class XMLUtils {
         } catch (IOException ioe) {
             LOGGER.severe(ioe.getMessage());
             throw ioe;
-        }
+        } catch (Exception e) {
+            LOGGER.severe(e.getMessage());
+            throw e;
+        } 
     }
 
 	public void writeXML(Document document, String filePath) throws Exception {
@@ -168,8 +171,12 @@ public class XMLUtils {
 
 		try {
 			InputSource is = new InputSource(new StringReader(xml));
-			return builder.parse(is);
+			Document document =  builder.parse(is);
+			return cloneDocument(document);
 		} catch (SAXException | IOException e) {
+			LOGGER.severe(e.getMessage());
+			throw e;
+		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
 			throw e;
 		}

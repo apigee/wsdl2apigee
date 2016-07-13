@@ -91,6 +91,9 @@ public class OpsMap {
 	}
 	
 	private void readOperation (String verb, Document opsMappingXML) throws Exception {
+		LOGGER.entering(OpsMap.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+
 		Node verbNode = opsMappingXML.getElementsByTagName(verb).item(0);
 		if (verbNode != null) {
 			NodeList getOpsList = verbNode.getChildNodes();
@@ -103,6 +106,8 @@ public class OpsMap {
 				}
 			}
 		}
+		LOGGER.exiting(OpsMap.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
 	}
 	
 	public void readOperationsMap(String OPSMAPPING_TEMPLATE) throws Exception {
@@ -126,12 +131,12 @@ public class OpsMap {
 				opsMappingXML = xmlUtils.getXMLFromJSONString(OPSMAPPING_TEMPLATE);
 			}
 		}
-		
+					
 		for (String v : verbs) {
 			readOperation(v, opsMappingXML);
 		}
 
-		LOGGER.entering(OpsMap.class.getName(), new Object() {
+		LOGGER.exiting(OpsMap.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
 	}

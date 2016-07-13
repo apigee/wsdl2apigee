@@ -16,6 +16,7 @@ public class GenerateProxyTest {
 
 
     public static final String WEATHER_WSDL = "http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
+	public static final String oMap = "<proxywriter><get><operation><pattern>get</pattern><location>beginsWith</location></operation><operation><pattern>inq</pattern><location>beginsWith</location></operation><operation><pattern>search</pattern><location>beginsWith</location></operation><operation><pattern>list</pattern><location>beginsWith</location></operation><operation><pattern>retrieve</pattern><location>beginsWith</location></operation></get><post><operation><pattern>create</pattern><location>contains</location></operation><operation><pattern>add</pattern><location>beginsWith</location></operation><operation><pattern>process</pattern><location>beginsWith</location></operation></post><put><operation><pattern>update</pattern><location>beginsWith</location></operation><operation><pattern>change</pattern><location>beginsWith</location></operation><operation><pattern>modify</pattern><location>beginsWith</location></operation><operation><pattern>set</pattern><location>beginsWith</location></operation></put><delete><operation><pattern>delete</pattern><location>beginsWith</location></operation><operation><pattern>remove</pattern><location>beginsWith</location></operation><operation><pattern>del</pattern><location>beginsWith</location></operation></delete></proxywriter>";
 
     private void checkForFilesInBundle(List<String> filenames, InputStream inputStream) throws IOException {
         final ZipInputStream zipInputStream = new ZipInputStream(inputStream);
@@ -31,6 +32,7 @@ public class GenerateProxyTest {
         try {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
+            	System.out.println(zipEntry.getName());
                 if (filename.equals(zipEntry.getName())) {
                     final byte[] bytes = new byte[1024];
                     int read = 0;
@@ -176,7 +178,6 @@ public class GenerateProxyTest {
     public void testOpsMap1 () throws Exception {
      	
     	GenerateProxy genProxy = new GenerateProxy();
-    	String oMap = "<proxywriter><get><operation><pattern>get</pattern><location>beginsWith</location></operation><operation><pattern>inq</pattern><location>beginsWith</location></operation><operation><pattern>search</pattern><location>beginsWith</location></operation><operation><pattern>list</pattern><location>beginsWith</location></operation><operation><pattern>retrieve</pattern><location>beginsWith</location></operation></get><post><operation><pattern>create</pattern><location>contains</location></operation><operation><pattern>add</pattern><location>beginsWith</location></operation><operation><pattern>process</pattern><location>beginsWith</location></operation></post><put><operation><pattern>update</pattern><location>beginsWith</location></operation><operation><pattern>change</pattern><location>beginsWith</location></operation><operation><pattern>modify</pattern><location>beginsWith</location></operation><operation><pattern>set</pattern><location>beginsWith</location></operation></put><delete><operation><pattern>delete</pattern><location>beginsWith</location></operation><operation><pattern>remove</pattern><location>beginsWith</location></operation><operation><pattern>del</pattern><location>beginsWith</location></operation></delete></proxywriter>";
     	genProxy.setOpsMap(oMap);
     	genProxy.setPassThru(false);
     	final InputStream inputStream = genProxy.begin("test case", WEATHER_WSDL);
@@ -187,11 +188,57 @@ public class GenerateProxyTest {
     public void testOpsMap2 () throws Exception {
      	
     	GenerateProxy genProxy = new GenerateProxy();
-    	String oMap = "{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"pattern\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}";
-    	genProxy.setOpsMap(oMap);
+    	String jsonOMap = "{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"pattern\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}";
+    	genProxy.setOpsMap(jsonOMap);
     	genProxy.setPassThru(false);
     	final InputStream inputStream = genProxy.begin("test case", WEATHER_WSDL);
         inputStream.reset();   	
     }
     
+    @Test
+    public void testSelectedOperations () throws Exception {
+      final List<String> filenames = Arrays.asList(
+    		  "apiproxy/policies/AddressVerify-add-namespace.xml",
+    		  "apiproxy/policies/AddressVerify-add-other-namespaces.xml",
+    		  "apiproxy/policies/AddressVerify-add-soapaction.xml",
+    		  "apiproxy/policies/AddressVerify-json-to-xml.xml",
+    		  "apiproxy/policies/AddressVerify-root-wrapper.xml",
+    		  "apiproxy/policies/MassPay-add-namespace.xml",
+    		  "apiproxy/policies/MassPay-add-other-namespaces.xml",
+    		  "apiproxy/policies/MassPay-add-soapaction.xml",
+    		  "apiproxy/policies/MassPay-json-to-xml.xml",
+    		  "apiproxy/policies/MassPay-root-wrapper.xml",
+    		  "apiproxy/policies/extract-format.xml",
+    		  "apiproxy/policies/get-response-soap-body-xml.xml",
+    		  "apiproxy/policies/get-response-soap-body.xml",
+    		  "apiproxy/policies/remove-empty-nodes.xml",
+    		  "apiproxy/policies/remove-namespaces.xml",
+    		  "apiproxy/policies/return-generic-error-accept.xml",
+    		  "apiproxy/policies/return-generic-error.xml",
+    		  "apiproxy/policies/set-response-soap-body-accept.xml",
+    		  "apiproxy/policies/set-response-soap-body.xml",
+    		  "apiproxy/policies/set-target-url.xml",
+    		  "apiproxy/policies/unknown-resource-xml.xml",
+    		  "apiproxy/policies/unknown-resource.xml",
+    		  "apiproxy/policies/xml-to-json.xml",
+    		  "apiproxy/resources/jsc/root-wrapper.js",
+		      "apiproxy/resources/xsl/remove-empty-nodes.xslt",
+		      "apiproxy/resources/xsl/remove-namespaces.xslt",
+		      "apiproxy/resources/xsl/AddressVerify-add-namespace.xslt",
+		      "apiproxy/resources/xsl/AddressVerify-add-other-namespaces.xslt",
+		      "apiproxy/resources/xsl/MassPay-add-namespace.xslt",
+		      "apiproxy/resources/xsl/MassPay-add-other-namespaces.xslt",
+		      "apiproxy/targets/default.xml",
+		      "apiproxy/proxies/default.xml",
+		      "apiproxy/PayPalAPIInterfaceService.xml");
+    	final String PAYPAL_WSDL = "https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl";
+    	String jsonSelectedOp = "[{\"operationName\": \"AddressVerify\",\"verb\": \"post\",\"resourcePath\": \"/addressverify\"},{\"operationName\": \"MassPay\",\"verb\": \"put\",\"resourcePath\": \"/massivepay\"}]";
+    	GenerateProxy genProxy = new GenerateProxy();
+    	genProxy.setSelectedOperationsJson(jsonSelectedOp);
+    	genProxy.setOpsMap(oMap);
+    	genProxy.setPassThru(false);
+    	final InputStream inputStream = genProxy.begin("selected operations", PAYPAL_WSDL);
+    	checkForFilesInBundle(filenames, inputStream);
+        inputStream.reset();
+    }
 }
