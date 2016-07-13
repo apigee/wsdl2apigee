@@ -2097,8 +2097,7 @@ public class GenerateProxy {
 			LOGGER.setLevel(Level.INFO);
 			handler.setLevel(Level.INFO);
 		}
-		String jsonSelectedOp = "[{\"operationName\": \"AddressVerify\",\"verb\": \"post\",\"resourcePath\": \"/addressverify\"},{\"operationName\": \"MassPay\",\"verb\": \"put\",\"resourcePath\": \"/massivepay\"}]";
-		genProxy.setSelectedOperationsJson(jsonSelectedOp);
+
 		final InputStream begin = genProxy.begin(proxyDescription, wsdlPath);
 		if (begin != null) {
 			Files.copy(begin, new File(genProxy.proxyName + ".zip").toPath(), StandardCopyOption.REPLACE_EXISTING);
