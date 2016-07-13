@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>wsdl2apigee</groupId>
 	<artifactId>wsdl2apigee</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>wsdl2apigee</name>
 	<description>wsdl2apigee is an open source framework to generate Apigee API Proxies from WSDLs.</description>
 	<licenses>

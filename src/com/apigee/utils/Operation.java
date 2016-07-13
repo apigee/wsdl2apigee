@@ -3,7 +3,7 @@ package com.apigee.utils;
 public class Operation {
 
 	private String verb;
-	private String name;
+	private String pattern;
 	private String location;
 
 	/**
@@ -16,8 +16,8 @@ public class Operation {
 	/**
 	 * @return the name
 	 */
-	public String getName() {
-		return name;
+	public String getPattern() {
+		return pattern;
 	}
 
 	/**
@@ -27,8 +27,8 @@ public class Operation {
 		return location;
 	}
 	
-	Operation(String n, String l, String v) {
-		name = n;
+	Operation(String p, String l, String v) {
+		pattern = p;
 		verb = v;
 		location = l;
 	}

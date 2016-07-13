@@ -144,8 +144,12 @@ public class GenerateProxy {
 	private String proxyName;
 	
 	private String opsMap;
+	
+	private String selectedOperationsJson;
 
 	private List<String> vHosts;
+	
+	private SelectedOperations selectedOperations;
 	
 	private OpsMap operationsMap;
 
@@ -184,6 +188,7 @@ public class GenerateProxy {
 		messageTemplates = new HashMap<String, APIMap>();
 		xpathElement = new HashMap<Integer, String>();
 		operationsMap = new OpsMap();
+		selectedOperations = new SelectedOperations();
 		vHosts = new ArrayList<String>();
 		vHosts.add("default");
 
@@ -201,7 +206,11 @@ public class GenerateProxy {
 		basePath = null;
 		level = 0;
 	}
-
+	
+	public void setSelectedOperationsJson (String json) throws Exception {
+		selectedOperations.parseSelectedOperations(json);
+	}
+	
 	public void setDesc(boolean descset) {
 		DESCSET = descset;
 	}
@@ -1570,11 +1579,18 @@ public class GenerateProxy {
 
 		PortType portType = binding.getPortType();
 		APIMap apiMap = null;
+		HashMap<String, SelectedOperation> selectedOperationList = selectedOperations.getSelectedOperations();
 
 		for (Operation op : portType.getOperations()) {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
 			try {
+				
+				if (selectedOperationList.size() > 0 &&  !selectedOperationList.containsKey(op.getName())) {
+					//the current operations is not in the list; skip.
+					continue;
+				}
+				
 				if (RPCSTYLE) {
 					apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
 					messageTemplates.put(op.getName(), apiMap);
@@ -1593,11 +1609,11 @@ public class GenerateProxy {
 							apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
 							messageTemplates.put(op.getName(), apiMap);
 						} else {
-							String resourcePath = operationsMap.getResourcePath(op.getName());
+							String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
 							String verb = "";
 
 							if (!ALLPOST) {
-								verb = operationsMap.getVerb(op.getName());
+								verb = operationsMap.getVerb(op.getName(), selectedOperationList);
 							} else {
 								verb = "POST";
 							}
@@ -1673,6 +1689,10 @@ public class GenerateProxy {
 			for (Binding bnd : wsdl.getBindings()) {
 				if (bindingName.equalsIgnoreCase(bnd.getName())) {
 					for (BindingOperation bop : bnd.getOperations()) {
+						if (selectedOperationList.size() > 0 &&  !selectedOperationList.containsKey(bop.getName())) {
+							//the current operations is not in the list; skip.
+							continue;
+						}
 						if (bnd.getBinding() instanceof AbstractSOAPBinding) {
 							LOGGER.fine("Found Operation Name: " + bop.getName() + " SOAPAction: "
 									+ bop.getOperation().getSoapAction());
@@ -1914,8 +1934,8 @@ public class GenerateProxy {
 		for (BindingOperation bindingOperation : binding.getOperations()) {
 			final String operationName = bindingOperation.getName();
 			final WsdlDefinitions.Operation operation = new WsdlDefinitions.Operation(operationName,
-					findDocForOperation(operationName, portTypes), opsMap.getVerb(operationName),
-					opsMap.getResourcePath(operationName), null);
+					findDocForOperation(operationName, portTypes), opsMap.getVerb(operationName, null),
+					opsMap.getResourcePath(operationName, null), null);
 			list.add(operation);
 		}
 		return list;

@@ -3,23 +3,23 @@
     "get": {
       "operation": [
         {
-          "name": "get",
+          "pattern": "get",
           "location": "beginsWith"
         },
         {
-          "name": "inq",
+          "pattern": "inq",
           "location": "beginsWith"
         },
         {
-          "name": "search",
+          "pattern": "search",
           "location": "beginsWith"
         },
         {
-          "name": "list",
+          "pattern": "list",
           "location": "beginsWith"
         },
         {
-          "name": "retrieve",
+          "pattern": "retrieve",
           "location": "beginsWith"
         }
       ]
@@ -27,15 +27,15 @@
     "post": {
       "operation": [
         {
-          "name": "create",
+          "pattern": "create",
           "location": "contains"
         },
         {
-          "name": "add",
+          "pattern": "add",
           "location": "beginsWith"
         },
         {
-          "name": "process",
+          "pattern": "process",
           "location": "beginsWith"
         }
       ]
@@ -43,19 +43,19 @@
     "put": {
       "operation": [
         {
-          "name": "update",
+          "pattern": "update",
           "location": "beginsWith"
         },
         {
-          "name": "change",
+          "pattern": "change",
           "location": "beginsWith"
         },
         {
-          "name": "modify",
+          "pattern": "modify",
           "location": "beginsWith"
         },
         {
-          "name": "set",
+          "pattern": "set",
           "location": "beginsWith"
         }
       ]
@@ -63,15 +63,15 @@
     "delete": {
       "operation": [
         {
-          "name": "delete",
+          "pattern": "delete",
           "location": "beginsWith"
         },
         {
-          "name": "remove",
+          "pattern": "remove",
           "location": "beginsWith"
         },
         {
-          "name": "del",
+          "pattern": "del",
           "location": "beginsWith"
         }
       ]

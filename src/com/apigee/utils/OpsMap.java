@@ -1,6 +1,7 @@
 package com.apigee.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -40,17 +41,24 @@ public class OpsMap {
 		opsMap.add(o);
 	}
 	
-	public String getVerb(String operationName) {
+	public String getVerb(String operationName, HashMap<String, SelectedOperation> selectedOperations) {
 		String lcOperationName = operationName.toLowerCase();
+		
+		if (selectedOperations != null) {
+			if (selectedOperations.containsKey(operationName)) {
+				return selectedOperations.get(operationName).getVerb();
+			}
+		}
+		
 		for (Operation o : opsMap) {
 			//found key in the operation name
-			if (lcOperationName.contains(o.getName())) {
+			if (lcOperationName.contains(o.getPattern())) {
 				if (o.getLocation().equalsIgnoreCase("beginsWith")) {
-					if (lcOperationName.startsWith(o.getName())) {
+					if (lcOperationName.startsWith(o.getPattern())) {
 						return o.getVerb();
 					}
 				} else if (o.getLocation().equalsIgnoreCase("endsWith")) {
-					if (lcOperationName.startsWith(o.getName())) {
+					if (lcOperationName.startsWith(o.getPattern())) {
 						return o.getVerb();
 					}
 				} else { //assume contains
@@ -61,14 +69,20 @@ public class OpsMap {
 		return "GET";
 	}
 	
-	public String getResourcePath (String operationName) {
+	public String getResourcePath (String operationName, HashMap<String, SelectedOperation> selectedOperations) {
 
 		String resourcePath = operationName;
 		
+		if (selectedOperations != null) {
+			if (selectedOperations.containsKey(operationName)) {
+				return selectedOperations.get(operationName).getResourcePath();
+			}
+		}		
+		
 		for (Operation o : opsMap) {
-			if (operationName.toLowerCase().startsWith(o.getName()) && !operationName.toLowerCase().startsWith("address") 
-					&& !operationName.equalsIgnoreCase(o.getName())) { //don't replace the entire resource
-				resourcePath = operationName.toLowerCase().replaceFirst(o.getName(), "");
+			if (operationName.toLowerCase().startsWith(o.getPattern()) && !operationName.toLowerCase().startsWith("address") 
+					&& !operationName.equalsIgnoreCase(o.getPattern())) { //don't replace the entire resource
+				resourcePath = operationName.toLowerCase().replaceFirst(o.getPattern(), "");
 				LOGGER.fine("Replacing " + operationName + " with " + resourcePath.toLowerCase());
 				return "/" + resourcePath.toLowerCase();
 			}

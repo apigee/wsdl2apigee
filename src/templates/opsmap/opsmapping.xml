@@ -1,69 +1,69 @@
 <proxywriter>
 	<get>
 		<operation>
-			<name>get</name>
+			<pattern>get</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>inq</name>
+			<pattern>inq</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>search</name>
+			<pattern>search</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>list</name>
+			<pattern>list</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>retrieve</name>
+			<pattern>retrieve</pattern>
 			<location>beginsWith</location>
 		</operation>
 	</get>
 	<post>
 		<operation>
-			<name>create</name>
+			<pattern>create</pattern>
 			<location>contains</location>
 		</operation>
 		<operation>
-			<name>add</name>
+			<pattern>add</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>process</name>
+			<pattern>process</pattern>
 			<location>beginsWith</location>
 		</operation>
 	</post>
 	<put>
 		<operation>
-			<name>update</name>
+			<pattern>update</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>change</name>
+			<pattern>change</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>modify</name>
+			<pattern>modify</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>set</name>
+			<pattern>set</pattern>
 			<location>beginsWith</location>
 		</operation>
 	</put>
 	<delete>
 		<operation>
-			<name>delete</name>
+			<pattern>delete</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>remove</name>
+			<pattern>remove</pattern>
 			<location>beginsWith</location>
 		</operation>
 		<operation>
-			<name>del</name>
+			<pattern>del</pattern>
 			<location>beginsWith</location>
 		</operation>
 	</delete>
