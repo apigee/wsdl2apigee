@@ -2105,7 +2105,7 @@ public class GenerateProxy {
 
 	}
 
-    public static InputStream generateProxy(GenerateProxyOptions generateProxyOptions) throws FileNotFoundException {
+    public static InputStream generateProxy(GenerateProxyOptions generateProxyOptions) throws Exception {
         GenerateProxy genProxy = new GenerateProxy();
         genProxy.setOpsMap(OPSMAPPING_TEMPLATE);
 
@@ -2118,6 +2118,9 @@ public class GenerateProxy {
         genProxy.setOAuth(generateProxyOptions.isOauth());
         genProxy.setQuotaAPIKey(generateProxyOptions.isApiKey() && generateProxyOptions.isQuota());
         genProxy.setQuotaOAuth(generateProxyOptions.isOauth() && generateProxyOptions.isQuota());
+        if (generateProxyOptions.getOperationsFilter() != null && generateProxyOptions.getOperationsFilter().length() > 0) {
+            genProxy.setSelectedOperationsJson(generateProxyOptions.getOperationsFilter());
+        }
         return genProxy.begin(generateProxyOptions.getDescription() != null ? generateProxyOptions.getDescription() : "Generated SOAP to API proxy", generateProxyOptions.getWsdl());
     }
 

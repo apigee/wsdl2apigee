@@ -97,8 +97,8 @@ public class OpsMap {
 			for (int i = 0; i < getOpsList.getLength(); i++) {
 				if (getOpsList.item(i).getNodeType() == Node.ELEMENT_NODE) {
 					Element operation = (Element)getOpsList.item(i);
-					String name = operation.getElementsByTagName("name").item(0).getTextContent();
-					String location = operation.getElementsByTagName("name").item(0).getTextContent();
+					String name = operation.getElementsByTagName("pattern").item(0).getTextContent();
+					String location = operation.getElementsByTagName("pattern").item(0).getTextContent();
 					addOps (name, location, verb.toUpperCase());
 				}
 			}

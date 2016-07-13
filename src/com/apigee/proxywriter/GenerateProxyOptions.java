@@ -11,8 +11,10 @@ public class GenerateProxyOptions {
     private final boolean apiKey;
     private final boolean oauth;
     private final boolean quota;
+    private final String operationsFilter;
 
-    public GenerateProxyOptions(String wsdl, String port, boolean passthrough, String description, String basepath, String vHosts, boolean cors, boolean apiKey, boolean oauth, boolean quota) {
+    public GenerateProxyOptions(String wsdl, String port, boolean passthrough, String description, String basepath,
+                String vHosts, boolean cors, boolean apiKey, boolean oauth, boolean quota, String operationsFilter) {
         this.wsdl = wsdl;
         this.port = port;
         this.passthrough = passthrough;
@@ -23,6 +25,7 @@ public class GenerateProxyOptions {
         this.apiKey = apiKey;
         this.oauth = oauth;
         this.quota = quota;
+        this.operationsFilter = operationsFilter;
     }
 
     public String getWsdl() {
@@ -63,5 +66,9 @@ public class GenerateProxyOptions {
 
     public boolean isQuota() {
         return quota;
+    }
+
+    public String getOperationsFilter() {
+        return operationsFilter;
     }
 }
