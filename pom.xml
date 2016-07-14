@@ -89,12 +89,10 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <doCheck>true</doCheck>
-                    <doUpdate>true</doUpdate>
-                    <shortRevisionLength>5</shortRevisionLength>
-                </configuration>
-            </plugin>
+			    <configuration>
+			        <revisionOnScmFailure>no.scm.config.in.pom</revisionOnScmFailure>
+			    </configuration>            
+			</plugin>
         </plugins>
     </build>
     <dependencies>
