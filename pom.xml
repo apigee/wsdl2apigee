@@ -91,7 +91,8 @@
                 </executions>
 			    <configuration>
 			        <revisionOnScmFailure>no.scm.config.in.pom</revisionOnScmFailure>
-			    </configuration>            
+                    <shortRevisionLength>5</shortRevisionLength>
+			    </configuration>
 			</plugin>
         </plugins>
     </build>

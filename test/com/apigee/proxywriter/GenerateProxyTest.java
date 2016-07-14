@@ -32,7 +32,6 @@ public class GenerateProxyTest {
         try {
             ZipEntry zipEntry;
             while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-                System.out.println(zipEntry.getName());
                 if (filename.equals(zipEntry.getName())) {
                     final byte[] bytes = new byte[1024];
                     int read = 0;
