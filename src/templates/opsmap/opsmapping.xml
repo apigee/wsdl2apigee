@@ -20,6 +20,10 @@
 			<pattern>retrieve</pattern>
 			<location>beginsWith</location>
 		</operation>
+		<operation>
+			<pattern>fetch</pattern>
+			<location>beginsWith</location>
+		</operation>
 	</get>
 	<post>
 		<operation>

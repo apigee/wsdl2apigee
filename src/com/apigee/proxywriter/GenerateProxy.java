@@ -1764,7 +1764,8 @@ public class GenerateProxy {
 		String zipFolder = null;
 		Path tempDirectory = null;
 		InputStream is = null;
-
+		GenerateBundle generateBundle = new GenerateBundle();
+		
 		try {
 			if (buildFolder == null) {
 				tempDirectory = Files.createTempDirectory(null);
@@ -1813,7 +1814,7 @@ public class GenerateProxy {
 					writeSOAPPassThruProxyEndpointConditions(proxyDescription);
 				}
 
-				File file = GenerateBundle.build(zipFolder, proxyName);
+				File file = generateBundle.build(zipFolder, proxyName);
 				LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
@@ -1821,7 +1822,7 @@ public class GenerateProxy {
 			} else {
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
-				throw new TargetFolderException("Erorr is preparing target folder");
+				throw new TargetFolderException("Erorr is preparing target folder; target folder not empty " + buildFolder);
 			}
 		} catch (SecurityException e) {
 			LOGGER.severe(e.getMessage());

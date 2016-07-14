@@ -1,7 +1,9 @@
 package com.apigee.proxywriter;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +17,7 @@ import java.util.zip.ZipOutputStream;
 
 public class GenerateBundle {
 
-	private static final int BUFFER = 2048;
+	private static final int BUFFER = 4096;
 
 	private static final Logger LOGGER = Logger.getLogger(GenerateBundle.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
@@ -28,7 +30,7 @@ public class GenerateBundle {
 		LOGGER.addHandler(handler);
 	}	
 	
-	private static File zipIt(String zipFile, String targetFolder, List<String> fileList) throws Exception{
+	/*private static File zipIt(String zipFile, String targetFolder, List<String> fileList) throws Exception{
 
 		LOGGER.entering(GenerateBundle.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -102,6 +104,7 @@ public class GenerateBundle {
 
 		if (node.isDirectory()) {
 			String[] subNote = node.list();
+			//fileList.add(node.toString());
 			for (String filename : subNote) {
 				fileList.addAll(generateFileList(new File(node, filename), targetFolder));
 			}
@@ -133,6 +136,56 @@ public class GenerateBundle {
 		LOGGER.exiting(GenerateBundle.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
         return f;
+	}*/
+	
+    private void addFolderToZip(File folder, String parentFolder,
+            ZipOutputStream zos) throws FileNotFoundException, IOException {
+        for (File file : folder.listFiles()) {
+            if (file.isDirectory()) {
+                addFolderToZip(file, parentFolder + "/" + file.getName(), zos);
+                continue;
+            }
+  
+            zos.putNextEntry(new ZipEntry(parentFolder + "/" + file.getName()));
+  
+            BufferedInputStream bis = new BufferedInputStream(
+                    new FileInputStream(file));
+  
+            long bytesRead = 0;
+            byte[] bytesIn = new byte[BUFFER];
+            int read = 0;
+  
+            while ((read = bis.read(bytesIn)) != -1) {
+                zos.write(bytesIn, 0, read);
+                bytesRead += read;
+            }
+  
+            zos.closeEntry();
+            bis.close();
+        }
+    }   
+    	
+	public File build(String zipFolder, String proxyName) throws Exception {
+		
+		try {
+			File folder = new File(zipFolder);
+			String parentFolder = zipFolder.substring(zipFolder.lastIndexOf(File.separator) + 1, zipFolder.length());
+			
+			File f = new File(folder.getParent(), proxyName + ".zip");
+			
+			FileOutputStream fos = new FileOutputStream(f);
+			ZipOutputStream zos = new ZipOutputStream(fos);
+			
+			addFolderToZip(folder, parentFolder, zos);  
+			       
+			zos.flush();  
+			zos.close();  
+			
+			return f;
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 }
