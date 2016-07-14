@@ -121,6 +121,7 @@ public class XMLUtils {
 			FileOutputStream fos = new FileOutputStream(f, false);
 			StreamResult result = new StreamResult(fos);
 			transformer.transform(source, result);
+			fos.close();
 		} catch (IOException ioe) {
 			LOGGER.severe(ioe.getMessage());
 			throw ioe;
