@@ -73,26 +73,26 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/Extract-Operation-Name.xml", inputStream);
-        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-                "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"Extract-Operation-Name\">\n" +
-                "    <DisplayName>Extract Operation Name</DisplayName>\n" +
-                "    <Properties/>\n" +
-                "    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>\n" +
-                "    <Source clearPayload=\"false\">request</Source>\n" +
-                "    <XMLPayload stopPayloadProcessing=\"false\">\n" +
-                "        <Variable name=\"envelope\" type=\"String\">\n" +
-                "            <XPath>local-name(/*)</XPath>\n" +
-                "        </Variable>\n" +
-                "        <Variable name=\"body\" type=\"String\">\n" +
-                "            <XPath>local-name(/*/*[local-name() = 'Body'])</XPath>\n" +
-                "        </Variable>\n" +
-                "        <Variable name=\"envelopeNamespace\" type=\"String\">\n" +
-                "            <XPath>namespace-uri(/*)</XPath>\n" +
-                "        </Variable>\n" +
-                "        <Variable name=\"operation\" type=\"String\">\n" +
-                "            <XPath>local-name(//*[local-name() = 'Body']/*[1])</XPath>\n" +
-                "        </Variable>\n" +
-                "    </XMLPayload>\n" +
+        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
+                "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"Extract-Operation-Name\">" + System.getProperty("line.separator") +
+                "    <DisplayName>Extract Operation Name</DisplayName>" + System.getProperty("line.separator") +
+                "    <Properties/>" + System.getProperty("line.separator") +
+                "    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>" + System.getProperty("line.separator") +
+                "    <Source clearPayload=\"false\">request</Source>" + System.getProperty("line.separator") +
+                "    <XMLPayload stopPayloadProcessing=\"false\">" + System.getProperty("line.separator") +
+                "        <Variable name=\"envelope\" type=\"String\">" + System.getProperty("line.separator") +
+                "            <XPath>local-name(/*)</XPath>" + System.getProperty("line.separator") +
+                "        </Variable>" + System.getProperty("line.separator") +
+                "        <Variable name=\"body\" type=\"String\">" + System.getProperty("line.separator") +
+                "            <XPath>local-name(/*/*[local-name() = 'Body'])</XPath>" + System.getProperty("line.separator") +
+                "        </Variable>" + System.getProperty("line.separator") +
+                "        <Variable name=\"envelopeNamespace\" type=\"String\">" + System.getProperty("line.separator") +
+                "            <XPath>namespace-uri(/*)</XPath>" + System.getProperty("line.separator") +
+                "        </Variable>" + System.getProperty("line.separator") + 
+                "        <Variable name=\"operation\" type=\"String\">" + System.getProperty("line.separator") +
+                "            <XPath>local-name(//*[local-name() = 'Body']/*[1])</XPath>" + System.getProperty("line.separator") +
+                "        </Variable>" + System.getProperty("line.separator") + 
+                "    </XMLPayload>" + System.getProperty("line.separator") + 
                 "</ExtractVariables>");
     }
 
@@ -128,19 +128,19 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/extract-format.xml", inputStream);
-        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
-                "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"extract-format\">\n" +
-                "    <DisplayName>Extract Format</DisplayName>\n" +
-                "    <Properties/>\n" +
-                "    <Header name=\"Content-Type\">\n" +
-                "        <Pattern ignoreCase=\"true\">{contentformat}</Pattern>\n" +
-                "    </Header>\n" +
-                "    <Header name=\"Accept\">\n" +
-                "        <Pattern ignoreCase=\"true\">{acceptformat}</Pattern>\n" +
-                "    </Header>\n" +
-                "    <Variable name=\"request.verb\">\n" +
-                "        <Pattern>{verb}</Pattern>\n" +
-                "    </Variable>\n" +
+        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") + 
+                "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"extract-format\">" + System.getProperty("line.separator") + 
+                "    <DisplayName>Extract Format</DisplayName>" + System.getProperty("line.separator") + 
+                "    <Properties/>" + System.getProperty("line.separator") + 
+                "    <Header name=\"Content-Type\">" + System.getProperty("line.separator") + 
+                "        <Pattern ignoreCase=\"true\">{contentformat}</Pattern>" + System.getProperty("line.separator") + 
+                "    </Header>" + System.getProperty("line.separator") + 
+                "    <Header name=\"Accept\">" + System.getProperty("line.separator") + 
+                "        <Pattern ignoreCase=\"true\">{acceptformat}</Pattern>" + System.getProperty("line.separator") + 
+                "    </Header>" + System.getProperty("line.separator") + 
+                "    <Variable name=\"request.verb\">" + System.getProperty("line.separator") + 
+                "        <Pattern>{verb}</Pattern>" + System.getProperty("line.separator") + 
+                "    </Variable>" + System.getProperty("line.separator") + 
                 "</ExtractVariables>");
     }
 

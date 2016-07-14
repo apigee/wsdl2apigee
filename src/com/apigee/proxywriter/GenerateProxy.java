@@ -994,14 +994,14 @@ public class GenerateProxy {
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
 			if (PASSTHRU) {
-				sourcePath += "soappassthru" + File.separator;
+				sourcePath += "soappassthru/";
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"),
 						Paths.get(targetPath + "Invalid-SOAP.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} else {
-				sourcePath += "soap2api" + File.separator;
+				sourcePath += "soap2api/";
 				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
 						Paths.get(targetPath + "xml-to-json.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
