@@ -1083,7 +1083,7 @@ public class GenerateProxy {
 							Paths.get(targetPath + "add-cors.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				}
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
 			e.printStackTrace();
 			throw e;
