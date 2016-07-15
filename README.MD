@@ -10,12 +10,12 @@ mvn install
 
 ## Usage
 ```
-java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl=<wsdl URL or Path>
+java -jar wsdl2apigee-1.0.0-jar-with-dependencies.jar -wsdl=<wsdl URL or Path>
 ```
 
 ### Other Options
 ```
-java -jar wsdl2apigee.jar com.apigee.proxywriter.GenerateProxy -wsdl=<wsdl URL or Path> -passthru=<true|false> -desc=<description> -allpost=<true|false> -opsmap=<opsmapping.xml> -service=<service name> -port=<port name> -debug=<true|false> -oauth=<true|false> -vhosts=comma separated values for virtuals hosts> -build=<build folder name> -cors=<true|false> -apikey=<true|false> -quota=<true|false> -basepath=<specify base path>
+java -jar wsdl2apigee-1.0.0-jar-with-dependencies.jar -wsdl=<wsdl URL or Path> -passthru=<true|false> -desc=<description> -allpost=<true|false> -opsmap=<opsmapping.xml> -service=<service name> -port=<port name> -debug=<true|false> -oauth=<true|false> -vhosts=comma separated values for virtuals hosts> -build=<build folder name> -cors=<true|false> -apikey=<true|false> -quota=<true|false> -basepath=<specify base path>
 
 Defaults:
 passthru=false            Do not convert to API/JSON. Treat as SOAP
@@ -36,27 +36,76 @@ A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks 
 ```
 <proxywriter>
 	<get>
-		<name location="beginsWith">get</name>
-		<name location="beginsWith">list</name>
-		<name location="beginsWith">inq</name>
-		<name location="beginsWith">search</name>
-		<name location="beginsWith">retrieve</name>
+		<operation>
+			<pattern>get</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>inq</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>search</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>list</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>retrieve</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>fetch</pattern>
+			<location>beginsWith</location>
+		</operation>
 	</get>
 	<post>
-		<name location="contains">create</name>
-		<name location="beginsWith">add</name>
-		<name location="beginsWith">process</name>
+		<operation>
+			<pattern>create</pattern>
+			<location>contains</location>
+		</operation>
+		<operation>
+			<pattern>add</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>process</pattern>
+			<location>beginsWith</location>
+		</operation>
 	</post>
 	<put>
-		<name location="contains">update</name>
-		<name location="contains">change</name>
-		<name location="beginsWith">modify</name>
-		<name location="beginsWith">set</name>
+		<operation>
+			<pattern>update</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>change</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>modify</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>set</pattern>
+			<location>beginsWith</location>
+		</operation>
 	</put>
 	<delete>
-		<name location="beginsWith">delete</name>
-		<name location="beginsWith">remove</name>
-		<name location="beginsWith">del</name>
+		<operation>
+			<pattern>delete</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>remove</pattern>
+			<location>beginsWith</location>
+		</operation>
+		<operation>
+			<pattern>del</pattern>
+			<location>beginsWith</location>
+		</operation>
 	</delete>
 </proxywriter>
 ```
