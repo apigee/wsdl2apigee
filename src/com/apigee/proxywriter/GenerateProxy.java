@@ -1551,8 +1551,8 @@ public class GenerateProxy {
 				}
 			}
 			if (port == null) { // didn't find any port matching name
-				LOGGER.severe("No matching port were found in the WSDL");
-				throw new NoServicesFoundException("No matching were found in the WSDL");
+				LOGGER.severe("No matching port was found in the WSDL");
+				throw new NoServicesFoundException("No matching port found in the WSDL");
 			}
 		} else {
 			port = service.getPorts().get(0); // get first port
@@ -1755,7 +1755,7 @@ public class GenerateProxy {
 		}
 	}
 
-	public InputStream begin(String proxyDescription, String wsdlPath) {
+	public InputStream begin(String proxyDescription, String wsdlPath) throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1824,12 +1824,9 @@ public class GenerateProxy {
 				}.getClass().getEnclosingMethod().getName());
 				throw new TargetFolderException("Erorr is preparing target folder; target folder not empty " + buildFolder);
 			}
-		} catch (SecurityException e) {
-			LOGGER.severe(e.getMessage());
-		} catch (TargetFolderException e) {
-			LOGGER.severe(e.getMessage());
 		} catch (Exception e) {
 			LOGGER.severe(e.getMessage());
+            throw e;
 		} finally {
 			if (tempDirectory != null) {
 				try {
@@ -1852,7 +1849,6 @@ public class GenerateProxy {
 				}
 			}
 		}
-		return is;
 	}
 
 	public static void usage() {
