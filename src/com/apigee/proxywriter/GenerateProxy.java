@@ -1586,7 +1586,7 @@ public class GenerateProxy {
 		}
 
 		if (!PASSTHRU && RPCSTYLE == true) {
-			throw new UnSupportedWSDLException("Only Docuement/Literal is supported for SOAP to REST");
+			throw new UnSupportedWSDLException("Only Document/Literal is supported for SOAP to REST");
 		}
 
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
