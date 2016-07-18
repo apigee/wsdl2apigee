@@ -360,6 +360,7 @@ public class GenerateProxy {
 		description.setTextContent(proxyDescription);
 
 		Node policies = apiTemplateDocument.getElementsByTagName("Policies").item(0);
+		Node resources = apiTemplateDocument.getElementsByTagName("Resources").item(0);
 
 		Node flows = proxyDefault.getElementsByTagName("Flows").item(0);
 		Node flow;
@@ -369,6 +370,7 @@ public class GenerateProxy {
 		Node condition, condition2;
 		Node step1, step2, step3, step4, step5;
 		Node name1, name2, name3, name4, name5;
+		boolean once = false;
 
 		// add oauth policies if set
 		if (OAUTH) {
@@ -501,6 +503,7 @@ public class GenerateProxy {
 
 			flows.appendChild(flow);
 		}
+		
 
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			String operationName = entry.getKey();
@@ -565,6 +568,14 @@ public class GenerateProxy {
 				step3.appendChild(name3);
 				step3.appendChild(condition2.cloneNode(true));
 				request.appendChild(step3);
+				
+				//add the root wrapper only once
+				if (!once) {
+					Node resourceRootWrapper = apiTemplateDocument.createElement("Resource");
+					resourceRootWrapper.setTextContent("jsc://root-wrapper.js");
+					resources.appendChild(resourceRootWrapper);
+					once = true;
+				}
 
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
@@ -621,7 +632,7 @@ public class GenerateProxy {
 				Node policy2 = apiTemplateDocument.createElement("Policy");
 				policy2.setTextContent(jsPolicyName);
 				policies.appendChild(policy2);
-
+				
 				writeRootWrapper(jsPolicyTemplate, operationName, apiMap.getRootElement());
 
 				Node policy1 = apiTemplateDocument.createElement("Policy");
@@ -633,6 +644,9 @@ public class GenerateProxy {
 				Node policy3 = apiTemplateDocument.createElement("Policy");
 				policy3.setTextContent(operationName + "add-namespace");
 				policies.appendChild(policy3);
+				Node resourceAddNamespaces = apiTemplateDocument.createElement("Resource");
+				resourceAddNamespaces.setTextContent("xsl://"+operationName + "add-namespace.xslt");
+				resources.appendChild(resourceAddNamespaces);
 
 				if (apiMap.getOthernamespaces()) {
 					Node policy4 = apiTemplateDocument.createElement("Policy");
@@ -640,6 +654,10 @@ public class GenerateProxy {
 
 					policies.appendChild(policy4);
 
+					Node resourceAddOtherNamespaces = apiTemplateDocument.createElement("Resource");
+					resourceAddOtherNamespaces.setTextContent("xsl://"+operationName + "add-other-namespaces.xslt");
+					resources.appendChild(resourceAddOtherNamespaces);
+					
 					writeAddNamespace(addNamespaceTemplate, operationName, true);
 				} else {
 					writeAddNamespace(addNamespaceTemplate, operationName, false);

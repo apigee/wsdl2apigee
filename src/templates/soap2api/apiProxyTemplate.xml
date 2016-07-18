@@ -29,7 +29,10 @@
     <ProxyEndpoints>
         <ProxyEndpoint>default</ProxyEndpoint>
     </ProxyEndpoints>
-    <Resources/>
+    <Resources>
+    	<Resource>xsl://remove-empty-nodes.xslt</Resource>
+    	<Resource>xsl://remove-namespaces.xslt</Resource>    	
+    </Resources>
     <TargetServers/>
     <TargetEndpoints>
         <TargetEndpoint>default</TargetEndpoint>
