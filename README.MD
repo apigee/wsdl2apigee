@@ -30,6 +30,7 @@ quota=false               Works only if apikey or oauth is set
 basepath=Uses the basepath from the wsdl
 cors=false                Don't enable CORS; Works only for SOAP to REST
 build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
+opsmap=specify operations map
 ``` 
 OpsMap:
 A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:
