@@ -51,10 +51,12 @@ import com.apigee.utils.Options.Separator;
 import com.apigee.xsltgen.Rule;
 import com.apigee.xsltgen.RuleSet;
 import com.predic8.schema.All;
+import com.predic8.schema.BuiltInSchemaType;
 import com.predic8.schema.Choice;
 import com.predic8.schema.ComplexContent;
 import com.predic8.schema.ComplexType;
 import com.predic8.schema.Derivation;
+import com.predic8.schema.GroupRef;
 import com.predic8.schema.ModelGroup;
 import com.predic8.schema.Schema;
 import com.predic8.schema.SchemaComponent;
@@ -67,6 +69,7 @@ import com.predic8.wsdl.Binding;
 import com.predic8.wsdl.BindingOperation;
 import com.predic8.wsdl.Definitions;
 import com.predic8.wsdl.Operation;
+import com.predic8.wsdl.Part;
 import com.predic8.wsdl.PortType;
 import com.predic8.wsdl.Service;
 import com.predic8.wsdl.WSDLParser;
@@ -84,7 +87,17 @@ public class GenerateProxy {
 	public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";
 
 	private static String SOAP2API_XSL = "";
-
+	
+	private static final List<String> primitiveTypes = Arrays.asList(new String [] {"int", "string", "boolean","decimal", 
+			"float", "double", "duration", "dateTime", "time", "date", "long",
+            "gYearMonth", "gYear", "gMonthDay", "gDay", "gMonth", "hexBinary", "base64Binary", "anyURI", "QName", 
+            "NOTATION"});
+	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+	
+    private static final List<String> blackListedNamespaces = Arrays.asList(
+    		"http://schemas.xmlsoap.org/wsdl/",
+    		"http://schemas.xmlsoap.org/wsdl/soap/");
+	
 	private static final String SOAP2API_APIPROXY_TEMPLATE = "/templates/soap2api/apiProxyTemplate.xml";
 	private static final String SOAP2API_PROXY_TEMPLATE = "/templates/soap2api/proxyDefault.xml";
 	private static final String SOAP2API_TARGET_TEMPLATE = "/templates/soap2api/targetDefault.xml";
@@ -1209,6 +1222,10 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 	}
+	
+    private static Boolean isPrimitive(String type) {
+        return primitiveTypes.contains(type);
+    }	
 
 	public String getPrefix(String namespaceUri) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -1394,6 +1411,129 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
+	
+	private String parseParts (List<Part> parts, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix, String soapRequest) {
+		for (Part part : parts) {
+			if(isPrimitive(part.getType().getQname().getLocalPart())) {
+				soapRequest = soapRequest+ "<"+part.getName()+" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\""+part.getTypePN()+"\">"+"?</"+part.getName()+">\n";	
+				//primitive elements are in the same namespace, skip xpath
+			} else {
+				TypeDefinition typeDefinition =  part.getType();
+				if (typeDefinition instanceof ComplexType) {
+					ComplexType ct = (ComplexType) typeDefinition;
+					SchemaComponent sc= ct.getModel();
+					try {
+						soapRequest = soapRequest + "<"+part.getName()+" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\""+part.getTypePN()+"\" xmlns:"+part.getType().getPrefix()+"=\""+part.getType().getNamespaceUri()+"\">\n"; 
+						soapRequest += sc.getRequestTemplate();
+						soapRequest += "\n</"+part.getName()+">";
+						xpathElement.put(++ level, part.getName());
+						//since we already have the soap request template, no need to pass it.
+						//call parseRPCschema to find any elements with a different namespace
+						parseRPCSchema(sc, schemas, rootElement, rootNamespace, rootPrefix, "");
+						level --;
+					} catch (Exception e) {
+						soapRequest += "\n</"+part.getName()+">";
+						soapRequest = parseRPCSchema(sc, schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+					}
+				} else if (typeDefinition instanceof BuiltInSchemaType) {
+					BuiltInSchemaType bst = (BuiltInSchemaType)typeDefinition;
+						soapRequest = soapRequest + bst.getRequestTemplate();
+						//TODO: parse elements
+				} else {
+					LOGGER.warning("WARNING");
+				}
+			}
+		}
+		return soapRequest;
+	}
+	
+	private String parseRPCSchema(SchemaComponent sc, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix, String soapRequest) {
+		if (sc instanceof Sequence) {
+			Sequence sequence = (Sequence)sc;
+			level ++;			
+			soapRequest = soapRequest + sequence.getRequestTemplate();
+			for (com.predic8.schema.Element e : sequence.getElements()) {
+				if (e.getName() == null) level --;
+				if (e.getName() != null) xpathElement.put(level, e.getName());
+				parseRPCElement(e, schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+			}	
+			level --;
+			cleanUpXPath();
+		}
+		else if (sc instanceof ComplexContent){
+			ComplexContent complexContent = (ComplexContent) sc;
+			Derivation derivation = complexContent.getDerivation();
+
+			if (derivation != null) {
+				TypeDefinition typeDefinition = getTypeFromSchema(derivation.getBase(), schemas);				
+				if (typeDefinition instanceof ComplexType) {
+					soapRequest = parseRPCSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+				}				
+				if (derivation.getModel() instanceof Sequence) {
+					soapRequest = parseRPCSchema((Sequence)derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+				} else if (derivation.getModel() instanceof ModelGroup) {
+					soapRequest = parseRPCSchema((ModelGroup)derivation.getModel(), schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+				} 				
+			}
+		} else if (sc instanceof SimpleContent) {
+			SimpleContent simpleContent = (SimpleContent) sc;
+			Derivation derivation = (Derivation) simpleContent.getDerivation();
+
+			if (derivation.getAllAttributes().size() > 0) {
+				//has attributes
+				buildXPath(derivation.getNamespaceUri(), rootElement, rootNamespace, rootPrefix);
+			} 
+		} else if (sc instanceof GroupRef){
+			//GroupRef groupRef = (GroupRef)sc;
+			LOGGER.fine("WARNING: GroupRef not handled.");
+		} else {
+			LOGGER.warning("WARNING: unhandled type " + sc.getClass().getName());
+		}
+		return soapRequest;
+	}
+	
+	private void parseRPCElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement, String rootNamespace, String rootPrefix, String soapRequest) {
+        if (e.getName() == null) {
+            if (e.getRef() != null) {
+                final String localPart = e.getRef().getLocalPart();
+                final com.predic8.schema.Element element = elementFromSchema(localPart, schemas);
+                parseRPCSchema(element, schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+            }
+            else {
+            	//TODO: handle this
+            	LOGGER.warning("unhandle conditions getRef() = null");
+            }
+        }          else {
+            if (!e.getName().equalsIgnoreCase(rootElement)) {
+                if (e.getEmbeddedType() instanceof ComplexType) {
+                    ComplexType ct = (ComplexType)e.getEmbeddedType();
+                    if (!e.getNamespaceUri().equalsIgnoreCase(rootNamespace)) {
+                    	buildXPath(e, rootElement, rootNamespace, rootPrefix);
+                    }
+                    parseRPCSchema(ct.getModel(), schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+                } else {
+                	if (e.getType() != null){
+                		if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)
+    							&& !e.getType().getNamespaceURI().equalsIgnoreCase(rootNamespace)) {
+                			buildXPath(e, rootElement, rootNamespace, rootPrefix);
+                        } 
+                    	TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
+                    	if (typeDefinition instanceof ComplexType) {
+                    		parseRPCSchema(((ComplexType) typeDefinition).getModel(), schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+                    	} 
+                	}
+                	else  {
+                    	//handle this as anyType
+						buildXPath(e, rootElement, rootNamespace, rootPrefix, true);
+						if (!getParentNamepace(e).equalsIgnoreCase(rootNamespace)) {
+							buildXPath(e, rootElement, rootNamespace, rootPrefix);
+						}
+						LOGGER.warning("Found element " + e.getName() + " with no type. Handling as xsd:anyType");                   	
+                    }
+                }
+            }
+        }		
+	} 	
 
 	private TypeDefinition getTypeFromSchema(QName qName, List<Schema> schemas) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -1424,6 +1564,16 @@ public class GenerateProxy {
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+	}
+	
+	private String buildSOAPRequest(List<Part> parts, List<Schema> schemas, String rootElement, String rootNamespace) {
+		String prefix = getPrefix(rootNamespace);
+		String soapRequest = "<soapenv:Envelope " + soap11Namespace + getNamespacesAsString(true) + " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n"+
+				"<" + prefix+":"+rootElement+">\n";
+		soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
+		soapRequest += "</" + prefix+":"+rootElement+">\n";
+		soapRequest += "</soapenv:Body>\n</soapenv:Envelope>";
+		return soapRequest;
 	}
 
 	private void buildXPath(com.predic8.schema.Element e, String rootElement, String rootNamespace, String rootPrefix,
@@ -1491,7 +1641,25 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
+	
+	private String getNamespacesAsString (boolean removeBlackListed) {
+		String namespaces = "";
+		for (Map.Entry<String, String> entry : namespace.entrySet()) {
+			if (removeBlackListed) {
+				if (!isBlackListed(entry.getValue())) {
+					namespaces += " xmlns:"+entry.getKey()+"=\""+entry.getValue()+"\"";
+				}
+			} else {
+				namespaces += " xmlns:"+entry.getKey()+"=\""+entry.getValue()+"\"";
+			}
+		}
+		return namespaces;
+	}
 
+	private static boolean isBlackListed (String namespaceURI) {
+		return blackListedNamespaces.contains(namespaceURI);
+	}
+	
 	private String getParentNamepace(com.predic8.schema.Element e) {
 		XMLElement parent = e.getParent();
 
@@ -1585,9 +1753,9 @@ public class GenerateProxy {
 			RPCSTYLE = true;
 		}
 
-		if (!PASSTHRU && RPCSTYLE == true) {
+		/*if (!PASSTHRU && RPCSTYLE == true) {
 			throw new UnSupportedWSDLException("Only Docuement/Literal is supported for SOAP to REST");
-		}
+		}*/
 
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
 				+ binding.getPrefix() + " NamespaceURI: " + binding.getNamespaceUri());
@@ -1610,8 +1778,51 @@ public class GenerateProxy {
 				}
 				
 				if (RPCSTYLE) {
-					apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
-					messageTemplates.put(op.getName(), apiMap);
+					if (PASSTHRU) {
+						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
+						messageTemplates.put(op.getName(), apiMap);
+					} else {
+						//TODO: manage RPC here
+						String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
+						String verb = "";
+
+						xpathElement.put(level, op.getName()); 
+			        	namespace = (Map<String, String>)op.getNamespaceContext();
+
+						if (!ALLPOST) {
+							verb = operationsMap.getVerb(op.getName(), selectedOperationList);
+						} else {
+							verb = "POST";
+						}
+						if (verb.equalsIgnoreCase("GET")) {
+							String soapRequest = "";
+
+							soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri());
+							
+							KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(soapRequest);
+							apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
+									op.getName(), false);
+						} else {
+							buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri());
+							
+							String namespaceUri = op.getNamespaceUri();
+							String prefix = getPrefix(namespaceUri);
+							xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+									op.getName(), prefix, namespaceUri, namespace);							
+							
+							if (ruleList.size() > 0) {
+								RuleSet rs = new RuleSet();
+								rs.addRuleList(ruleList);
+								xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
+										rs.getTransform(soapVersion), namespace);
+								ruleList.clear();
+								apiMap = new APIMap("", "", resourcePath, verb, op.getName(), true);
+							} else {
+								apiMap = new APIMap("", "", resourcePath, verb, op.getName(), false);
+							}							
+						}
+						messageTemplates.put(op.getName(), apiMap);
+					}
 				} else {
 					if (op.getInput().getMessage().getParts().size() < 1) {
 						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
