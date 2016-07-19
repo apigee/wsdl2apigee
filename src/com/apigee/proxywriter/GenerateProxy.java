@@ -1753,10 +1753,6 @@ public class GenerateProxy {
 			RPCSTYLE = true;
 		}
 
-		/*if (!PASSTHRU && RPCSTYLE == true) {
-			throw new UnSupportedWSDLException("Only Docuement/Literal is supported for SOAP to REST");
-		}*/
-
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
 				+ binding.getPrefix() + " NamespaceURI: " + binding.getNamespaceUri());
 
@@ -1782,7 +1778,6 @@ public class GenerateProxy {
 						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
 						messageTemplates.put(op.getName(), apiMap);
 					} else {
-						//TODO: manage RPC here
 						String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
 						String verb = "";
 
