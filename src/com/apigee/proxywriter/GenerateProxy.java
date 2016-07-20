@@ -562,15 +562,26 @@ public class GenerateProxy {
 			name5 = proxyDefault.createElement("Name");
 
 			if (httpVerb.equalsIgnoreCase("get")) {
-				name1.setTextContent(extractPolicyName);
-				step1.appendChild(name1);
-				request.appendChild(step1);
+				if (apiMap.getJsonBody() != null) {
+					name1.setTextContent(extractPolicyName);
+					step1.appendChild(name1);
+					request.appendChild(step1);
+				}
 
 				step2 = proxyDefault.createElement("Step");
 				name2 = proxyDefault.createElement("Name");
 				name2.setTextContent(buildSOAPPolicy);
 				step2.appendChild(name2);
 				request.appendChild(step2);
+				
+				step3 = proxyDefault.createElement("Step");
+				name3 = proxyDefault.createElement("Name");
+				name3.setTextContent("remove-empty-nodes");
+				Node condition3 = proxyDefault.createElement("Condition");
+				condition3.setTextContent("(verb == \"GET\")");
+				step3.appendChild(name3);
+				step3.appendChild(condition3);
+				request.appendChild(step3);
 
 				LOGGER.fine("Assign Message: " + buildSOAPPolicy);
 				LOGGER.fine("Extract Variable: " + extractPolicyName);
@@ -629,17 +640,19 @@ public class GenerateProxy {
 
 			if (httpVerb.equalsIgnoreCase("get")) {
 				// Add policy to proxy.xml
-				Node policy1 = apiTemplateDocument.createElement("Policy");
-				policy1.setTextContent(extractPolicyName);
+				if (apiMap.getJsonBody() != null) {
+					Node policy1 = apiTemplateDocument.createElement("Policy");
+					policy1.setTextContent(extractPolicyName);
+					policies.appendChild(policy1);
+					// write Extract Variable Policy
+					writeSOAP2APIExtractPolicy(extractTemplate, operationName, extractPolicyName);
+				}
 				Node policy2 = apiTemplateDocument.createElement("Policy");
 				policy2.setTextContent(buildSOAPPolicy);
-				policies.appendChild(policy1);
 				policies.appendChild(policy2);
 				// write Assign Message Policy
 				writeSOAP2APIAssignMessagePolicies(assignTemplate, operationName, buildSOAPPolicy,
 						apiMap.getSoapAction());
-				// write Extract Variable Policy
-				writeSOAP2APIExtractPolicy(extractTemplate, operationName, extractPolicyName);
 			} else {
 
 				Node policy2 = apiTemplateDocument.createElement("Policy");
@@ -1566,11 +1579,13 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 	
-	private String buildSOAPRequest(List<Part> parts, List<Schema> schemas, String rootElement, String rootNamespace) {
+	private String buildSOAPRequest(List<Part> parts, List<Schema> schemas, String rootElement, String rootNamespace, boolean generateParts) {
 		String prefix = getPrefix(rootNamespace);
 		String soapRequest = "<soapenv:Envelope " + soap11Namespace + getNamespacesAsString(true) + " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n"+
 				"<" + prefix+":"+rootElement+">\n";
-		soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
+		if (generateParts) {
+			soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
+		}
 		soapRequest += "</" + prefix+":"+rootElement+">\n";
 		soapRequest += "</soapenv:Body>\n</soapenv:Envelope>";
 		return soapRequest;
@@ -1748,9 +1763,16 @@ public class GenerateProxy {
 		Binding binding = port.getBinding();
 		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
-
-		if (!binding.getStyle().toLowerCase().contains("document/literal")) {
+		
+		if (binding.getStyle().toLowerCase().contains("rpc")) {
+			LOGGER.info("Binding Stype: " + binding.getStyle());
 			RPCSTYLE = true;
+		} else if (binding.getStyle().toLowerCase().contains("document")) {
+			LOGGER.info("Binding Stype: " + binding.getStyle());
+			RPCSTYLE = false;
+		} else {
+			LOGGER.info(binding.getStyle()+". Treating as document");
+			RPCSTYLE = false;
 		}
 
 		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
@@ -1767,38 +1789,37 @@ public class GenerateProxy {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
 			try {
+				String soapRequest = "";
 				
 				if (selectedOperationList.size() > 0 &&  !selectedOperationList.containsKey(op.getName())) {
 					//the current operations is not in the list; skip.
 					continue;
 				}
 				
-				if (RPCSTYLE) {
-					if (PASSTHRU) {
-						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
-						messageTemplates.put(op.getName(), apiMap);
+				if (PASSTHRU) {
+					apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
+				} else {
+					String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
+					String verb = "";
+					
+					if (!ALLPOST) {
+						verb = operationsMap.getVerb(op.getName(), selectedOperationList);
 					} else {
-						String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
-						String verb = "";
-
-						xpathElement.put(level, op.getName()); 
-			        	namespace = (Map<String, String>)op.getNamespaceContext();
-
-						if (!ALLPOST) {
-							verb = operationsMap.getVerb(op.getName(), selectedOperationList);
-						} else {
-							verb = "POST";
-						}
+						verb = "POST";
+					}
+					
+					if (RPCSTYLE) {
+						namespace = (Map<String, String>)op.getNamespaceContext();
+						
 						if (verb.equalsIgnoreCase("GET")) {
-							String soapRequest = "";
 
-							soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri());
+							soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri(), true);
 							
 							KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(soapRequest);
 							apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
-									op.getName(), false);
+									op.getName(), false);							
 						} else {
-							buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri());
+							buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri(), true);
 							
 							String namespaceUri = op.getNamespaceUri();
 							String prefix = getPrefix(namespaceUri);
@@ -1814,88 +1835,128 @@ public class GenerateProxy {
 								apiMap = new APIMap("", "", resourcePath, verb, op.getName(), true);
 							} else {
 								apiMap = new APIMap("", "", resourcePath, verb, op.getName(), false);
-							}							
-						}
-						messageTemplates.put(op.getName(), apiMap);
-					}
-				} else {
-					if (op.getInput().getMessage().getParts().size() < 1) {
-						LOGGER.warning("wsdl operation " + op.getName() + " has no parts.");
-					} else if (op.getInput().getMessage().getParts().size() > 1) {
-						LOGGER.warning(
-								"wsdl operation " + op.getName() + " has > 1 part. This is not currently supported");
-					} else {
-						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
-								.getElement();
-						namespace = (Map<String, String>) requestElement.getNamespaceContext();
-
-						if (PASSTHRU) {
-							apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
-							messageTemplates.put(op.getName(), apiMap);
-						} else {
-							String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
-							String verb = "";
-
-							if (!ALLPOST) {
-								verb = operationsMap.getVerb(op.getName(), selectedOperationList);
-							} else {
-								verb = "POST";
 							}
+						}
+					} else {
+						if (op.getInput().getMessage().getParts().size() == 0) {
+							
+							namespace = (Map<String, String>)op.getNamespaceContext();
+							
 							if (verb.equalsIgnoreCase("GET")) {
-								creator.setCreator(new RequestTemplateCreator());
-								// use membrane SOAP to generate a SOAP Request
-								creator.createRequest(port.getName(), op.getName(), binding.getName());
-								// store the operation name, SOAP Request and
-								// the
-								// expected JSON Body in the map
-								KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
-								apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
-										requestElement.getName(), false);
-								writer.getBuffer().setLength(0);
+
+								soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri(), true);
+
+								apiMap = new APIMap(null, soapRequest, resourcePath, verb,
+										op.getName(), false);								
 							} else {
-								String namespaceUri = null;
-								if (requestElement.getType() != null) {
-									namespaceUri = requestElement.getType().getNamespaceURI();
-								} else {
-									namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
-								}
+								buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri(), true);
+								
+								String namespaceUri = op.getNamespaceUri();
 								String prefix = getPrefix(namespaceUri);
-								if (soapVersion.equalsIgnoreCase("SOAP11")) {
-									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
-											op.getName(), prefix, namespaceUri, namespace);
-								} else {
-									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
-											op.getName(), prefix, namespaceUri, namespace);
-								}
-
-								TypeDefinition typeDefinition = null;
-
-								if (requestElement.getEmbeddedType() != null) {
-									typeDefinition = requestElement.getEmbeddedType();
-								} else {
-									typeDefinition = getTypeFromSchema(requestElement.getType(), wsdl.getSchemas());
-								}
-								if (typeDefinition instanceof ComplexType) {
-									ComplexType ct = (ComplexType) typeDefinition;
-									xpathElement.put(level, requestElement.getName());
-									parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(),
-											namespaceUri, prefix);
-								}
+								xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+										op.getName(), prefix, namespaceUri, namespace);							
+								
 								if (ruleList.size() > 0) {
 									RuleSet rs = new RuleSet();
 									rs.addRuleList(ruleList);
 									xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
 											rs.getTransform(soapVersion), namespace);
 									ruleList.clear();
-									apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
+									apiMap = new APIMap("", "", resourcePath, verb, op.getName(), true);
 								} else {
-									apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), false);
+									apiMap = new APIMap("", "", resourcePath, verb, op.getName(), false);
+								}								
+							}
+						} else {
+							com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
+									.getElement();
+							if (requestElement != null) {
+								namespace = (Map<String, String>) requestElement.getNamespaceContext();
+								
+								if (verb.equalsIgnoreCase("GET")) {
+									creator.setCreator(new RequestTemplateCreator());
+									// use membrane SOAP to generate a SOAP Request
+									creator.createRequest(port.getName(), op.getName(), binding.getName());
+									// store the operation name, SOAP Request and
+									// the
+									// expected JSON Body in the map
+									KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
+									apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
+											requestElement.getName(), false);
+									writer.getBuffer().setLength(0);
+								} else {
+									String namespaceUri = null;
+									if (requestElement.getType() != null) {
+										namespaceUri = requestElement.getType().getNamespaceURI();
+									} else {
+										namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
+									}
+									String prefix = getPrefix(namespaceUri);
+									if (soapVersion.equalsIgnoreCase("SOAP11")) {
+										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+												op.getName(), prefix, namespaceUri, namespace);
+									} else {
+										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
+												op.getName(), prefix, namespaceUri, namespace);
+									}
+
+									TypeDefinition typeDefinition = null;
+
+									if (requestElement.getEmbeddedType() != null) {
+										typeDefinition = requestElement.getEmbeddedType();
+									} else {
+										typeDefinition = getTypeFromSchema(requestElement.getType(), wsdl.getSchemas());
+									}
+									if (typeDefinition instanceof ComplexType) {
+										ComplexType ct = (ComplexType) typeDefinition;
+										xpathElement.put(level, requestElement.getName());
+										parseSchema(ct.getModel(), wsdl.getSchemas(), requestElement.getName(),
+												namespaceUri, prefix);
+									}
+									if (ruleList.size() > 0) {
+										RuleSet rs = new RuleSet();
+										rs.addRuleList(ruleList);
+										xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
+												rs.getTransform(soapVersion), namespace);
+										ruleList.clear();
+										apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
+									} else {
+										apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), false);
+									}
+								}
+							} else {
+								namespace = (Map<String, String>)op.getNamespaceContext();
+								
+								if (verb.equalsIgnoreCase("GET")) {
+
+									soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri(), true);
+									System.out.println(soapRequest);
+									apiMap = new APIMap(null, soapRequest, resourcePath, verb,
+											op.getName(), false);								
+								} else {
+									buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(), op.getNamespaceUri(), true);
+									
+									String namespaceUri = op.getNamespaceUri();
+									String prefix = getPrefix(namespaceUri);
+									xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+											op.getName(), prefix, namespaceUri, namespace);							
+									
+									if (ruleList.size() > 0) {
+										RuleSet rs = new RuleSet();
+										rs.addRuleList(ruleList);
+										xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
+												rs.getTransform(soapVersion), namespace);
+										ruleList.clear();
+										apiMap = new APIMap("", "", resourcePath, verb, op.getName(), true);
+									} else {
+										apiMap = new APIMap("", "", resourcePath, verb, op.getName(), false);
+									}	
 								}
 							}
-							messageTemplates.put(op.getName(), apiMap);
 						}
 					}
 				}
+				messageTemplates.put(op.getName(), apiMap);
 			} catch (Exception e) {
 				LOGGER.severe(e.getMessage());
 				e.printStackTrace();
@@ -2144,7 +2205,6 @@ public class GenerateProxy {
 
 	private static List<WsdlDefinitions.Operation> convertOperations(Binding binding, List<PortType> portTypes) {
 		List<WsdlDefinitions.Operation> list = new ArrayList<>();
-		//TODO: ops map should be passed as a param
 		OpsMap opsMap = null;
 		try {
 			opsMap = new OpsMap(OPSMAPPING_TEMPLATE);

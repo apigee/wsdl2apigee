@@ -11,12 +11,7 @@
         <Response/>
     </PreFlow>
     <PostFlow name="PostFlow">
-        <Request>
-            <Step>
-                <Name>remove-empty-nodes</Name>
-                <Condition>(verb == "GET")</Condition>
-            </Step>
-        </Request>
+        <Request/>
         <Response/>
     </PostFlow>
     <Flows/>
