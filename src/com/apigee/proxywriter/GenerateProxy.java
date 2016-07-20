@@ -933,11 +933,17 @@ public class GenerateProxy {
 		} else {
 			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP11_PAYLOAD_TYPE));
 
-			assignPolicyXML.getElementsByTagName("Header").item(1)
-					.setTextContent(StringEscapeUtils.escapeXml10(SOAP11_CONTENT_TYPE));
+                assignPolicyXML.getElementsByTagName("Header").item(1)
+                        .setTextContent(StringEscapeUtils.escapeXml10(SOAP11_CONTENT_TYPE));
 
-			Node header = assignPolicyXML.getElementsByTagName("Header").item(0);
-			header.setTextContent(soapAction);
+            if (soapAction != null) {
+                Node header = assignPolicyXML.getElementsByTagName("Header").item(0);
+                header.setTextContent(soapAction);
+            }
+            else {
+                final Node add = assignPolicyXML.getElementsByTagName("Add").item(0);
+                add.getParentNode().removeChild(add);
+            }
 		}
 
 		APIMap apiMap = messageTemplates.get(operationName);

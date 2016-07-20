@@ -164,6 +164,20 @@ public class GenerateProxyTest {
     }
 
     @Test
+    public void testSoapActionHeaderNotPresentForHttpBinding() throws Exception {
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherHttpPost", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+        final String entry = readZipFileEntry("apiproxy/policies/GetWeatherInformation-build-soap.xml", inputStream);
+        Assert.assertFalse(entry.contains("<Header name=\"SOAPAction\"/>"));
+    }
+
+    @Test
+    public void testSoapActionHeaderPresentForSoapBinding() throws Exception {
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+        final String entry = readZipFileEntry("apiproxy/policies/GetWeatherInformation-build-soap.xml", inputStream);
+        Assert.assertTrue(entry.contains("<Header name=\"SOAPAction\">http://ws.cdyne.com/WeatherWS/GetWeatherInformation</Header>"));
+    }
+
+    @Test
     public void testSelectedOperations2() throws Exception {
         InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
         final int countWithNoSelectedJson = entryCount(inputStream);
