@@ -16,6 +16,7 @@ public class GenerateProxyTest {
 
 
     public static final String WEATHER_WSDL = "http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
+    public static final String BLZ_WSDL = "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
     public static final String oMap = "<proxywriter><get><operation><pattern>get</pattern><location>beginsWith</location></operation><operation><pattern>inq</pattern><location>beginsWith</location></operation><operation><pattern>search</pattern><location>beginsWith</location></operation><operation><pattern>list</pattern><location>beginsWith</location></operation><operation><pattern>retrieve</pattern><location>beginsWith</location></operation></get><post><operation><pattern>create</pattern><location>contains</location></operation><operation><pattern>add</pattern><location>beginsWith</location></operation><operation><pattern>process</pattern><location>beginsWith</location></operation></post><put><operation><pattern>update</pattern><location>beginsWith</location></operation><operation><pattern>change</pattern><location>beginsWith</location></operation><operation><pattern>modify</pattern><location>beginsWith</location></operation><operation><pattern>set</pattern><location>beginsWith</location></operation></put><delete><operation><pattern>delete</pattern><location>beginsWith</location></operation><operation><pattern>remove</pattern><location>beginsWith</location></operation><operation><pattern>del</pattern><location>beginsWith</location></operation></delete></proxywriter>";
 
     private void checkForFilesInBundle(List<String> filenames, InputStream inputStream) throws IOException {
@@ -175,6 +176,12 @@ public class GenerateProxyTest {
         InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
         final String entry = readZipFileEntry("apiproxy/policies/GetWeatherInformation-build-soap.xml", inputStream);
         Assert.assertTrue(entry.contains("<Header name=\"SOAPAction\">http://ws.cdyne.com/WeatherWS/GetWeatherInformation</Header>"));
+    }
+
+    @Test
+    public void testHttpBinding2() throws Exception {
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(BLZ_WSDL, "BLZServiceHttpport", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+        Assert.assertTrue(inputStream != null);
     }
 
     @Test
