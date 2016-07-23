@@ -1,5 +1,6 @@
 # wsdl2apigee
-This application  can:
+wsdl2apigee is an open source project that extends Apigee Edge functionality to provide the ability to:
+
 * Expose a SOAP Service as a REST API (over JSON or XML) or 
 * Expose a SOAP Service in a pass through mode for deployment on Apigee Edge
 
@@ -32,6 +33,15 @@ cors=false                Don't enable CORS; Works only for SOAP to REST
 build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
 opsmap=specify operations map
 ``` 
+## Output
+You should see an API Proxy bundle generated in the same folder you ran the command. The bundle follows the convention of
+{soap-servicename}.zip. You can import the bundle via the Edge Admin UI or tools like [apigeetool](https://www.npmjs.com/package/apigeetool).
+
+## Support
+This repo is NOT supported as part of Apigee Edge. The contributors will provide "best effort" support for issues 
+opened on GitHub.
+
+## Appendix
 OpsMap:
 A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:
 ```
