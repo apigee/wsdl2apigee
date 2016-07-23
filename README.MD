@@ -38,8 +38,7 @@ You should see an API Proxy bundle generated in the same folder you ran the comm
 {soap-servicename}.zip. You can import the bundle via the Edge Admin UI or tools like [apigeetool](https://www.npmjs.com/package/apigeetool).
 
 ## Support
-This repo is NOT supported as part of Apigee Edge. The contributors will provide "best effort" support for issues 
-opened on GitHub.
+This is an in-progress project of Apigee Corporation. No support is expressed or implied. Use at your own risk.
 
 ## Appendix
 OpsMap:
