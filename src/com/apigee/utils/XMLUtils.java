@@ -16,6 +16,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -69,6 +70,35 @@ public class XMLUtils {
 
 	public XMLUtils() throws Exception {
 		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+	}
+	
+	public boolean isValidXML(String xml) {
+		try {
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory.setNamespaceAware(true);
+			documentBuilderFactory.setValidating(true);
+			
+			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			documentBuilder.setErrorHandler(new ErrorHandler() {
+				
+				@Override
+				public void warning(SAXParseException exception) throws SAXException {
+				}
+				
+				@Override
+				public void fatalError(SAXParseException exception) throws SAXException {
+				}
+				
+				@Override
+				public void error(SAXParseException exception) throws SAXException {
+				}
+			});
+			documentBuilder.parse(new InputSource(new StringReader(xml)));
+			
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
     
     public Document readXML(String resource) throws Exception {

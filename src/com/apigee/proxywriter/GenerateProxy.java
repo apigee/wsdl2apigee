@@ -40,7 +40,7 @@ import java.util.logging.SimpleFormatter;
 import com.apigee.proxywriter.exception.*;
 import com.apigee.utils.*;
 import org.apache.commons.lang3.StringEscapeUtils;
-
+import org.apache.commons.validator.routines.UrlValidator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -93,8 +93,14 @@ public class GenerateProxy {
 			"gMonthDay", "gDay", "gMonth", "hexBinary", "base64Binary", "anyURI", "QName", "NOTATION" });
 	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
 
+	private final String soap12Namespace = " xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+	
 	private static final List<String> blackListedNamespaces = Arrays.asList("http://schemas.xmlsoap.org/wsdl/",
 			"http://schemas.xmlsoap.org/wsdl/soap/");
+	
+	private static final String emptySoap12 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><soapenv:Body/></soapenv:Envelope>";
+
+	private static final String emptySoap11 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><soapenv:Body/></soapenv:Envelope>";
 
 	private static final String SOAP2API_APIPROXY_TEMPLATE = "/templates/soap2api/apiProxyTemplate.xml";
 	private static final String SOAP2API_PROXY_TEMPLATE = "/templates/soap2api/proxyDefault.xml";
@@ -943,7 +949,19 @@ public class GenerateProxy {
 		}
 
 		APIMap apiMap = messageTemplates.get(operationName);
-		Document operationPayload = xmlUtils.getXMLFromString(apiMap.getSoapBody());
+		Document operationPayload = null;
+				
+		if (xmlUtils.isValidXML(apiMap.getSoapBody())) {
+			operationPayload = xmlUtils.getXMLFromString(apiMap.getSoapBody());
+		} else {
+			LOGGER.warning("Operation " + operationName + " soap template could not be generated");
+			if (soapVersion.equalsIgnoreCase("SOAP11")) {
+				operationPayload = xmlUtils.getXMLFromString(emptySoap11);
+			} else {
+				operationPayload = xmlUtils.getXMLFromString(emptySoap12);
+			}
+		}
+		
 		Node importedNode = assignPolicyXML.importNode(operationPayload.getDocumentElement(), true);
 		payload.appendChild(importedNode);
 
@@ -1242,6 +1260,19 @@ public class GenerateProxy {
 
 	private static Boolean isPrimitive(String type) {
 		return primitiveTypes.contains(type);
+	}
+	
+	private String getNamespace(String prefix) {
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		for (Map.Entry<String, String> entry : namespace.entrySet()) {
+			if (entry.getKey().equalsIgnoreCase(prefix)) {
+				return entry.getValue();
+			}
+		}
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		return null;		
 	}
 
 	public String getPrefix(String namespaceUri) {
@@ -1600,11 +1631,19 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
+	
+	private String getSoapNamespace () {
+		if (soapVersion.equalsIgnoreCase("SOAP11")) {
+			return soap11Namespace;
+		} else {
+			return soap12Namespace;
+		}
+	}
 
 	private String buildSOAPRequest(List<Part> parts, List<Schema> schemas, String rootElement, String rootNamespace,
 			boolean generateParts) {
 		String prefix = getPrefix(rootNamespace);
-		String soapRequest = "<soapenv:Envelope " + soap11Namespace + getNamespacesAsString(true)
+		String soapRequest = "<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
 				+ " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n" + "<"
 				+ prefix + ":" + rootElement + ">\n";
 		if (generateParts) {
@@ -1859,6 +1898,14 @@ public class GenerateProxy {
 
 		targetEndpoint = port.getAddress().getLocation();
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
+		
+		String[] schemes = {"http","https"};
+		UrlValidator urlValidator = new UrlValidator(schemes);
+		
+		if (!urlValidator.isValid(targetEndpoint)) {
+			LOGGER.warning("Target endpoint is not http/https URL. Assigning a default value");
+			targetEndpoint = "http://localhost:8080/soap";
+		}
 
 		PortType portType = binding.getPortType();
 		APIMap apiMap = null;
@@ -1910,11 +1957,15 @@ public class GenerateProxy {
 										// use membrane SOAP to generate a SOAP
 										// Request
 										creator.createRequest(port.getName(), op.getName(), binding.getName());
+										KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
+										
+										//sometimes membrane soa generates invalid soap
+										//this will cause the bundle to not be uploaded
+
 										// store the operation name, SOAP
 										// Request and
 										// the
 										// expected JSON Body in the map
-										KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
 										apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
 												requestElement.getName(), false);
 										writer.getBuffer().setLength(0);

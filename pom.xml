@@ -146,6 +146,11 @@
             <artifactId>json</artifactId>
             <version>20160212</version>
         </dependency>
+		<dependency>
+		    <groupId>commons-validator</groupId>
+		    <artifactId>commons-validator</artifactId>
+		    <version>1.5.1</version>
+		</dependency>        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
