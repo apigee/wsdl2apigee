@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
 import java.util.logging.ConsoleHandler;
@@ -352,14 +353,27 @@ public class XMLUtils {
 	}
 
 	public void generateRootNamespaceXSLT(String xsltTemplate, String target, String operationName, String prefix,
+										  String rootElement,
                                           String namespaceUri, Map<String, String> namespace) throws Exception {
 		DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 		docBuilderFactory.setNamespaceAware(true);
 		DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
-
-		Document document = docBuilder.parse(getClass().getResourceAsStream(xsltTemplate));
+		
+		if (rootElement == null) {
+			rootElement = operationName;
+		}
+		
+		String newXsltTemplate = new Scanner(getClass()
+                .getResourceAsStream(xsltTemplate), "UTF-8")
+        		.useDelimiter("\\A").next()
+                .replaceAll("@@ROOT", rootElement)
+                .replaceAll("@@PREFIX", prefix)
+                .replaceAll("@@NAMESPACE", namespaceUri);
+		
+		Document document = docBuilder.parse(new InputSource(new StringReader(newXsltTemplate)));
 
 		Node stylesheet = document.getDocumentElement();
+		
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
@@ -399,19 +413,15 @@ public class XMLUtils {
 			}
 		});
 
-		NodeList nodes = (NodeList) xp.evaluate("/xsl:stylesheet/xsl:template/xsl:element", document,
+		/*NodeList nodes = (NodeList) xp.evaluate("/xsl:stylesheet/xsl:template/xsl:element", document,
 				XPathConstants.NODESET);
 		Node element = nodes.item(0);
-
-		NamedNodeMap attr = element.getAttributes();
-		Node nodeAttr = attr.getNamedItem("name");
-		nodeAttr.setNodeValue(prefix + elementName);
 
 		Node nspace = document.createElementNS("http://www.w3.org/1999/XSL/Transform", "xsl:namespace");
 		((Element) nspace).setAttribute("name", prefix);
 		((Element) nspace).setAttribute("select", "'" + namespaceUri + "'");
 
-		element.insertBefore(nspace, element.getFirstChild());
+		element.insertBefore(nspace, element.getFirstChild());*/
 
 		writeXML(document, target + operationName + "-add-namespace.xslt");
 

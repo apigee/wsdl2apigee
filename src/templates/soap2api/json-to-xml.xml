@@ -10,8 +10,8 @@
         <TextNodeName>TEXT</TextNodeName>
         <AttributePrefix>@</AttributePrefix>
         <InvalidCharsReplacement>_</InvalidCharsReplacement>
-        <ObjectRootElementName>Root</ObjectRootElementName>
-        <ArrayRootElementName>Array</ArrayRootElementName>
+        <!--  <ObjectRootElementName>Root</ObjectRootElementName> 
+        <ArrayRootElementName>Array</ArrayRootElementName> -->
         <ArrayItemElementName>Item</ArrayItemElementName>
     </Options>
     <OutputVariable>request</OutputVariable>
