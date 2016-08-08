@@ -275,4 +275,14 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
     }
+
+    @Test
+    public void testClientServiceWsdl() throws Exception {
+        final String CLIENT_SERVICE_WSDL = "https://api.mindbodyonline.com/0_5/ClientService.asmx?wsdl";
+        final GenerateProxy generateProxy = new GenerateProxy();
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
+        final InputStream inputStream = generateProxy.begin("Mind Body", CLIENT_SERVICE_WSDL);
+        Assert.assertNotNull(inputStream);
+    }
 }

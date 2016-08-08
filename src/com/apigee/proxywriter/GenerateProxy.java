@@ -1632,10 +1632,13 @@ public class GenerateProxy {
 	private void cleanUpXPath() {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		for (Integer key : xpathElement.keySet()) {
-			if (key > level)
-				xpathElement.remove(key);
-		}
+        final Iterator<Map.Entry<Integer, String>> iterator = xpathElement.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<Integer, String> next = iterator.next();
+            if (next.getKey() > level) {
+                iterator.remove();
+            }
+        }
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
