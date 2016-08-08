@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <ns0:wrapper xmlns:ns0="http://www.apigee.com">
+      <ns0:elem>abc</ns0:elem>
+    </ns0:wrapper>
+  </soapenv:Body>
+</soapenv:Envelope>
