@@ -1932,15 +1932,19 @@ public class GenerateProxy {
 				if (selectedOperationList.size() > 0 && !selectedOperationList.containsKey(op.getName())) {
 					continue;
 				}
-				// if passthru, then do nothing
+				// if passthru, then do nothing much
 				if (PASSTHRU) {
-					//get root element
-					com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
-							.getElement();
-					if (requestElement != null) {
-						apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
-					} else {
+					if (RPCSTYLE) {
 						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
+					} else {
+						//get root element
+						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
+								.getElement();
+						if (requestElement != null) {
+							apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
+						} else {
+							apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
+						}
 					}
 				} else {
 					String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
