@@ -1632,10 +1632,13 @@ public class GenerateProxy {
 	private void cleanUpXPath() {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		for (Integer key : xpathElement.keySet()) {
-			if (key > level)
-				xpathElement.remove(key);
-		}
+		final Iterator<Map.Entry<Integer, String>> iterator = xpathElement.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry<Integer, String> next = iterator.next();
+            if (next.getKey() > level) {
+                iterator.remove();
+            }
+        }
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
@@ -1931,7 +1934,14 @@ public class GenerateProxy {
 				}
 				// if passthru, then do nothing
 				if (PASSTHRU) {
-					apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
+					//get root element
+					com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
+							.getElement();
+					if (requestElement != null) {
+						apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
+					} else {
+						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
+					}
 				} else {
 					String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
 					String verb = "";
