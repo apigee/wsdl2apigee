@@ -275,4 +275,16 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
     }
+    
+    @Test
+    public void testPassThruElement() throws Exception {
+        final String CLIENT_SERVICE_WSDL = "http://sxcqa.webservice.sxc.com/WebService/services/MemberSearchV5/wsdl/MemberSearchV5.wsdl";
+        final GenerateProxy generateProxy = new GenerateProxy();
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(true);
+        final InputStream inputStream = generateProxy.begin("Test operation element", CLIENT_SERVICE_WSDL);
+        inputStream.reset();
+        final String proxiesDefault = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
+        Assert.assertTrue(proxiesDefault.contains("MemberSearchV5Request"));
+    }    
 }
