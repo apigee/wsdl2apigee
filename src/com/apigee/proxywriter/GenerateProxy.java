@@ -1506,7 +1506,6 @@ public class GenerateProxy {
 					} else if (typeDefinition instanceof BuiltInSchemaType) {
 						BuiltInSchemaType bst = (BuiltInSchemaType) typeDefinition;
 						soapRequest = soapRequest + bst.getRequestTemplate();
-						// TODO: parse elements
 					} else {
 						LOGGER.warning("WARNING");
 					}
@@ -1656,13 +1655,26 @@ public class GenerateProxy {
 	private String buildSOAPRequest(List<Part> parts, List<Schema> schemas, String rootElement, String rootNamespace,
 			boolean generateParts) {
 		String prefix = getPrefix(rootNamespace);
-		String soapRequest = "<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
-				+ " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n" + "<"
-				+ prefix + ":" + rootElement + ">\n";
+		String soapRequest = null;
+		
+		if (RPCSTYLE) {
+			soapRequest = 		"<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
+			+ " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n" + "<"
+			+ prefix + ":" + rootElement + ">\n";
+
+		} else {
+			soapRequest = 		"<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
+			+ " >\n<soapenv:Body>\n";
+		}
+		
 		if (generateParts) {
 			soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
 		}
-		soapRequest += "</" + prefix + ":" + rootElement + ">\n";
+		
+		if (RPCSTYLE) {
+			soapRequest += "</" + prefix + ":" + rootElement + ">\n";
+		}
+		
 		soapRequest += "</soapenv:Body>\n</soapenv:Envelope>";
 		return soapRequest;
 	}
@@ -2034,19 +2046,24 @@ public class GenerateProxy {
 										creator.setCreator(new RequestTemplateCreator());
 										// use membrane SOAP to generate a SOAP
 										// Request
-										creator.createRequest(port.getName(), op.getName(), binding.getName());
-										KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
-										
-										//sometimes membrane soa generates invalid soap
-										//this will cause the bundle to not be uploaded
+										try {
+											creator.createRequest(port.getName(), op.getName(), binding.getName());
+											KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
+											
+											//sometimes membrane soa generates invalid soap
+											//this will cause the bundle to not be uploaded
 
-										// store the operation name, SOAP
-										// Request and
-										// the
-										// expected JSON Body in the map
-										apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
-												requestElement.getName(), false);
-										writer.getBuffer().setLength(0);
+											// store the operation name, SOAP
+											// Request and
+											// the
+											// expected JSON Body in the map
+											apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb,
+													requestElement.getName(), false);
+											writer.getBuffer().setLength(0);
+										} catch (Exception e) {
+											LOGGER.warning("Membrane SOA failed to generate template.");
+											apiMap = createAPIMap(op, wsdl, verb, resourcePath, xmlUtils);
+										}
 									} else {
 										apiMap = createAPIMap(op, wsdl, verb, resourcePath, xmlUtils);
 									}

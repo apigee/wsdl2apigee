@@ -305,4 +305,17 @@ public class GenerateProxyTest {
         final String assignMessage = readZipFileEntry("apiproxy/policies/GetCityWeatherByZIP-build-soap.xml", inputStream);
         Assert.assertTrue(assignMessage.contains(SOAP11));
     }
+    
+    @Test 
+    public void testHttpPort() throws Exception {
+        final String CLIENT_SERVICE_WSDL = "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
+        final GenerateProxy generateProxy = new GenerateProxy();
+        generateProxy.setService("BLZService");
+        generateProxy.setPort("BLZServiceHttpport");
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
+        
+        generateProxy.begin("Test http port binding", CLIENT_SERVICE_WSDL);
+
+    }
 }
