@@ -98,9 +98,9 @@ public class GenerateProxy {
 	private static final List<String> blackListedNamespaces = Arrays.asList("http://schemas.xmlsoap.org/wsdl/",
 			"http://schemas.xmlsoap.org/wsdl/soap/");
 	
-	private static final String emptySoap12 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><!—THERE WAS A PROBLEM GENERATING THE TEMPLATE. PLEASE CREATE THE REQUEST MANUALLY —><soapenv:Body/></soapenv:Envelope>";
+	private static final String emptySoap12 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><!-- THERE WAS A PROBLEM GENERATING THE TEMPLATE. PLEASE CREATE THE REQUEST MANUALLY --><soapenv:Body/></soapenv:Envelope>";
 
-	private static final String emptySoap11 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><!—THERE WAS A PROBLEM GENERATING THE TEMPLATE. PLEASE CREATE THE REQUEST MANUALLY —><soapenv:Body/></soapenv:Envelope>";
+	private static final String emptySoap11 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><!-- THERE WAS A PROBLEM GENERATING THE TEMPLATE. PLEASE CREATE THE REQUEST MANUALLY --><soapenv:Body/></soapenv:Envelope>";
 
 	private static final String SOAP2API_APIPROXY_TEMPLATE = "/templates/soap2api/apiProxyTemplate.xml";
 	private static final String SOAP2API_PROXY_TEMPLATE = "/templates/soap2api/proxyDefault.xml";
@@ -930,13 +930,8 @@ public class GenerateProxy {
 		Node payload = assignPolicyXML.getElementsByTagName("Payload").item(0);
 		NamedNodeMap payloadNodeMap = payload.getAttributes();
 		Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
-
-		if (soapVersion.equalsIgnoreCase("SOAP12")) {
-			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP12_PAYLOAD_TYPE));
-
-			assignPolicyXML.getElementsByTagName("Header").item(1)
-					.setTextContent(StringEscapeUtils.escapeXml10(SOAP12_CONTENT_TYPE));
-		} else {
+		
+		if (soapVersion.equalsIgnoreCase("SOAP11")) {
 			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP11_PAYLOAD_TYPE));
 
 			assignPolicyXML.getElementsByTagName("Header").item(1)
@@ -949,11 +944,15 @@ public class GenerateProxy {
 				final Node add = assignPolicyXML.getElementsByTagName("Add").item(0);
 				add.getParentNode().removeChild(add);
 			}
+		} else {
+			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP12_PAYLOAD_TYPE));
+
+			assignPolicyXML.getElementsByTagName("Header").item(1)
+					.setTextContent(StringEscapeUtils.escapeXml10(SOAP12_CONTENT_TYPE));
 		}
 
 		APIMap apiMap = messageTemplates.get(operationName);
 		Document operationPayload = null;
-				
 		if (xmlUtils.isValidXML(apiMap.getSoapBody())) {
 			operationPayload = xmlUtils.getXMLFromString(apiMap.getSoapBody());
 		} else {
@@ -1370,7 +1369,6 @@ public class GenerateProxy {
 			Sequence seq = (Sequence) sc;
 			level++;
 			for (com.predic8.schema.Element e : seq.getElements()) {
-				// System.out.println(e.getName() + " - " + " " + e.getType());
 				if (e.getName() == null)
 					level--;
 				if (e.getName() != null) {
@@ -1911,7 +1909,7 @@ public class GenerateProxy {
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
 		
 		String[] schemes = {"http","https"};
-		UrlValidator urlValidator = new UrlValidator(schemes);
+		UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
 		
 		if (!urlValidator.isValid(targetEndpoint)) {
 			LOGGER.warning("Target endpoint is not http/https URL. Assigning a default value");
