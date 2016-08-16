@@ -1814,6 +1814,52 @@ public class GenerateProxy {
 
 		return apiMap;
 	}
+	
+	public String getSOAPVersion(String wsdlPath) throws NoServicesFoundException{
+		
+		Service service = null;
+		com.predic8.wsdl.Port port = null;
+		WSDLParser parser = new WSDLParser();
+		Definitions wsdl = null;
+		
+		wsdl = parser.parse(wsdlPath);
+		if (wsdl.getServices().size() == 0) {
+			LOGGER.severe("No services were found in the WSDL");
+			throw new NoServicesFoundException("No services were found in the WSDL");
+		}
+		
+		if (serviceName != null) {
+			for (Service svc : wsdl.getServices()) {
+				if (svc.getName().equalsIgnoreCase(serviceName)) {
+					service = svc;
+					break;
+				}
+			}
+			if (service == null) { // didn't find any service matching name
+				LOGGER.severe("No matching services were found in the WSDL");
+				throw new NoServicesFoundException("No matching services were found in the WSDL");
+			} 
+		} else {
+			service = wsdl.getServices().get(0); // get the first service
+		}		
+		
+		if (portName != null) {
+			for (com.predic8.wsdl.Port prt : service.getPorts()) {
+				if (prt.getName().equalsIgnoreCase(portName)) {
+					port = prt;
+				}
+			}
+			if (port == null) { // didn't find any port matching name
+				LOGGER.severe("No matching port was found in the WSDL");
+				throw new NoServicesFoundException("No matching port found in the WSDL");
+			}
+		} else {
+			port = service.getPorts().get(0); // get first port
+		}		
+
+		return port.getBinding().getProtocol().toString();
+
+	}
 
 	@SuppressWarnings("unchecked")
 	private void parseWSDL(String wsdlPath) throws Exception {
@@ -1890,6 +1936,14 @@ public class GenerateProxy {
 		Binding binding = port.getBinding();
 		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
+		
+		//EDGEUI-659
+		if (!soapVersion.equalsIgnoreCase("SOAP11") &&
+				!soapVersion.equalsIgnoreCase("SOAP12")) {
+			//set default
+			LOGGER.warning("Unknow SOAP Version. Setting to SOAP 1.1");
+			soapVersion = "SOAP11";
+		}
 
 		if (binding.getStyle().toLowerCase().contains("rpc")) {
 			LOGGER.info("Binding Stype: " + binding.getStyle());
