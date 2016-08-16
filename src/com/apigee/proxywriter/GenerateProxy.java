@@ -292,6 +292,10 @@ public class GenerateProxy {
 	public void setOAuth(boolean oauth) {
 		OAUTH = oauth;
 	}
+	
+	public String getTargetEndpoint() {
+		return targetEndpoint;
+	}
 
 	private void writeAPIProxy(String proxyDescription) throws Exception {
 

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -286,5 +287,22 @@ public class GenerateProxyTest {
         inputStream.reset();
         final String proxiesDefault = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
         Assert.assertTrue(proxiesDefault.contains("MemberSearchV5Request"));
-    }    
+    }  
+    
+    @Test
+    public void testHttpBinding() throws Exception {
+        final String CLIENT_SERVICE_WSDL = "http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
+        final GenerateProxy generateProxy = new GenerateProxy();
+        generateProxy.setService("Weather");
+        generateProxy.setPort("WeatherHttpGet");
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
+        
+        final String SOAP11 = "http://schemas.xmlsoap.org/soap/envelope/";
+        final InputStream inputStream = generateProxy.begin("Test http binding", CLIENT_SERVICE_WSDL);
+        inputStream.reset();
+
+        final String assignMessage = readZipFileEntry("apiproxy/policies/GetCityWeatherByZIP-build-soap.xml", inputStream);
+        Assert.assertTrue(assignMessage.contains(SOAP11));
+    }
 }
