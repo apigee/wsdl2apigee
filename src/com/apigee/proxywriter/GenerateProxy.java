@@ -81,10 +81,12 @@ import groovy.xml.QName;
 
 public class GenerateProxy {
 
-	private static final Logger LOGGER = Logger.getLogger(GenerateProxy.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GenerateProxy.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
+    public static final String SOAP_11 = "SOAP11";
+    public static final String SOAP_12 = "SOAP12";
 
-	public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";
+    public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";
 
 	private static String SOAP2API_XSL = "";
 
@@ -212,7 +214,7 @@ public class GenerateProxy {
 		vHosts.add("default");
 
 		buildFolder = null;
-		soapVersion = "SOAP12";
+		soapVersion = SOAP_12;
 		ALLPOST = false;
 		PASSTHRU = false;
 		OAUTH = false;
@@ -370,7 +372,7 @@ public class GenerateProxy {
 		//Document jsPolicyTemplate = xmlUtils.readXML(SOAP2API_JSPOLICY_TEMPLATE);
 
 		Document addNamespaceTemplate = null;
-		if (soapVersion.equalsIgnoreCase("SOAP11")) {
+		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 			addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLT11POLICY_TEMPLATE);
 		} else {
 			addNamespaceTemplate = xmlUtils.readXML(SOAP2API_XSLT12POLICY_TEMPLATE);
@@ -631,7 +633,7 @@ public class GenerateProxy {
 				}
 
 				// for soap 1.1 add soap action
-				if (soapVersion.equalsIgnoreCase("SOAP11")) {
+				if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 					step5 = proxyDefault.createElement("Step");
 					name5 = proxyDefault.createElement("Name");
 					name5.setTextContent(addSoapAction);
@@ -701,7 +703,7 @@ public class GenerateProxy {
 					writeAddNamespace(addNamespaceTemplate, operationName, false);
 				}
 				// for soap 1.1 add soap action
-				if (soapVersion.equalsIgnoreCase("SOAP11")) {
+				if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 					// Add policy to proxy.xml
 					Node policy5 = apiTemplateDocument.createElement("Policy");
 					policy5.setTextContent(addSoapAction);
@@ -935,7 +937,7 @@ public class GenerateProxy {
 		NamedNodeMap payloadNodeMap = payload.getAttributes();
 		Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
 		
-		if (soapVersion.equalsIgnoreCase("SOAP11")) {
+		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP11_PAYLOAD_TYPE));
 
 			assignPolicyXML.getElementsByTagName("Header").item(1)
@@ -961,7 +963,7 @@ public class GenerateProxy {
 			operationPayload = xmlUtils.getXMLFromString(apiMap.getSoapBody());
 		} else {
 			LOGGER.warning("Operation " + operationName + " soap template could not be generated");
-			if (soapVersion.equalsIgnoreCase("SOAP11")) {
+			if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 				operationPayload = xmlUtils.getXMLFromString(emptySoap11);
 			} else {
 				operationPayload = xmlUtils.getXMLFromString(emptySoap12);
@@ -1190,7 +1192,7 @@ public class GenerateProxy {
 		description.setTextContent(proxyDescription);
 
 		Node soapCondition = proxyDefault.getElementsByTagName("Condition").item(1);
-		if (soapVersion.equalsIgnoreCase("SOAP11")) {
+		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 			soapCondition.setTextContent(soapConditionText + SOAP11 + "\")");
 		} else {
 			soapCondition.setTextContent(soapConditionText + SOAP12 + "\")");
@@ -1645,7 +1647,7 @@ public class GenerateProxy {
 	}
 	
 	private String getSoapNamespace () {
-		if (soapVersion.equalsIgnoreCase("SOAP11")) {
+		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 			return soap11Namespace;
 		} else {
 			return soap12Namespace;
@@ -1804,7 +1806,7 @@ public class GenerateProxy {
 				String namespaceUri = op.getNamespaceUri();
 				String prefix = getPrefix(namespaceUri);
 
-				if (soapVersion.equalsIgnoreCase("SOAP11")) {
+				if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 					xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(), prefix,
 							null, namespaceUri, namespace);
 				} else {
@@ -1954,11 +1956,11 @@ public class GenerateProxy {
 		soapVersion = binding.getProtocol().toString();
 		
 		//EDGEUI-659
-		if (!soapVersion.equalsIgnoreCase("SOAP11") &&
-				!soapVersion.equalsIgnoreCase("SOAP12")) {
+		if (!soapVersion.equalsIgnoreCase(SOAP_11) &&
+				!soapVersion.equalsIgnoreCase(SOAP_12)) {
 			//set default
 			LOGGER.warning("Unknow SOAP Version. Setting to SOAP 1.1");
-			soapVersion = "SOAP11";
+			soapVersion = SOAP_11;
 		}
 
 		if (binding.getStyle().toLowerCase().contains("rpc")) {
@@ -2041,8 +2043,8 @@ public class GenerateProxy {
 								namespace = (Map<String, String>) requestElement.getNamespaceContext();
 
 								if (verb.equalsIgnoreCase("GET")) {
-									if (soapVersion.equalsIgnoreCase("SOAP11")
-											|| soapVersion.equalsIgnoreCase("SOAP12")) {
+									if (soapVersion.equalsIgnoreCase(SOAP_11)
+											|| soapVersion.equalsIgnoreCase(SOAP_12)) {
 										creator.setCreator(new RequestTemplateCreator());
 										// use membrane SOAP to generate a SOAP
 										// Request
@@ -2075,7 +2077,7 @@ public class GenerateProxy {
 										namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
 									}
 									String prefix = getPrefix(namespaceUri);
-									if (soapVersion.equalsIgnoreCase("SOAP11")) {
+									if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
 												op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
 									} else {
@@ -2368,7 +2370,13 @@ public class GenerateProxy {
 			List<PortType> portTypes) {
 		List<WsdlDefinitions.Port> list = new ArrayList<>(ports.size());
 		for (com.predic8.wsdl.Port port : ports) {
-			list.add(new WsdlDefinitions.Port(port.getName(), convertOperations(port.getBinding(), portTypes)));
+            final Object protocol = port.getBinding().getProtocol();
+            if (protocol != null) {
+                final String protocolStr = protocol.toString();
+                if (SOAP_11.equalsIgnoreCase(protocolStr) || SOAP_12.equalsIgnoreCase(protocolStr)) {
+                    list.add(new WsdlDefinitions.Port(port.getName(), convertOperations(port.getBinding(), portTypes)));
+                }
+            }
 		}
 		return list;
 	}

@@ -195,7 +195,7 @@ public class GenerateProxyTest {
         final WsdlDefinitions.Service service = wsdlDefinitions.getServices().get(0);
         Assert.assertEquals("Weather", service.getName());
         final List<WsdlDefinitions.Port> portTypes = service.getPorts();
-        Assert.assertEquals(portTypes.size(), 4);
+        Assert.assertEquals(portTypes.size(), 2);
         final WsdlDefinitions.Port weatherSoap = portTypes.get(0);
         Assert.assertEquals(weatherSoap.getName(), "WeatherSoap");
         final WsdlDefinitions.Operation getWeatherInformationOperation = weatherSoap.getOperations().get(0);
@@ -204,10 +204,17 @@ public class GenerateProxyTest {
         Assert.assertEquals(getWeatherInformationOperation.getName(), "GetWeatherInformation");
         Assert.assertEquals(getWeatherInformationOperation.getPath(), "/weatherinformation");
         Assert.assertEquals(portTypes.get(1).getName(), "WeatherSoap12");
-        Assert.assertEquals(portTypes.get(2).getName(), "WeatherHttpGet");
-        Assert.assertEquals(portTypes.get(3).getName(), "WeatherHttpPost");
         Assert.assertEquals(weatherSoap.getOperations().size(), 3);
     }
+
+    @Test
+    public void testParseWsdlDoesNotShowPortsWithoutSOAPBindings() throws ErrorParsingWsdlException {
+        final WsdlDefinitions wsdlDefinitions = GenerateProxy.parseWsdl(WEATHER_WSDL);
+        final WsdlDefinitions.Service service = wsdlDefinitions.getServices().get(0);
+        final List<WsdlDefinitions.Port> ports = service.getPorts();
+        Assert.assertEquals(ports.size(), 2);
+    }
+
 
     @Test
     public void testOpsMap1 () throws Exception {
@@ -318,4 +325,5 @@ public class GenerateProxyTest {
         generateProxy.begin("Test http port binding", CLIENT_SERVICE_WSDL);
 
     }
+
 }
