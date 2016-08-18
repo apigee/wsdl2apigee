@@ -1720,7 +1720,11 @@ public class GenerateProxy {
 		}
 		
 		if (generateParts) {
-			soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
+			try {
+				soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
+			} catch (Exception e){
+				LOGGER.warning("Failed to parse parts. Not generating SOAP Template. Try changing the verb to POST/PUT");
+			}
 		}
 		
 		if (RPCSTYLE) {
@@ -1728,6 +1732,7 @@ public class GenerateProxy {
 		}
 		
 		soapRequest += "</soapenv:Body>\n</soapenv:Envelope>";
+
 		return soapRequest;
 	}
 
