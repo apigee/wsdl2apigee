@@ -64,6 +64,7 @@ import com.predic8.schema.Sequence;
 import com.predic8.schema.SimpleContent;
 import com.predic8.schema.TypeDefinition;
 import com.predic8.soamodel.XMLElement;
+import com.predic8.wsdl.AbstractAddress;
 import com.predic8.wsdl.AbstractSOAPBinding;
 import com.predic8.wsdl.Binding;
 import com.predic8.wsdl.BindingOperation;
@@ -118,6 +119,7 @@ public class GenerateProxy {
 	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
 	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
+	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/return-wsdl.xml";
 
 	private static final String SOAP11_CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml;
 																				// charset=utf-8";
@@ -163,6 +165,8 @@ public class GenerateProxy {
 	private String proxyName;
 
 	private String opsMap;
+	
+	private String wsdlContent;
 
 	private String selectedOperationsJson;
 
@@ -1060,8 +1064,8 @@ public class GenerateProxy {
 					+ File.separator;
 			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
-			String jsResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
-					+ File.separator + "jsc" + File.separator;
+			/*String jsResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
+					+ File.separator + "jsc" + File.separator;*/
 
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
@@ -1072,6 +1076,8 @@ public class GenerateProxy {
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"),
 						Paths.get(targetPath + "Invalid-SOAP.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				/*Files.copy(getClass().getResourceAsStream(sourcePath + "return-wsdl.xml"),
+						Paths.get(targetPath + "return-wsdl.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);*/
 			} else {
 				sourcePath += "soap2api/";
 				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
@@ -1168,10 +1174,12 @@ public class GenerateProxy {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
-		String soapConditionText = "(envelope != \"Envelope\") or (body != \"Body\") or (envelopeNamespace !=\"";
+		String soapConditionText = "((envelope != \"Envelope\") or (body != \"Body\") or (envelopeNamespace !=\"";
 
 		XMLUtils xmlUtils = new XMLUtils();
 		Document proxyDefault = xmlUtils.readXML(SOAPPASSTHRU_PROXY_TEMPLATE);
+		Document getWsdlTemplate = xmlUtils.readXML(SOAPPASSTHRU_GETWSDL_TEMPLATE);
+		
 		Node basePathNode = proxyDefault.getElementsByTagName("BasePath").item(0);
 
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
@@ -1189,11 +1197,11 @@ public class GenerateProxy {
 		Node description = proxyDefault.getElementsByTagName("Description").item(0);
 		description.setTextContent(proxyDescription);
 
-		Node soapCondition = proxyDefault.getElementsByTagName("Condition").item(1);
+		Node soapCondition = proxyDefault.getElementsByTagName("Condition").item(2);
 		if (soapVersion.equalsIgnoreCase("SOAP11")) {
-			soapCondition.setTextContent(soapConditionText + SOAP11 + "\")");
+			soapCondition.setTextContent(soapConditionText + SOAP11 + "\"))  and (request.verb != \"GET\")");
 		} else {
-			soapCondition.setTextContent(soapConditionText + SOAP12 + "\")");
+			soapCondition.setTextContent(soapConditionText + SOAP12 + "\"))  and (request.verb != \"GET\")");
 		}
 
 		String conditionText = "(proxy.pathsuffix MatchesPath \"/\") and (request.verb = \"POST\") and (operation = \"";
@@ -1229,7 +1237,32 @@ public class GenerateProxy {
 
 			flows.appendChild(flow);
 		}
+		
+		//Add get wsdl
+		flow = proxyDefault.createElement("Flow");
+		((Element) flow).setAttribute("name", "Get WSDL");
+		flowDescription = proxyDefault.createElement("Description");
+		flowDescription.setTextContent("Unknown Resource");
+		flow.appendChild(flowDescription);
 
+		request = proxyDefault.createElement("Request");
+		response = proxyDefault.createElement("Response");
+		condition = proxyDefault.createElement("Condition");
+		condition.setTextContent("(proxy.pathsuffix MatchesPath \"/\") and (request.verb = \"GET\") and (request.queryparam.wsdl != \"\")");
+
+		step1 = proxyDefault.createElement("Step");
+		name1 = proxyDefault.createElement("Name");
+		name1.setTextContent("Return-WSDL");
+
+		step1.appendChild(name1);
+		request.appendChild(step1);
+
+		flow.appendChild(request);
+		flow.appendChild(response);
+		flow.appendChild(condition);
+
+		flows.appendChild(flow);
+		
 		// Add unknown resource
 		flow = proxyDefault.createElement("Flow");
 		((Element) flow).setAttribute("name", "unknown-resource");
@@ -1253,6 +1286,8 @@ public class GenerateProxy {
 		flow.appendChild(condition);
 
 		flows.appendChild(flow);
+		
+		writeRaiseFault(getWsdlTemplate);
 
 		xmlUtils.writeXML(proxyDefault, buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
 				+ File.separator + "default.xml");
@@ -1262,6 +1297,23 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
+	}
+	
+	private void writeRaiseFault(Document getWsdlTemplate) throws Exception {
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		XMLUtils xmlUtils = new XMLUtils();
+		Document getWsdlRaiseFaultPolicy = xmlUtils.cloneDocument(getWsdlTemplate);
+		
+		Node payload = getWsdlRaiseFaultPolicy.getElementsByTagName("Payload").item(0);
+		payload.setTextContent(wsdlContent);
+		
+		xmlUtils.writeXML(getWsdlRaiseFaultPolicy, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
+				+ File.separator + "return-wsdl.xml");
+		
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		
 	}
 
 	private static Boolean isPrimitive(String type) {
@@ -1888,6 +1940,8 @@ public class GenerateProxy {
 		Service service = null;
 		com.predic8.wsdl.Port port = null;
 		String bindingName;
+		List<com.predic8.wsdl.Port> ports = new ArrayList<com.predic8.wsdl.Port>();
+		List<Service> services = new ArrayList<Service>();
 
 		try {
 			WSDLParser parser = new WSDLParser();
@@ -1946,9 +2000,10 @@ public class GenerateProxy {
 			}
 		} else {
 			port = service.getPorts().get(0); // get first port
+			portName = port.getName();
 		}
 		LOGGER.fine("Found Port: " + port.getName());
-
+		
 		Binding binding = port.getBinding();
 		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
@@ -1960,7 +2015,7 @@ public class GenerateProxy {
 			LOGGER.warning("Unknow SOAP Version. Setting to SOAP 1.1");
 			soapVersion = "SOAP11";
 		}
-
+		
 		if (binding.getStyle().toLowerCase().contains("rpc")) {
 			LOGGER.info("Binding Stype: " + binding.getStyle());
 			RPCSTYLE = true;
@@ -1976,6 +2031,15 @@ public class GenerateProxy {
 				+ binding.getPrefix() + " NamespaceURI: " + binding.getNamespaceUri());
 
 		targetEndpoint = port.getAddress().getLocation();
+		
+		//start feature
+		port.getAddress().setLocation("@request.header.host#"+basePath);
+		ports.add(port);
+		service.setPorts(ports);
+		services.add(service);
+		wsdlContent = wsdl.getAsString();
+		//end feature
+
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
 		
 		String[] schemes = {"http","https"};

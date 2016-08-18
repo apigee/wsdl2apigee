@@ -6,10 +6,11 @@
         <Request>
             <Step>
                 <Name>Invalid-SOAP</Name>
-                <Condition>!(request.header.Content-Type ~~ "(text|application)\/(xml|([a-z]*\+xml))(;(\w)*=(\S*))?")</Condition>
+                <Condition>!(request.header.Content-Type ~~ "(text|application)\/(xml|([a-z]*\+xml))(;(\w)*=(\S*))?") and (request.verb != "GET")</Condition>
             </Step>
             <Step>
                 <Name>Extract-Operation-Name</Name>
+                <Condition>(request.verb != "GET")</Condition>
             </Step>
             <Step>
                 <Name>Invalid-SOAP</Name>

@@ -66,6 +66,7 @@ public class GenerateProxyTest {
         final List<String> filenames = Arrays.asList(
                 "apiproxy/policies/Extract-Operation-Name.xml",
                 "apiproxy/policies/Invalid-SOAP.xml",
+                "apiproxy/policies/return-wsdl.xml",
                 "apiproxy/proxies/default.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/Weather.xml");
