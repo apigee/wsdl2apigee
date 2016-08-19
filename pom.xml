@@ -7,7 +7,7 @@
     <name>wsdl2apigee</name>
     <description>wsdl2apigee is an open source framework to generate Apigee API Proxies from WSDLs.</description>
     <scm>
-        <connection>scm:git:git@github.com:srinandan/wsdl2apigee.git</connection>
+        <connection>scm:git:git@github.com:apigee/wsdl2apigee.git</connection>
     </scm>
     <licenses>
         <license>
