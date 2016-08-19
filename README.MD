@@ -34,88 +34,102 @@ quota=false               Works only if apikey or oauth is set
 basepath=Uses the basepath from the wsdl
 cors=false                Don't enable CORS; Works only for SOAP to REST
 build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
+oas=false                 Generate Open API Specification document
 opsmap=specify operations map
 ``` 
 ## Output
 You should see an API Proxy bundle generated in the same folder you ran the command. The bundle follows the convention of
 {soap-servicename}.zip. You can import the bundle via the Edge Admin UI or tools like [apigeetool](https://www.npmjs.com/package/apigeetool).
 
+### Open API Specification
+Generate Open API specification (skeleton) from WSDL files.
+```
+java -jar wsdl2apigee.jar -wsdl="http://www.thomas-bayer.com/axis2/services/BLZService?wsdl" -oas=true
+```
+
 ## Appendix
 OpsMap:
 A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:
 ```
-<proxywriter>
-	<get>
-		<operation>
-			<pattern>get</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>inq</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>search</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>list</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>retrieve</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>fetch</pattern>
-			<location>beginsWith</location>
-		</operation>
-	</get>
-	<post>
-		<operation>
-			<pattern>create</pattern>
-			<location>contains</location>
-		</operation>
-		<operation>
-			<pattern>add</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>process</pattern>
-			<location>beginsWith</location>
-		</operation>
-	</post>
-	<put>
-		<operation>
-			<pattern>update</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>change</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>modify</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>set</pattern>
-			<location>beginsWith</location>
-		</operation>
-	</put>
-	<delete>
-		<operation>
-			<pattern>delete</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>remove</pattern>
-			<location>beginsWith</location>
-		</operation>
-		<operation>
-			<pattern>del</pattern>
-			<location>beginsWith</location>
-		</operation>
-	</delete>
-</proxywriter>
+{
+  "proxywriter": {
+    "get": {
+      "operation": [
+        {
+          "pattern": "get",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "inq",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "search",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "list",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "retrieve",
+          "location": "beginsWith"
+        }
+      ]
+    },
+    "post": {
+      "operation": [
+        {
+          "pattern": "create",
+          "location": "contains"
+        },
+        {
+          "pattern": "add",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "process",
+          "location": "beginsWith"
+        }
+      ]
+    },
+    "put": {
+      "operation": [
+        {
+          "pattern": "update",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "change",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "modify",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "set",
+          "location": "beginsWith"
+        }
+      ]
+    },
+    "delete": {
+      "operation": [
+        {
+          "pattern": "delete",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "remove",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "del",
+          "location": "beginsWith"
+        }
+      ]
+    }
+  }
+}
 ```
+

@@ -125,7 +125,7 @@ public class GenerateProxy {
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
 	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/return-wsdl.xml";
 	
-	private static final String OAS_TEMPLATE = "templates/oas/oastemplate.json";
+	private static final String OAS_TEMPLATE = "/templates/oas/oastemplate.json";
 	
 	private static final String SOAP11_CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml;
 																				// charset=utf-8";
@@ -2489,6 +2489,7 @@ public class GenerateProxy {
 		System.out.println("-quota=<true|false>       default is false; works only if apikey or oauth is set");
 		System.out.println("-basepath=specify base path");
 		System.out.println("-cors=<true|false>        default is false");
+		System.out.println("-oas=<true|false>        default is false");
 		System.out.println("-debug=<true|false>       default is false");
 		System.out.println("");
 		System.out.println("");
@@ -2502,31 +2503,14 @@ public class GenerateProxy {
 		System.out.println("OpsMap:");
 		System.out.println("A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:");
 		System.out.println("");
-		System.out.println("\t<proxywriter>");
-		System.out.println("\t\t<get>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">get</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">list</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">inq</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">search</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">retrieve</name>");
-		System.out.println("\t\t</get>");
-		System.out.println("\t\t<post>");
-		System.out.println("\t\t\t<name location=\"contains\">create</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">add</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">process</name>");
-		System.out.println("\t\t</post>");
-		System.out.println("\t\t<put>");
-		System.out.println("\t\t\t<name location=\"contains\">update</name>");
-		System.out.println("\t\t\t<name location=\"contains\">change</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">modify</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">set</name>");
-		System.out.println("\t\t</put>");
-		System.out.println("\t\t<delete>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">delete</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">remove</name>");
-		System.out.println("\t\t\t<name location=\"beginsWith\">del</name>");
-		System.out.println("\t\t</delete>");
-		System.out.println("\t</proxywriter>");
+		System.out.println("{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"pattern\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}");
+
+		System.out.println("\n\n");
+		System.out.println("Open API Specification:");
+		System.out.println("Generates an OAS document (JSON format). ");
+		System.out.println("\n\n");
+		System.out.println("Examples:");
+		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"http://www.thomas-bayer.com/axis2/services/BLZService?wsdl\" -oas=true");
 	}
 
 	private static List<WsdlDefinitions.Port> convertPorts(List<com.predic8.wsdl.Port> ports,
