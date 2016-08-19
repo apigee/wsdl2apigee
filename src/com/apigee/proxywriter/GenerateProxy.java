@@ -37,10 +37,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import com.apigee.oas.OASUtils;
 import com.apigee.proxywriter.exception.*;
 import com.apigee.utils.*;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -64,7 +67,6 @@ import com.predic8.schema.Sequence;
 import com.predic8.schema.SimpleContent;
 import com.predic8.schema.TypeDefinition;
 import com.predic8.soamodel.XMLElement;
-import com.predic8.wsdl.AbstractAddress;
 import com.predic8.wsdl.AbstractSOAPBinding;
 import com.predic8.wsdl.Binding;
 import com.predic8.wsdl.BindingOperation;
@@ -120,7 +122,9 @@ public class GenerateProxy {
 	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
 	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/return-wsdl.xml";
-
+	
+	private static final String OAS_TEMPLATE = "templates/oas/oastemplate.json";
+	
 	private static final String SOAP11_CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml;
 																				// charset=utf-8";
 	private static final String SOAP12_CONTENT_TYPE = "application/soap+xml";
@@ -131,6 +135,8 @@ public class GenerateProxy {
 	private static final String SOAP11 = "http://schemas.xmlsoap.org/soap/envelope/";
 	private static final String SOAP12 = "http://www.w3.org/2003/05/soap-envelope";
 
+	//generate OAS
+	private boolean OAS;
 	// set this to true if SOAP passthru is needed
 	private boolean PASSTHRU;
 	// set this to true if all operations are to be consumed via POST verb
@@ -228,6 +234,7 @@ public class GenerateProxy {
 		DESCSET = false;
 		basePath = null;
 		TOO_MANY = false;
+		OAS = false;
 		level = 0;
 	}
 
@@ -261,6 +268,10 @@ public class GenerateProxy {
 
 	public void setOpsMap(String oMap) {
 		opsMap = oMap;
+	}
+	
+	public void setOAS(boolean oas) {
+		OAS = oas;
 	}
 
 	public void setVHost(String vhosts) {
@@ -1860,20 +1871,24 @@ public class GenerateProxy {
 
 				String namespaceUri = op.getNamespaceUri();
 				String prefix = getPrefix(namespaceUri);
-
-				if (soapVersion.equalsIgnoreCase("SOAP11")) {
-					xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(), prefix,
-							null, namespaceUri, namespace);
-				} else {
-					xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(), prefix,
-							null, namespaceUri, namespace);
+				
+				if (!OAS) {
+					if (soapVersion.equalsIgnoreCase("SOAP11")) {
+						xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL, op.getName(), prefix,
+								null, namespaceUri, namespace);
+					} else {
+						xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL, op.getName(), prefix,
+								null, namespaceUri, namespace);
+					}
 				}
 
 				if (ruleList.size() > 0) {
 					RuleSet rs = new RuleSet();
 					rs.addRuleList(ruleList);
-					xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion),
-							namespace);
+					if (!OAS) {
+						xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(), rs.getTransform(soapVersion),
+								namespace);
+					}
 					ruleList.clear();
 					apiMap = new APIMap("", "", resourcePath, verb, op.getName(), true);
 				} else {
@@ -2144,12 +2159,14 @@ public class GenerateProxy {
 										namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
 									}
 									String prefix = getPrefix(namespaceUri);
-									if (soapVersion.equalsIgnoreCase("SOAP11")) {
-										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
-												op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
-									} else {
-										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
-												op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
+									if (!OAS) {
+										if (soapVersion.equalsIgnoreCase("SOAP11")) {
+											xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+													op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
+										} else {
+											xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
+													op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
+										}
 									}
 
 									TypeDefinition typeDefinition = null;
@@ -2176,8 +2193,10 @@ public class GenerateProxy {
 										if (ruleList.size() > 0) {
 											RuleSet rs = new RuleSet();
 											rs.addRuleList(ruleList);
-											xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
-													rs.getTransform(soapVersion), namespace);
+											if (!OAS) {
+												xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
+														rs.getTransform(soapVersion), namespace);
+											}
 											ruleList.clear();
 											apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
 										} else {
@@ -2230,10 +2249,80 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
+	
+	private void generateOAS () throws Exception {
+
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		
+		XMLUtils xmlUtils = new XMLUtils();
+		APIMap apiMap = null;
+		String oasTemplate = new Scanner(getClass()
+                .getResourceAsStream("/templates/oas/oastemplate.json"), "UTF-8")
+        		.useDelimiter("\\A").next();
+		String operationName = null;
+		List<String> queryParams = null;
+		JSONObject oasObject = new JSONObject(oasTemplate);
+		JSONObject info = oasObject.getJSONObject("info");
+		JSONArray parameters = null;
+		JSONObject parameter = null;
+		JSONObject operation = null;
+		JSONObject operationDetails = null;
+		
+		info.put("title",proxyName);
+		oasObject.put("host", OASUtils.getHostname(targetEndpoint));
+		oasObject.put("basePath", basePath);
+		
+		JSONObject paths = oasObject.getJSONObject("paths");
+		
+		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
+			operationName = entry.getKey();
+			apiMap = entry.getValue();
+			operation = new JSONObject();
+			operationDetails = new JSONObject();
+			
+			if (apiMap.getSoapBody() != "") {
+				queryParams = new ArrayList<String>();
+				parameters = new JSONArray();
+				List<String> elementList = xmlUtils.getElementList(apiMap.getSoapBody());
+				for (String elementName : elementList) {
+					//OAS does not allow duplicate query params.
+					if (!queryParams.contains(elementName)) {
+						queryParams.add(elementName);
+						parameter = new JSONObject();
+						parameter.put("name", elementName);
+						parameter.put("in", "query");
+						parameter.put("description", "");
+						parameter.put("required", false);
+						parameter.put("type", "string");
+						parameters.put(parameter);
+					}
+				}			
+			}
+			
+			if (queryParams != null && queryParams.size() > 0) {
+				operationDetails.put("parameters", parameters);
+			}
+			
+			operationDetails.put("description", "Implements WSDL operation " + operationName);
+			operationDetails.put("responses", OASUtils.getSuccess());
+			operation.put(apiMap.getVerb().toLowerCase(), operationDetails);
+			paths.put(apiMap.getResourcePath(), operation);
+		}
+		
+		OASUtils.writeJSON(oasObject.toString(5), proxyName);
+		
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		
+	}
 
 	private boolean prepareTargetFolder() {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+		
+		if (OAS) return true;
+		
 		File f = new File(buildFolder);
 
 		if (f.isDirectory()) { // ensure target is a folder
@@ -2308,6 +2397,14 @@ public class GenerateProxy {
 				// parse the wsdl
 				parseWSDL(wsdlPath);
 				LOGGER.info("Parsed WSDL Successfully.");
+				
+				if (OAS) {
+					generateOAS();
+					LOGGER.info("Generated OAS document");
+					LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+					}.getClass().getEnclosingMethod().getName());
+					return null;
+				}
 
 				if (!DESCSET) {
 					proxyDescription += serviceName;
@@ -2518,6 +2615,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("basepath", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// add enable cors conditions
 		opt.getSet().addOption("cors", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		//generate OAS spec
+		opt.getSet().addOption("oas", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
@@ -2608,6 +2707,11 @@ public class GenerateProxy {
 		if (!opt.getSet().isSet("apikey") && !opt.getSet().isSet("oauth") && opt.getSet().isSet("quota")) {
 			LOGGER.warning("WARNING: Quota is applicable with apikey or oauth flags. This flag will be ignored");
 		}
+		
+		if (opt.getSet().isSet("oas")) {
+			genProxy.setOAS(new Boolean(opt.getSet().getOption("oas").getResultValue(0)));
+		}
+		
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
