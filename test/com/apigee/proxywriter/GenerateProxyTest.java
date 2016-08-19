@@ -2,11 +2,15 @@ package com.apigee.proxywriter;
 
 import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
 import com.apigee.utils.WsdlDefinitions;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -327,4 +331,15 @@ public class GenerateProxyTest {
 
     }
 
+    @Test
+    public void testOASpec() throws Exception {
+        final String CLIENT_SERVICE_WSDL = "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
+        final GenerateProxy generateProxy = new GenerateProxy();
+        final String OAS = "{\r\n     \"basePath\": \"/blzservice\",\r\n     \"paths\": {\"/bank\": {\"get\": {\r\n          \"description\": \"Implements WSDL operation getBank\",\r\n          \"responses\": {\"200\": {\r\n               \"schema\": {\"$ref\": \"#/definitions/undefined\"},\r\n               \"description\": \"Successful response\"\r\n          }},\r\n          \"parameters\": [{\r\n               \"in\": \"query\",\r\n               \"name\": \"blz\",\r\n               \"description\": \"\",\r\n               \"type\": \"string\",\r\n               \"required\": false\r\n          }]\r\n     }}},\r\n     \"host\": \"www.thomas-bayer.com\",\r\n     \"produces\": [\"application/json\"],\r\n     \"schemes\": [\"http\"],\r\n     \"definitions\": {\"undefined\": {\"properties\": {\"message\": {\"type\": \"string\"}}}},\r\n     \"swagger\": \"2.0\",\r\n     \"info\": {\r\n          \"license\": {\"name\": \"Apache 2.0\"},\r\n          \"contact\": {\"name\": \"API Team\"},\r\n          \"description\": \"A OAS document generated from WSDL\",\r\n          \"termsOfService\": \"\",\r\n          \"title\": \"BLZService\",\r\n          \"version\": \"1.0.0\"\r\n     },\r\n     \"consumes\": [\"application/json\"]\r\n}";
+    	generateProxy.setOAS(true);
+    	generateProxy.setOpsMap(oMap);
+    	final InputStream inputStream = generateProxy.begin("Test OAS generation", CLIENT_SERVICE_WSDL);
+    	StringWriter writer = new StringWriter();
+    	IOUtils.copy(inputStream, writer, "utf-8");
+    }
 }

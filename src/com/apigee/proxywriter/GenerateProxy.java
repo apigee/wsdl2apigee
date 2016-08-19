@@ -2252,7 +2252,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 	}
 	
-	private void generateOAS () throws Exception {
+	private InputStream generateOAS () throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -2260,7 +2260,7 @@ public class GenerateProxy {
 		XMLUtils xmlUtils = new XMLUtils();
 		APIMap apiMap = null;
 		String oasTemplate = new Scanner(getClass()
-                .getResourceAsStream("/templates/oas/oastemplate.json"), "UTF-8")
+                .getResourceAsStream(OAS_TEMPLATE), "UTF-8")
         		.useDelimiter("\\A").next();
 		String operationName = null;
 		List<String> queryParams = null;
@@ -2283,7 +2283,7 @@ public class GenerateProxy {
 			operation = new JSONObject();
 			operationDetails = new JSONObject();
 			
-			if (apiMap.getSoapBody() != "") {
+			if (apiMap.getSoapBody() != "" && apiMap.getVerb().equalsIgnoreCase("GET")) {
 				queryParams = new ArrayList<String>();
 				parameters = new JSONArray();
 				List<String> elementList = xmlUtils.getElementList(apiMap.getSoapBody());
@@ -2311,12 +2311,11 @@ public class GenerateProxy {
 			operation.put(apiMap.getVerb().toLowerCase(), operationDetails);
 			paths.put(apiMap.getResourcePath(), operation);
 		}
-		
-		OASUtils.writeJSON(oasObject.toString(5), proxyName);
-		
+
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		
+		return OASUtils.writeJSON(oasObject.toString(5), proxyName);		
 	}
 
 	private boolean prepareTargetFolder() {
@@ -2401,11 +2400,9 @@ public class GenerateProxy {
 				LOGGER.info("Parsed WSDL Successfully.");
 				
 				if (OAS) {
-					generateOAS();
-					LOGGER.info("Generated OAS document");
 					LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 					}.getClass().getEnclosingMethod().getName());
-					return null;
+					return generateOAS();
 				}
 
 				if (!DESCSET) {
