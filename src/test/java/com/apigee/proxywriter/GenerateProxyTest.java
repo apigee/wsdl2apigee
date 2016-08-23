@@ -7,13 +7,12 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -342,4 +341,19 @@ public class GenerateProxyTest {
     	StringWriter writer = new StringWriter();
     	IOUtils.copy(inputStream, writer, "utf-8");
     }
+    
+    @Test
+    public void testReservedVariables() throws Exception {
+    	URL url = this.getClass().getResource("/test/resources/reservedVariables.wsdl");
+        final String CLIENT_SERVICE_WSDL = url.toString();
+        final GenerateProxy generateProxy = new GenerateProxy();
+    	
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
+    	
+        final InputStream inputStream = generateProxy.begin("Test Reserved Variables", CLIENT_SERVICE_WSDL);
+        final String extractPolicy = readZipFileEntry("apiproxy/policies/getOrganization-extract-query-param.xml", inputStream);
+        Assert.assertTrue(extractPolicy.contains("name=\"org\""));
+    }
+
 }

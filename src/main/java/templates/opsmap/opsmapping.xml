@@ -38,7 +38,10 @@
 			<pattern>process</pattern>
 			<location>beginsWith</location>
 		</operation>
-	</post>
+		<operation>
+			<pattern>submit</pattern>
+			<location>beginsWith</location>
+		</operation>	</post>
 	<put>
 		<operation>
 			<pattern>update</pattern>
@@ -70,5 +73,8 @@
 			<pattern>del</pattern>
 			<location>beginsWith</location>
 		</operation>
-	</delete>
+		<operation>
+			<pattern>cancel</pattern>
+			<location>beginsWith</location>
+		</operation>	</delete>
 </proxywriter>

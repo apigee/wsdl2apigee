@@ -257,7 +257,7 @@ public class XMLUtils {
 			throw e;
 		}
 	}
-
+	
 	public KeyValue<String, String> replacePlaceHolders(String xml) throws Exception {
 
 		LOGGER.entering(XMLUtils.class.getName(), new Object() {
@@ -269,7 +269,7 @@ public class XMLUtils {
 
 			XPathFactory xpf = XPathFactory.newInstance();
 			XPath xp = xpf.newXPath();
-
+						
 			NodeList nodes = (NodeList) xp.evaluate("//@* | //*[not(*)]", doc, XPathConstants.NODESET);
 
 			for (int i = 0, len = nodes.getLength(); i < len; i++) {

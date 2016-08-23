@@ -23,6 +23,10 @@ public class APIMap {
 		return jsonBody;
 	}
 	
+	public void setJsonBody(String jb) {
+		jsonBody = jb;
+	}
+	
 	public String getSoapBody() {
 		return soapBody;
 	}

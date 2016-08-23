@@ -84,12 +84,12 @@ import groovy.xml.QName;
 
 public class GenerateProxy {
 
-    private static final Logger LOGGER = Logger.getLogger(GenerateProxy.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(GenerateProxy.class.getName());
 	private static final ConsoleHandler handler = new ConsoleHandler();
-    public static final String SOAP_11 = "SOAP11";
-    public static final String SOAP_12 = "SOAP12";
+	public static final String SOAP_11 = "SOAP11";
+	public static final String SOAP_12 = "SOAP12";
 
-    public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";
+	public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";
 
 	private static String SOAP2API_XSL = "";
 
@@ -99,10 +99,10 @@ public class GenerateProxy {
 	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
 
 	private final String soap12Namespace = " xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
-	
+
 	private static final List<String> blackListedNamespaces = Arrays.asList("http://schemas.xmlsoap.org/wsdl/",
 			"http://schemas.xmlsoap.org/wsdl/soap/");
-	
+
 	private static final String emptySoap12 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><!-- THERE WAS A PROBLEM GENERATING THE TEMPLATE. PLEASE CREATE THE REQUEST MANUALLY --><soapenv:Body/></soapenv:Envelope>";
 
 	private static final String emptySoap11 = "<?xml version=\"1.0\"?><soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" soapenv:encodingStyle=\"http://www.w3.org/2003/05/soap-encoding\"><soapenv:Header/><!-- THERE WAS A PROBLEM GENERATING THE TEMPLATE. PLEASE CREATE THE REQUEST MANUALLY --><soapenv:Body/></soapenv:Envelope>";
@@ -118,15 +118,16 @@ public class GenerateProxy {
 	private static final String SOAP2API_XSLT12_TEMPLATE = "/templates/soap2api/add-namespace12.xslt";
 	private static final String SOAP2API_JSON_TO_XML_TEMPLATE = "/templates/soap2api/json-to-xml.xml";
 	private static final String SOAP2API_ADD_SOAPACTION_TEMPLATE = "/templates/soap2api/add-soapaction.xml";
-	//private static final String SOAP2API_JSPOLICY_TEMPLATE = "/templates/soap2api/root-wrapper.xml";
+	// private static final String SOAP2API_JSPOLICY_TEMPLATE =
+	// "/templates/soap2api/root-wrapper.xml";
 
 	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
 	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
 	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/return-wsdl.xml";
-	
+
 	private static final String OAS_TEMPLATE = "/templates/oas/oastemplate.json";
-	
+
 	private static final String SOAP11_CONTENT_TYPE = "text/xml; charset=utf-8";// "text&#x2F;xml;
 																				// charset=utf-8";
 	private static final String SOAP12_CONTENT_TYPE = "application/soap+xml";
@@ -137,7 +138,7 @@ public class GenerateProxy {
 	private static final String SOAP11 = "http://schemas.xmlsoap.org/soap/envelope/";
 	private static final String SOAP12 = "http://www.w3.org/2003/05/soap-envelope";
 
-	//generate OAS
+	// generate OAS
 	private boolean OAS;
 	// set this to true if SOAP passthru is needed
 	private boolean PASSTHRU;
@@ -157,7 +158,8 @@ public class GenerateProxy {
 	private boolean RPCSTYLE;
 	// enable this flag if user sets desc
 	private boolean DESCSET;
-	// fail safe measure when schemas are heavily nested or have 100s of elements
+	// fail safe measure when schemas are heavily nested or have 100s of
+	// elements
 	private boolean TOO_MANY;
 
 	private String targetEndpoint;
@@ -173,7 +175,7 @@ public class GenerateProxy {
 	private String proxyName;
 
 	private String opsMap;
-	
+
 	private String wsdlContent;
 
 	private String selectedOperationsJson;
@@ -198,6 +200,10 @@ public class GenerateProxy {
 	private int level;
 	// List of rules to generate XSLT
 	private ArrayList<Rule> ruleList = new ArrayList<Rule>();
+
+	private Definitions wsdl = null;
+
+	private com.predic8.wsdl.Port port = null;
 
 	public Map<String, String> namespace = new LinkedHashMap<String, String>();
 
@@ -271,9 +277,13 @@ public class GenerateProxy {
 	public void setOpsMap(String oMap) {
 		opsMap = oMap;
 	}
-	
+
 	public void setOAS(boolean oas) {
 		OAS = oas;
+	}
+	
+	public boolean getOAS() {
+		return OAS;
 	}
 
 	public void setVHost(String vhosts) {
@@ -309,7 +319,7 @@ public class GenerateProxy {
 	public void setOAuth(boolean oauth) {
 		OAUTH = oauth;
 	}
-	
+
 	public String getTargetEndpoint() {
 		return targetEndpoint;
 	}
@@ -384,7 +394,8 @@ public class GenerateProxy {
 
 		Document assignTemplate = xmlUtils.readXML(SOAP2API_ASSIGN_TEMPLATE);
 
-		//Document jsPolicyTemplate = xmlUtils.readXML(SOAP2API_JSPOLICY_TEMPLATE);
+		// Document jsPolicyTemplate =
+		// xmlUtils.readXML(SOAP2API_JSPOLICY_TEMPLATE);
 
 		Document addNamespaceTemplate = null;
 		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
@@ -551,7 +562,7 @@ public class GenerateProxy {
 			String buildSOAPPolicy = operationName + "-build-soap";
 			String extractPolicyName = operationName + "-extract-query-param";
 			String jsonToXML = operationName + "-json-to-xml";
-			//String jsPolicyName = operationName + "-root-wrapper";
+			// String jsPolicyName = operationName + "-root-wrapper";
 			String jsonToXMLCondition = "(request.header.Content-Type == \"application/json\")";
 
 			String httpVerb = apiMap.getVerb();
@@ -617,18 +628,19 @@ public class GenerateProxy {
 
 			} else {
 				// add root wrapper policy
-				/*name3.setTextContent(jsPolicyName);
-				step3.appendChild(name3);
-				step3.appendChild(condition2.cloneNode(true));
-				request.appendChild(step3);*/
+				/*
+				 * name3.setTextContent(jsPolicyName); step3.appendChild(name3);
+				 * step3.appendChild(condition2.cloneNode(true));
+				 * request.appendChild(step3);
+				 */
 
 				// add the root wrapper only once
-				/*if (!once) {
-					Node resourceRootWrapper = apiTemplateDocument.createElement("Resource");
-					resourceRootWrapper.setTextContent("jsc://root-wrapper.js");
-					resources.appendChild(resourceRootWrapper);
-					once = true;
-				}*/
+				/*
+				 * if (!once) { Node resourceRootWrapper =
+				 * apiTemplateDocument.createElement("Resource");
+				 * resourceRootWrapper.setTextContent("jsc://root-wrapper.js");
+				 * resources.appendChild(resourceRootWrapper); once = true; }
+				 */
 
 				name1.setTextContent(jsonToXML);
 				step1.appendChild(name1);
@@ -684,11 +696,14 @@ public class GenerateProxy {
 						apiMap.getSoapAction());
 			} else {
 
-				/*Node policy2 = apiTemplateDocument.createElement("Policy");
-				policy2.setTextContent(jsPolicyName);
-				policies.appendChild(policy2);*/
+				/*
+				 * Node policy2 = apiTemplateDocument.createElement("Policy");
+				 * policy2.setTextContent(jsPolicyName);
+				 * policies.appendChild(policy2);
+				 */
 
-				//writeRootWrapper(jsPolicyTemplate, operationName, apiMap.getRootElement());
+				// writeRootWrapper(jsPolicyTemplate, operationName,
+				// apiMap.getRootElement());
 
 				Node policy1 = apiTemplateDocument.createElement("Policy");
 				policy1.setTextContent(jsonToXML);
@@ -915,7 +930,7 @@ public class GenerateProxy {
 		List<String> elementList = xmlUtils.getElementList(apiMap.getSoapBody());
 		for (String elementName : elementList) {
 			queryParam = extractPolicyXML.createElement("QueryParam");
-			queryParam.setAttribute("name", elementName);
+			queryParam.setAttribute("name", getQueryParamName(elementName));
 
 			pattern = extractPolicyXML.createElement("Pattern");
 			pattern.setAttribute("ignoreCase", "true");
@@ -929,6 +944,23 @@ public class GenerateProxy {
 				+ File.separator + policyName + ".xml");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+	}
+	
+	//EDGEUI-672
+	private String replaceReservedVariables(String xmlPayload) {
+		final String findOrg = "organization>\\{organization\\}</";
+		final String replaceOrg = "organization>{org}</";
+		
+		return xmlPayload.replaceAll(findOrg, replaceOrg);
+	}
+	
+	//EDGEUI-672
+	private String getQueryParamName(String elementName) {
+		if (elementName.equalsIgnoreCase("organization")) {
+			return "org";
+		} else {
+			return elementName;
+		}
 	}
 
 	private void writeSOAP2APIAssignMessagePolicies(Document assignTemplate, String operationName, String policyName,
@@ -951,7 +983,7 @@ public class GenerateProxy {
 		Node payload = assignPolicyXML.getElementsByTagName("Payload").item(0);
 		NamedNodeMap payloadNodeMap = payload.getAttributes();
 		Node payloadAttr = payloadNodeMap.getNamedItem("contentType");
-		
+
 		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 			payloadAttr.setNodeValue(StringEscapeUtils.escapeXml10(SOAP11_PAYLOAD_TYPE));
 
@@ -975,7 +1007,8 @@ public class GenerateProxy {
 		APIMap apiMap = messageTemplates.get(operationName);
 		Document operationPayload = null;
 		if (xmlUtils.isValidXML(apiMap.getSoapBody())) {
-			operationPayload = xmlUtils.getXMLFromString(apiMap.getSoapBody());
+			//JIRA-EDGEUI-672
+			operationPayload = xmlUtils.getXMLFromString(replaceReservedVariables(apiMap.getSoapBody()));
 		} else {
 			LOGGER.warning("Operation " + operationName + " soap template could not be generated");
 			if (soapVersion.equalsIgnoreCase(SOAP_11)) {
@@ -984,7 +1017,7 @@ public class GenerateProxy {
 				operationPayload = xmlUtils.getXMLFromString(emptySoap12);
 			}
 		}
-		
+
 		Node importedNode = assignPolicyXML.importNode(operationPayload.getDocumentElement(), true);
 		payload.appendChild(importedNode);
 
@@ -1056,11 +1089,15 @@ public class GenerateProxy {
 		Node displayName = jsonxmlPolicyXML.getElementsByTagName("DisplayName").item(0);
 		displayName.setTextContent(operationName + " JSON TO XML");
 
-		/*Node objectRootElement = jsonxmlPolicyXML.getElementsByTagName("ObjectRootElementName").item(0);
-		objectRootElement.setTextContent(rootElement);
-
-		Node arrayRootElement = jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0);
-		arrayRootElement.setTextContent(rootElement);*/
+		/*
+		 * Node objectRootElement =
+		 * jsonxmlPolicyXML.getElementsByTagName("ObjectRootElementName").item(0
+		 * ); objectRootElement.setTextContent(rootElement);
+		 * 
+		 * Node arrayRootElement =
+		 * jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0)
+		 * ; arrayRootElement.setTextContent(rootElement);
+		 */
 
 		xmlUtils.writeXML(jsonxmlPolicyXML, targetPath + operationName + "-json-to-xml.xml");
 
@@ -1077,8 +1114,11 @@ public class GenerateProxy {
 					+ File.separator;
 			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
-			/*String jsResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
-					+ File.separator + "jsc" + File.separator;*/
+			/*
+			 * String jsResourcePath = buildFolder + File.separator + "apiproxy"
+			 * + File.separator + "resources" + File.separator + "jsc" +
+			 * File.separator;
+			 */
 
 			LOGGER.fine("Source Path: " + sourcePath);
 			LOGGER.fine("Target Path: " + targetPath);
@@ -1089,8 +1129,12 @@ public class GenerateProxy {
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"),
 						Paths.get(targetPath + "Invalid-SOAP.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				/*Files.copy(getClass().getResourceAsStream(sourcePath + "return-wsdl.xml"),
-						Paths.get(targetPath + "return-wsdl.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);*/
+				/*
+				 * Files.copy(getClass().getResourceAsStream(sourcePath +
+				 * "return-wsdl.xml"), Paths.get(targetPath +
+				 * "return-wsdl.xml"),
+				 * java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				 */
 			} else {
 				sourcePath += "soap2api/";
 				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
@@ -1137,9 +1181,12 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xslt"),
 						Paths.get(xslResourcePath + "remove-namespaces.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-				/*Files.copy(getClass().getResourceAsStream(sourcePath + "root-wrapper.js"),
-						Paths.get(jsResourcePath + "root-wrapper.js"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);*/
+				/*
+				 * Files.copy(getClass().getResourceAsStream(sourcePath +
+				 * "root-wrapper.js"), Paths.get(jsResourcePath +
+				 * "root-wrapper.js"),
+				 * java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				 */
 
 				if (OAUTH) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
@@ -1192,7 +1239,7 @@ public class GenerateProxy {
 		XMLUtils xmlUtils = new XMLUtils();
 		Document proxyDefault = xmlUtils.readXML(SOAPPASSTHRU_PROXY_TEMPLATE);
 		Document getWsdlTemplate = xmlUtils.readXML(SOAPPASSTHRU_GETWSDL_TEMPLATE);
-		
+
 		Node basePathNode = proxyDefault.getElementsByTagName("BasePath").item(0);
 
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
@@ -1250,8 +1297,8 @@ public class GenerateProxy {
 
 			flows.appendChild(flow);
 		}
-		
-		//Add get wsdl
+
+		// Add get wsdl
 		flow = proxyDefault.createElement("Flow");
 		((Element) flow).setAttribute("name", "Get WSDL");
 		flowDescription = proxyDefault.createElement("Description");
@@ -1261,7 +1308,8 @@ public class GenerateProxy {
 		request = proxyDefault.createElement("Request");
 		response = proxyDefault.createElement("Response");
 		condition = proxyDefault.createElement("Condition");
-		condition.setTextContent("(proxy.pathsuffix MatchesPath \"/\") and (request.verb = \"GET\") and (request.queryparam.wsdl != \"\")");
+		condition.setTextContent(
+				"(proxy.pathsuffix MatchesPath \"/\") and (request.verb = \"GET\") and (request.queryparam.wsdl != \"\")");
 
 		step1 = proxyDefault.createElement("Step");
 		name1 = proxyDefault.createElement("Name");
@@ -1275,7 +1323,7 @@ public class GenerateProxy {
 		flow.appendChild(condition);
 
 		flows.appendChild(flow);
-		
+
 		// Add unknown resource
 		flow = proxyDefault.createElement("Flow");
 		((Element) flow).setAttribute("name", "unknown-resource");
@@ -1299,7 +1347,7 @@ public class GenerateProxy {
 		flow.appendChild(condition);
 
 		flows.appendChild(flow);
-		
+
 		writeRaiseFault(getWsdlTemplate);
 
 		xmlUtils.writeXML(proxyDefault, buildFolder + File.separator + "apiproxy" + File.separator + "proxies"
@@ -1311,28 +1359,28 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 	}
-	
+
 	private void writeRaiseFault(Document getWsdlTemplate) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		XMLUtils xmlUtils = new XMLUtils();
 		Document getWsdlRaiseFaultPolicy = xmlUtils.cloneDocument(getWsdlTemplate);
-		
+
 		Node payload = getWsdlRaiseFaultPolicy.getElementsByTagName("Payload").item(0);
 		payload.setTextContent(wsdlContent);
-		
-		xmlUtils.writeXML(getWsdlRaiseFaultPolicy, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
-				+ File.separator + "return-wsdl.xml");
-		
+
+		xmlUtils.writeXML(getWsdlRaiseFaultPolicy, buildFolder + File.separator + "apiproxy" + File.separator
+				+ "policies" + File.separator + "return-wsdl.xml");
+
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		
+
 	}
 
 	private static Boolean isPrimitive(String type) {
 		return primitiveTypes.contains(type);
 	}
-	
+
 	private String getNamespace(String prefix) {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
@@ -1343,7 +1391,7 @@ public class GenerateProxy {
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		return null;		
+		return null;
 	}
 
 	public String getPrefix(String namespaceUri) {
@@ -1428,10 +1476,10 @@ public class GenerateProxy {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		
-		//fail safe measure.
+
+		// fail safe measure.
 		if (ruleList.size() >= 100) {
-			//the rules are too big. clear the rules.
+			// the rules are too big. clear the rules.
 			TOO_MANY = true;
 			return;
 		} else if (sc instanceof Sequence) {
@@ -1699,17 +1747,17 @@ public class GenerateProxy {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 		final Iterator<Map.Entry<Integer, String>> iterator = xpathElement.entrySet().iterator();
-        while (iterator.hasNext()) {
-            final Map.Entry<Integer, String> next = iterator.next();
-            if (next.getKey() > level) {
-                iterator.remove();
-            }
-        }
+		while (iterator.hasNext()) {
+			final Map.Entry<Integer, String> next = iterator.next();
+			if (next.getKey() > level) {
+				iterator.remove();
+			}
+		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
-	
-	private String getSoapNamespace () {
+
+	private String getSoapNamespace() {
 		if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 			return soap11Namespace;
 		} else {
@@ -1721,29 +1769,30 @@ public class GenerateProxy {
 			boolean generateParts) {
 		String prefix = getPrefix(rootNamespace);
 		String soapRequest = null;
-		
+
 		if (RPCSTYLE) {
-			soapRequest = 		"<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
-			+ " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n" + "<"
-			+ prefix + ":" + rootElement + ">\n";
+			soapRequest = "<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
+					+ " soapenv:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n<soapenv:Body>\n" + "<"
+					+ prefix + ":" + rootElement + ">\n";
 
 		} else {
-			soapRequest = 		"<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
-			+ " >\n<soapenv:Body>\n";
+			soapRequest = "<soapenv:Envelope " + getSoapNamespace() + getNamespacesAsString(true)
+					+ " >\n<soapenv:Body>\n";
 		}
-		
+
 		if (generateParts) {
 			try {
 				soapRequest = parseParts(parts, schemas, rootElement, rootNamespace, prefix, soapRequest);
-			} catch (Exception e){
-				LOGGER.warning("Failed to parse parts. Not generating SOAP Template. Try changing the verb to POST/PUT");
+			} catch (Exception e) {
+				LOGGER.warning(
+						"Failed to parse parts. Not generating SOAP Template. Try changing the verb to POST/PUT");
 			}
 		}
-		
+
 		if (RPCSTYLE) {
 			soapRequest += "</" + prefix + ":" + rootElement + ">\n";
 		}
-		
+
 		soapRequest += "</soapenv:Body>\n</soapenv:Envelope>";
 
 		return soapRequest;
@@ -1860,7 +1909,7 @@ public class GenerateProxy {
 
 				soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(),
 						op.getNamespaceUri(), true);
-				
+
 				if (op.getInput().getMessage().getParts().size() == 0) {
 					apiMap = new APIMap(null, soapRequest, resourcePath, verb, op.getName(), false);
 				} else {
@@ -1868,7 +1917,7 @@ public class GenerateProxy {
 					apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb, op.getName(), false);
 				}
 			} else {
-				buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(),
+				soapRequest = buildSOAPRequest(op.getInput().getMessage().getParts(), wsdl.getSchemas(), op.getName(),
 						op.getNamespaceUri(), true);
 
 				String namespaceUri = op.getNamespaceUri();
@@ -1892,9 +1941,9 @@ public class GenerateProxy {
 								namespace);
 					}
 					ruleList.clear();
-					apiMap = new APIMap("", "", resourcePath, verb, op.getName(), true);
+					apiMap = new APIMap("", soapRequest, resourcePath, verb, op.getName(), true);
 				} else {
-					apiMap = new APIMap("", "", resourcePath, verb, op.getName(), false);
+					apiMap = new APIMap("", soapRequest, resourcePath, verb, op.getName(), false);
 				}
 			}
 		} catch (Exception e) {
@@ -1904,20 +1953,20 @@ public class GenerateProxy {
 
 		return apiMap;
 	}
-	
-	public String getSOAPVersion(String wsdlPath) throws NoServicesFoundException{
-		
+
+	public String getSOAPVersion(String wsdlPath) throws NoServicesFoundException {
+
 		Service service = null;
 		com.predic8.wsdl.Port port = null;
 		WSDLParser parser = new WSDLParser();
 		Definitions wsdl = null;
-		
+
 		wsdl = parser.parse(wsdlPath);
 		if (wsdl.getServices().size() == 0) {
 			LOGGER.severe("No services were found in the WSDL");
 			throw new NoServicesFoundException("No services were found in the WSDL");
 		}
-		
+
 		if (serviceName != null) {
 			for (Service svc : wsdl.getServices()) {
 				if (svc.getName().equalsIgnoreCase(serviceName)) {
@@ -1928,11 +1977,11 @@ public class GenerateProxy {
 			if (service == null) { // didn't find any service matching name
 				LOGGER.severe("No matching services were found in the WSDL");
 				throw new NoServicesFoundException("No matching services were found in the WSDL");
-			} 
+			}
 		} else {
 			service = wsdl.getServices().get(0); // get the first service
-		}		
-		
+		}
+
 		if (portName != null) {
 			for (com.predic8.wsdl.Port prt : service.getPorts()) {
 				if (prt.getName().equalsIgnoreCase(portName)) {
@@ -1945,23 +1994,17 @@ public class GenerateProxy {
 			}
 		} else {
 			port = service.getPorts().get(0); // get first port
-		}		
+		}
 
 		return port.getBinding().getProtocol().toString();
 
 	}
 
-	@SuppressWarnings("unchecked")
-	private void parseWSDL(String wsdlPath) throws Exception {
+	private void getWSDLDetails(String wsdlPath) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		XMLUtils xmlUtils = new XMLUtils();
-		StringWriter writer = new StringWriter();
-		Definitions wsdl = null;
-		SOARequestCreator creator = null;
+
 		Service service = null;
-		com.predic8.wsdl.Port port = null;
-		String bindingName;
 		List<com.predic8.wsdl.Port> ports = new ArrayList<com.predic8.wsdl.Port>();
 		List<Service> services = new ArrayList<Service>();
 
@@ -1972,7 +2015,6 @@ public class GenerateProxy {
 				LOGGER.severe("No services were found in the WSDL");
 				throw new NoServicesFoundException("No services were found in the WSDL");
 			}
-			creator = new SOARequestCreator(wsdl, new RequestTemplateCreator(), new MarkupBuilder(writer));
 		} catch (Exception e) {
 			e.printStackTrace();
 			LOGGER.severe(e.getLocalizedMessage());
@@ -2025,19 +2067,17 @@ public class GenerateProxy {
 			portName = port.getName();
 		}
 		LOGGER.fine("Found Port: " + port.getName());
-		
+
 		Binding binding = port.getBinding();
-		bindingName = binding.getName();
 		soapVersion = binding.getProtocol().toString();
-		
-		//EDGEUI-659
-		if (!soapVersion.equalsIgnoreCase(SOAP_11) &&
-				!soapVersion.equalsIgnoreCase(SOAP_12)) {
-			//set default
+
+		// EDGEUI-659
+		if (!soapVersion.equalsIgnoreCase(SOAP_11) && !soapVersion.equalsIgnoreCase(SOAP_12)) {
+			// set default
 			LOGGER.warning("Unknow SOAP Version. Setting to SOAP 1.1");
 			soapVersion = SOAP_11;
 		}
-		
+
 		if (binding.getStyle().toLowerCase().contains("rpc")) {
 			LOGGER.info("Binding Stype: " + binding.getStyle());
 			RPCSTYLE = true;
@@ -2049,30 +2089,47 @@ public class GenerateProxy {
 			RPCSTYLE = false;
 		}
 
-		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
-				+ binding.getPrefix() + " NamespaceURI: " + binding.getNamespaceUri());
-
 		targetEndpoint = port.getAddress().getLocation();
-		
-		//start feature
-		port.getAddress().setLocation("@request.header.host#"+basePath);
+
+		// start feature
+		port.getAddress().setLocation("@request.header.host#" + basePath);
 		ports.add(port);
 		service.setPorts(ports);
 		services.add(service);
 		wsdlContent = wsdl.getAsString();
-		//end feature
+		// end feature
 
 		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
-		
-		String[] schemes = {"http","https"};
+
+		String[] schemes = { "http", "https" };
 		UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
-		
+
 		if (!urlValidator.isValid(targetEndpoint)) {
 			LOGGER.warning("Target endpoint is not http/https URL. Assigning a default value");
 			targetEndpoint = "http://localhost:8080/soap";
 		}
 
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void parseWSDL() throws Exception {
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+		XMLUtils xmlUtils = new XMLUtils();
+
+		StringWriter writer = new StringWriter();
+		SOARequestCreator creator = new SOARequestCreator(wsdl, new RequestTemplateCreator(),
+				new MarkupBuilder(writer));
+
+		Binding binding = port.getBinding();
 		PortType portType = binding.getPortType();
+		String bindingName = binding.getName();
+
+		LOGGER.fine("Found Binding: " + bindingName + " Binding Protocol: " + soapVersion + " Prefix: "
+				+ binding.getPrefix() + " NamespaceURI: " + binding.getNamespaceUri());
+
 		APIMap apiMap = null;
 		HashMap<String, SelectedOperation> selectedOperationList = selectedOperations.getSelectedOperations();
 
@@ -2080,8 +2137,6 @@ public class GenerateProxy {
 			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
 					+ op.getNamespaceUri());
 			try {
-				String soapRequest = "";
-
 				// the current operations is not in the list; skip.
 				if (selectedOperationList.size() > 0 && !selectedOperationList.containsKey(op.getName())) {
 					continue;
@@ -2091,7 +2146,7 @@ public class GenerateProxy {
 					if (RPCSTYLE) {
 						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
 					} else {
-						//get root element
+						// get root element
 						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
 								.getElement();
 						if (requestElement != null) {
@@ -2134,10 +2189,13 @@ public class GenerateProxy {
 										// Request
 										try {
 											creator.createRequest(port.getName(), op.getName(), binding.getName());
-											KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
-											
-											//sometimes membrane soa generates invalid soap
-											//this will cause the bundle to not be uploaded
+											KeyValue<String, String> kv = xmlUtils
+													.replacePlaceHolders(writer.toString());
+
+											// sometimes membrane soa generates
+											// invalid soap
+											// this will cause the bundle to not
+											// be uploaded
 
 											// store the operation name, SOAP
 											// Request and
@@ -2161,14 +2219,15 @@ public class GenerateProxy {
 										namespaceUri = requestElement.getEmbeddedType().getNamespaceUri();
 									}
 									String prefix = getPrefix(namespaceUri);
-									if (!OAS) {
-										if (soapVersion.equalsIgnoreCase(SOAP_11)) {
-											xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
-													op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
-										} else {
-											xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
-													op.getName(), prefix, requestElement.getName(), namespaceUri, namespace);
-										}
+
+									if (soapVersion.equalsIgnoreCase(SOAP_11)) {
+										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT11_TEMPLATE, SOAP2API_XSL,
+												op.getName(), prefix, requestElement.getName(), namespaceUri,
+												namespace);
+									} else {
+										xmlUtils.generateRootNamespaceXSLT(SOAP2API_XSLT12_TEMPLATE, SOAP2API_XSL,
+												op.getName(), prefix, requestElement.getName(), namespaceUri,
+												namespace);
 									}
 
 									TypeDefinition typeDefinition = null;
@@ -2185,22 +2244,23 @@ public class GenerateProxy {
 												namespaceUri, prefix);
 									}
 									if (TOO_MANY) {
-										LOGGER.warning(op.getName() + ": Too many nested schemas or elements. Skipping XSLT gen. Manual intervention necessary");
+										LOGGER.warning(op.getName()
+												+ ": Too many nested schemas or elements. Skipping XSLT gen. Manual intervention necessary");
 										ruleList.clear();
 										apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(),
 												false);
 									} else {
-										// rule list is > 0, there are additional
+										// rule list is > 0, there are
+										// additional
 										// namespaces to add
 										if (ruleList.size() > 0) {
 											RuleSet rs = new RuleSet();
 											rs.addRuleList(ruleList);
-											if (!OAS) {
-												xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
-														rs.getTransform(soapVersion), namespace);
-											}
+											xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
+													rs.getTransform(soapVersion), namespace);
 											ruleList.clear();
-											apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(), true);
+											apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(),
+													true);
 										} else {
 											apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(),
 													false);
@@ -2251,17 +2311,79 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
-	
-	private InputStream generateOAS () throws Exception {
+
+	@SuppressWarnings("unchecked")
+	private InputStream generateOAS() throws Exception {
 
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		
+
+		StringWriter writer = new StringWriter();
+		SOARequestCreator creator = new SOARequestCreator(wsdl, new RequestTemplateCreator(),
+				new MarkupBuilder(writer));
 		XMLUtils xmlUtils = new XMLUtils();
 		APIMap apiMap = null;
-		String oasTemplate = new Scanner(getClass()
-                .getResourceAsStream(OAS_TEMPLATE), "UTF-8")
-        		.useDelimiter("\\A").next();
+		HashMap<String, SelectedOperation> selectedOperationList = selectedOperations.getSelectedOperations();
+
+		@SuppressWarnings("resource")
+		String oasTemplate = new Scanner(getClass().getResourceAsStream(OAS_TEMPLATE), "UTF-8").useDelimiter("\\A")
+				.next();
+
+		Binding binding = port.getBinding();
+		PortType portType = binding.getPortType();
+
+		for (Operation op : portType.getOperations()) {
+			LOGGER.fine("Found Operation Name: " + op.getName() + " Prefix: " + op.getPrefix() + " NamespaceURI: "
+					+ op.getNamespaceUri());
+
+			String resourcePath = operationsMap.getResourcePath(op.getName(), selectedOperationList);
+			String verb = "";
+			// if all post options is not turned on, then interpret the
+			// operation from opsmap
+			if (!ALLPOST) {
+				verb = operationsMap.getVerb(op.getName(), selectedOperationList);
+			} else { // else POST
+				verb = "POST";
+			}
+
+			if (op.getInput().getMessage().getParts().size() == 0) {
+				apiMap = createAPIMap(op, wsdl, verb, resourcePath, xmlUtils);
+			} else {
+				com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0).getElement();
+
+				if (requestElement != null) {
+					namespace = (Map<String, String>) requestElement.getNamespaceContext();
+					// use membrane SOAP to generate a SOAP
+					// Request
+					try {
+						creator.createRequest(port.getName(), op.getName(), binding.getName());
+						KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(writer.toString());
+
+						// sometimes membrane soa generates invalid soap
+						// this will cause the bundle to not be uploaded
+
+						// store the operation name, SOAP
+						// Request and
+						// the
+						// expected JSON Body in the map
+						apiMap = new APIMap(kv.getValue(), kv.getKey(), resourcePath, verb, requestElement.getName(),
+								false);
+						writer.getBuffer().setLength(0);
+					} catch (Exception e) {
+						LOGGER.warning("Membrane SOA failed to generate template.");
+						apiMap = createAPIMap(op, wsdl, verb, resourcePath, xmlUtils);
+						KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(apiMap.getSoapBody());
+						apiMap.setJsonBody(kv.getValue());
+					}
+				} else {
+					apiMap = createAPIMap(op, wsdl, verb, resourcePath, xmlUtils);
+					KeyValue<String, String> kv = xmlUtils.replacePlaceHolders(apiMap.getSoapBody());
+					apiMap.setJsonBody(kv.getValue());
+				}
+			}
+			messageTemplates.put(op.getName(), apiMap);
+		}
+
 		String operationName = null;
 		List<String> queryParams = null;
 		JSONObject oasObject = new JSONObject(oasTemplate);
@@ -2270,25 +2392,25 @@ public class GenerateProxy {
 		JSONObject parameter = null;
 		JSONObject operation = null;
 		JSONObject operationDetails = null;
-		
-		info.put("title",proxyName);
+
+		info.put("title", proxyName);
 		oasObject.put("host", OASUtils.getHostname(targetEndpoint));
 		oasObject.put("basePath", basePath);
-		
+
 		JSONObject paths = oasObject.getJSONObject("paths");
-		
+
 		for (Map.Entry<String, APIMap> entry : messageTemplates.entrySet()) {
 			operationName = entry.getKey();
 			apiMap = entry.getValue();
 			operation = new JSONObject();
 			operationDetails = new JSONObject();
-			
+
 			if (apiMap.getSoapBody() != "" && apiMap.getVerb().equalsIgnoreCase("GET")) {
 				queryParams = new ArrayList<String>();
 				parameters = new JSONArray();
 				List<String> elementList = xmlUtils.getElementList(apiMap.getSoapBody());
 				for (String elementName : elementList) {
-					//OAS does not allow duplicate query params.
+					// OAS does not allow duplicate query params.
 					if (!queryParams.contains(elementName)) {
 						queryParams.add(elementName);
 						parameter = new JSONObject();
@@ -2299,31 +2421,35 @@ public class GenerateProxy {
 						parameter.put("type", "string");
 						parameters.put(parameter);
 					}
-				}			
+				}
+				if (queryParams.size() > 0) {
+					operationDetails.put("parameters", parameters);
+				}
 			}
-			
-			if (queryParams != null && queryParams.size() > 0) {
-				operationDetails.put("parameters", parameters);
-			}
-			
+
+
 			operationDetails.put("description", "Implements WSDL operation " + operationName);
 			operationDetails.put("responses", OASUtils.getSuccess());
 			operation.put(apiMap.getVerb().toLowerCase(), operationDetails);
 			paths.put(apiMap.getResourcePath(), operation);
+			System.out.println(apiMap.getJsonBody());
 		}
-
-		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
 		
-		return OASUtils.writeJSON(oasObject.toString(5), proxyName);		
+		LOGGER.info("Generated Open API Spec successfully.");		
+
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+
+		return OASUtils.writeJSON(oasObject.toString(5), proxyName);
 	}
 
 	private boolean prepareTargetFolder() {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
-		
-		if (OAS) return true;
-		
+
+		if (OAS)
+			return true;
+
 		File f = new File(buildFolder);
 
 		if (f.isDirectory()) { // ensure target is a folder
@@ -2380,11 +2506,13 @@ public class GenerateProxy {
 		GenerateBundle generateBundle = new GenerateBundle();
 
 		try {
-			if (buildFolder == null) {
-				tempDirectory = Files.createTempDirectory(null);
-				buildFolder = tempDirectory.toAbsolutePath().toString();
+			if (!OAS) {
+				if (buildFolder == null) {
+					tempDirectory = Files.createTempDirectory(null);
+					buildFolder = tempDirectory.toAbsolutePath().toString();
+				}
+				zipFolder = buildFolder + File.separator + "apiproxy";
 			}
-			zipFolder = buildFolder + File.separator + "apiproxy";
 			// prepare the target folder (create apiproxy folder and sub-folders
 			if (prepareTargetFolder()) {
 
@@ -2395,49 +2523,51 @@ public class GenerateProxy {
 					LOGGER.info("Read operations map");
 				}
 
-				// parse the wsdl
-				parseWSDL(wsdlPath);
-				LOGGER.info("Parsed WSDL Successfully.");
-				
+				getWSDLDetails(wsdlPath);
+
 				if (OAS) {
 					LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 					}.getClass().getEnclosingMethod().getName());
 					return generateOAS();
-				}
-
-				if (!DESCSET) {
-					proxyDescription += serviceName;
-				}
-
-				LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
-				LOGGER.info("Build Folder: " + buildFolder + "\nSOAP Version: " + soapVersion);
-				LOGGER.info("Proxy Name: " + proxyName + "\nProxy Description: " + proxyDescription);
-
-				// create the basic proxy structure from templates
-				writeAPIProxy(proxyDescription);
-				LOGGER.info("Generated Apigee proxy file.");
-
-				if (!PASSTHRU) {
-					LOGGER.info("Generated SOAP Message Templates.");
-					writeSOAP2APIProxyEndpoint(proxyDescription);
-					LOGGER.info("Generated proxies XML.");
-					writeStdPolicies();
-					LOGGER.info("Copied standard policies.");
-					writeTargetEndpoint();
-					LOGGER.info("Generated target XML.");
 				} else {
-					writeStdPolicies();
-					LOGGER.info("Copied standard policies.");
-					writeTargetEndpoint();
-					LOGGER.info("Generated target XML.");
-					writeSOAPPassThruProxyEndpointConditions(proxyDescription);
-				}
+					// parse the wsdl
+					parseWSDL();
+					LOGGER.info("Parsed WSDL Successfully.");
 
-				File file = generateBundle.build(zipFolder, proxyName);
-				LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
-				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
-				}.getClass().getEnclosingMethod().getName());
-				return new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+					if (!DESCSET) {
+						proxyDescription += serviceName;
+					}
+
+					LOGGER.info("Base Path: " + basePath + "\nWSDL Path: " + wsdlPath);
+					LOGGER.info("Build Folder: " + buildFolder + "\nSOAP Version: " + soapVersion);
+					LOGGER.info("Proxy Name: " + proxyName + "\nProxy Description: " + proxyDescription);
+
+					// create the basic proxy structure from templates
+					writeAPIProxy(proxyDescription);
+					LOGGER.info("Generated Apigee proxy file.");
+
+					if (!PASSTHRU) {
+						LOGGER.info("Generated SOAP Message Templates.");
+						writeSOAP2APIProxyEndpoint(proxyDescription);
+						LOGGER.info("Generated proxies XML.");
+						writeStdPolicies();
+						LOGGER.info("Copied standard policies.");
+						writeTargetEndpoint();
+						LOGGER.info("Generated target XML.");
+					} else {
+						writeStdPolicies();
+						LOGGER.info("Copied standard policies.");
+						writeTargetEndpoint();
+						LOGGER.info("Generated target XML.");
+						writeSOAPPassThruProxyEndpointConditions(proxyDescription);
+					}
+
+					File file = generateBundle.build(zipFolder, proxyName);
+					LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
+					LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+					}.getClass().getEnclosingMethod().getName());
+					return new ByteArrayInputStream(Files.readAllBytes(file.toPath()));
+				}
 			} else {
 				LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 				}.getClass().getEnclosingMethod().getName());
@@ -2503,27 +2633,29 @@ public class GenerateProxy {
 		System.out.println("OpsMap:");
 		System.out.println("A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:");
 		System.out.println("");
-		System.out.println("{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"pattern\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}");
+		System.out.println(
+				"{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"pattern\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}");
 
 		System.out.println("\n\n");
 		System.out.println("Open API Specification:");
 		System.out.println("Generates an OAS document (JSON format). ");
 		System.out.println("\n\n");
 		System.out.println("Examples:");
-		System.out.println("$ java -jar wsdl2apigee.jar -wsdl=\"http://www.thomas-bayer.com/axis2/services/BLZService?wsdl\" -oas=true");
+		System.out.println(
+				"$ java -jar wsdl2apigee.jar -wsdl=\"http://www.thomas-bayer.com/axis2/services/BLZService?wsdl\" -oas=true");
 	}
 
 	private static List<WsdlDefinitions.Port> convertPorts(List<com.predic8.wsdl.Port> ports,
 			List<PortType> portTypes) {
 		List<WsdlDefinitions.Port> list = new ArrayList<>(ports.size());
 		for (com.predic8.wsdl.Port port : ports) {
-            final Object protocol = port.getBinding().getProtocol();
-            if (protocol != null) {
-                final String protocolStr = protocol.toString();
-                if (SOAP_11.equalsIgnoreCase(protocolStr) || SOAP_12.equalsIgnoreCase(protocolStr)) {
-                    list.add(new WsdlDefinitions.Port(port.getName(), convertOperations(port.getBinding(), portTypes)));
-                }
-            }
+			final Object protocol = port.getBinding().getProtocol();
+			if (protocol != null) {
+				final String protocolStr = protocol.toString();
+				if (SOAP_11.equalsIgnoreCase(protocolStr) || SOAP_12.equalsIgnoreCase(protocolStr)) {
+					list.add(new WsdlDefinitions.Port(port.getName(), convertOperations(port.getBinding(), portTypes)));
+				}
+			}
 		}
 		return list;
 	}
@@ -2604,7 +2736,7 @@ public class GenerateProxy {
 		opt.getSet().addOption("basepath", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// add enable cors conditions
 		opt.getSet().addOption("cors", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		//generate OAS spec
+		// generate OAS spec
 		opt.getSet().addOption("oas", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
@@ -2696,11 +2828,10 @@ public class GenerateProxy {
 		if (!opt.getSet().isSet("apikey") && !opt.getSet().isSet("oauth") && opt.getSet().isSet("quota")) {
 			LOGGER.warning("WARNING: Quota is applicable with apikey or oauth flags. This flag will be ignored");
 		}
-		
+
 		if (opt.getSet().isSet("oas")) {
 			genProxy.setOAS(new Boolean(opt.getSet().getOption("oas").getResultValue(0)));
 		}
-		
 
 		if (opt.getSet().isSet("debug")) {
 			// enable debug
@@ -2712,7 +2843,7 @@ public class GenerateProxy {
 		}
 
 		final InputStream begin = genProxy.begin(proxyDescription, wsdlPath);
-		if (begin != null) {
+		if (begin != null && !genProxy.getOAS()) {
 			Files.copy(begin, new File(genProxy.proxyName + ".zip").toPath(), StandardCopyOption.REPLACE_EXISTING);
 		}
 

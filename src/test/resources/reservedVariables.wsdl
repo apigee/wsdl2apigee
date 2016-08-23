@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://www.apigee.com/wsdl2apigee/reservedVariables/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="reservedVariables" targetNamespace="http://www.apigee.com/wsdl2apigee/reservedVariables/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.apigee.com/wsdl2apigee/reservedVariables/">
+      <xsd:element name="getOrgRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="organization" type="xsd:string"/>
+            <xsd:element name="field1" type="xsd:string"/>
+            <xsd:element name="field2" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="getOrgResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="organization" type="xsd:string"/>
+            <xsd:element name="field1" type="xsd:string"/>
+            <xsd:element name="field2" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="getOrgRequest">
+    <wsdl:part element="tns:getOrgRequest" name="parameters"/>
+  </wsdl:message>
+  <wsdl:message name="getOrgResponse">
+    <wsdl:part element="tns:getOrgResponse" name="parameters"/>
+  </wsdl:message>
+  <wsdl:portType name="reservedVariables">
+    <wsdl:operation name="getOrganization">
+      <wsdl:input message="tns:getOrgRequest"/>
+      <wsdl:output message="tns:getOrgResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="reservedVariablesSOAP" type="tns:reservedVariables">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getOrganization">
+      <soap:operation soapAction="http://www.apigee.com/wsdl2apigee/reservedVariables/getOrganization"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="reservedVariables">
+    <wsdl:port binding="tns:reservedVariablesSOAP" name="reservedVariablesSOAP">
+      <soap:address location="http://www.apigee.com/"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

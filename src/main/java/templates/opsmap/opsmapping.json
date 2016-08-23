@@ -37,6 +37,10 @@
         {
           "pattern": "process",
           "location": "beginsWith"
+        },
+        {
+          "pattern": "submit",
+          "localtion": "beginsWith"
         }
       ]
     },
@@ -72,6 +76,10 @@
         },
         {
           "pattern": "del",
+          "location": "beginsWith"
+        },
+        {
+          "pattern": "cancel",
           "location": "beginsWith"
         }
       ]
