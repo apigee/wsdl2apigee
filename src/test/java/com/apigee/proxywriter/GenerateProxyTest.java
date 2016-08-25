@@ -355,5 +355,17 @@ public class GenerateProxyTest {
         final String extractPolicy = readZipFileEntry("apiproxy/policies/getOrganization-extract-query-param.xml", inputStream);
         Assert.assertTrue(extractPolicy.contains("name=\"org\""));
     }
+    
+    @Test
+    public void testRecursiveWSDL() throws Exception {
+    	final String CLIENT_SERVICE_WSDL = "https://webservice.s7.exacttarget.com/etframework.wsdl";
+    	final GenerateProxy generateProxy = new GenerateProxy();
+    
+    	generateProxy.setOpsMap(oMap);
+    	generateProxy.setPassThru(false);
+    	
+        final InputStream inputStream = generateProxy.begin("Test WSDL with recursive schema", CLIENT_SERVICE_WSDL);
+    	
+    }
 
 }

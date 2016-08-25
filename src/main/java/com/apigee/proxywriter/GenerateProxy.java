@@ -926,20 +926,35 @@ public class GenerateProxy {
 		displayName.setTextContent(operationName + " Extract Query Param");
 
 		APIMap apiMap = messageTemplates.get(operationName);
-
-		List<String> elementList = xmlUtils.getElementList(apiMap.getSoapBody());
-		for (String elementName : elementList) {
+		
+		//edgeui-654
+		if (apiMap.getSoapBody().getBytes().length < 4096) {
+			List<String> elementList = xmlUtils.getElementList(apiMap.getSoapBody());
+			for (String elementName : elementList) {
+				queryParam = extractPolicyXML.createElement("QueryParam");
+				queryParam.setAttribute("name", getQueryParamName(elementName));
+	
+				pattern = extractPolicyXML.createElement("Pattern");
+				pattern.setAttribute("ignoreCase", "true");
+				pattern.setTextContent("{" + elementName + "}");
+	
+				queryParam.appendChild(pattern);
+				rootElement.appendChild(queryParam);
+			}
+		} else {
+			//setting a sample query param;edgeui-654
+			LOGGER.warning("Large SOAP Message Template; Skipping extract policy"); 
 			queryParam = extractPolicyXML.createElement("QueryParam");
-			queryParam.setAttribute("name", getQueryParamName(elementName));
+			queryParam.setAttribute("name", "sample");
 
 			pattern = extractPolicyXML.createElement("Pattern");
 			pattern.setAttribute("ignoreCase", "true");
-			pattern.setTextContent("{" + elementName + "}");
+			pattern.setTextContent("{sample}");
 
 			queryParam.appendChild(pattern);
 			rootElement.appendChild(queryParam);
 		}
-
+		
 		xmlUtils.writeXML(extractPolicyXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
 				+ File.separator + policyName + ".xml");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
@@ -1006,7 +1021,8 @@ public class GenerateProxy {
 
 		APIMap apiMap = messageTemplates.get(operationName);
 		Document operationPayload = null;
-		if (xmlUtils.isValidXML(apiMap.getSoapBody())) {
+		//edgeui-654 (check for getBytes().length
+		if (xmlUtils.isValidXML(apiMap.getSoapBody()) && apiMap.getSoapBody().getBytes().length < 4096) {
 			//JIRA-EDGEUI-672
 			operationPayload = xmlUtils.getXMLFromString(replaceReservedVariables(apiMap.getSoapBody()));
 		} else {
@@ -1477,8 +1493,15 @@ public class GenerateProxy {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
-		// fail safe measure.
-		if (ruleList.size() >= 100) {
+		// fail safe measures.
+		if (Thread.currentThread().getStackTrace().length >= 128) {//edgeui-654
+			TOO_MANY = true;
+			return;
+		}
+		
+		else if (TOO_MANY) return;//edgeui-654
+		
+		else if (ruleList.size() >= 100) {
 			// the rules are too big. clear the rules.
 			TOO_MANY = true;
 			return;
@@ -2122,7 +2145,10 @@ public class GenerateProxy {
 		StringWriter writer = new StringWriter();
 		SOARequestCreator creator = new SOARequestCreator(wsdl, new RequestTemplateCreator(),
 				new MarkupBuilder(writer));
+		//edgeui-654
+		creator.setMaxRecursionDepth(2);
 
+		
 		Binding binding = port.getBinding();
 		PortType portType = binding.getPortType();
 		String bindingName = binding.getName();

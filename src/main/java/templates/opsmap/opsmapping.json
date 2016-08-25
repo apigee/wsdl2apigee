@@ -40,7 +40,7 @@
         },
         {
           "pattern": "submit",
-          "localtion": "beginsWith"
+          "location": "beginsWith"
         }
       ]
     },
