@@ -26,12 +26,5 @@
   "paths": {
   },
   "definitions": {
-    "undefined": {
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
-    }
   }
 }

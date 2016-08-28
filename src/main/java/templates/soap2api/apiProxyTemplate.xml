@@ -24,6 +24,7 @@
         <Policy>get-response-soap-body-xml</Policy>
         <Policy>set-response-soap-body-accept</Policy>
         <Policy>return-generic-error-accept</Policy>
+        <Policy>return-open-api</Policy>
         <Policy>unknown-resource-xml</Policy>
     </Policies>
     <ProxyEndpoints>

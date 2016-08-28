@@ -34,18 +34,11 @@ quota=false               Works only if apikey or oauth is set
 basepath=Uses the basepath from the wsdl
 cors=false                Don't enable CORS; Works only for SOAP to REST
 build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
-oas=false                 Generate Open API Specification document
 opsmap=specify operations map
 ``` 
 ## Output
 You should see an API Proxy bundle generated in the same folder you ran the command. The bundle follows the convention of
 {soap-servicename}.zip. You can import the bundle via the Edge Admin UI or tools like [apigeetool](https://www.npmjs.com/package/apigeetool).
-
-### Open API Specification
-Generate Open API specification (skeleton) from WSDL files.
-```
-java -jar wsdl2apigee.jar -wsdl="http://www.thomas-bayer.com/axis2/services/BLZService?wsdl" -oas=true
-```
 
 ## Appendix
 OpsMap:
