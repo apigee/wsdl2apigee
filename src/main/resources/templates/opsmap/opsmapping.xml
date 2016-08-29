@@ -41,7 +41,8 @@
 		<operation>
 			<pattern>submit</pattern>
 			<location>beginsWith</location>
-		</operation>	</post>
+		</operation>
+	</post>
 	<put>
 		<operation>
 			<pattern>update</pattern>
@@ -76,5 +77,6 @@
 		<operation>
 			<pattern>cancel</pattern>
 			<location>beginsWith</location>
-		</operation>	</delete>
+		</operation>
+	</delete>
 </proxywriter>
