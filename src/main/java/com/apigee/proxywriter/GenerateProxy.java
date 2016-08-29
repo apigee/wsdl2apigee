@@ -2618,13 +2618,17 @@ public class GenerateProxy {
 				queryParams.clear();
 				
 			} else {
-				com.predic8.schema.Element eInput = op.getInput().getMessage().getParts().get(0).getElement();
-				getOASDefinitions(wsdl, eInput);
-				
-				if (!verb.equalsIgnoreCase("GET")) {
-					parameters = OASUtils.getBodyParameter(eInput.getName());
+				if (op.getInput().getMessage().getParts().size() == 0) {
+					//TODO: handle 0 parts
 				} else {
-					parameters = OASUtils.getQueryParameters(queryParams);
+					com.predic8.schema.Element eInput = op.getInput().getMessage().getParts().get(0).getElement();
+					getOASDefinitions(wsdl, eInput);
+					
+					if (!verb.equalsIgnoreCase("GET")) {
+						parameters = OASUtils.getBodyParameter(eInput.getName());
+					} else {
+						parameters = OASUtils.getQueryParameters(queryParams);
+					}
 				}
 				
 				queryParams.clear();

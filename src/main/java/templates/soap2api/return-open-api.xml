@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RaiseFault async="false" continueOnError="false" enabled="true" name="return-open-api">
+    <DisplayName>Return Open API</DisplayName>
+    <Properties/>
+    <FaultResponse>
+        <Set>
+        	<StatusCode>200</StatusCode>
+            <Headers>
+            	<Header name="Content-Type">application/json</Header>
+            </Headers>
+            <Payload contentType="application/json"  variablePrefix="@" variableSuffix="#">
+            </Payload>
+        </Set>
+    </FaultResponse>
+</RaiseFault>

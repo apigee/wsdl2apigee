@@ -127,6 +127,7 @@ public class GenerateProxyTest {
                 "apiproxy/resources/xsl/remove-empty-nodes.xslt",
                 "apiproxy/resources/xsl/remove-namespaces.xslt",
                 "apiproxy/targets/default.xml",
+                "apiproxy/policies/return-open-api.xml",
                 "apiproxy/Weather.xml");
         final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false, null));
         checkForFilesInBundle(filenames, inputStream);
@@ -274,6 +275,7 @@ public class GenerateProxyTest {
                 "apiproxy/resources/xsl/AddressVerify-add-other-namespaces.xslt",
                 "apiproxy/resources/xsl/MassPay-add-namespace.xslt",
                 "apiproxy/resources/xsl/MassPay-add-other-namespaces.xslt",
+                "apiproxy/policies/return-open-api.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/proxies/default.xml",
                 "apiproxy/PayPalAPIInterfaceService.xml");
@@ -298,7 +300,7 @@ public class GenerateProxyTest {
         inputStream.reset();
         final String proxiesDefault = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
         Assert.assertTrue(proxiesDefault.contains("MemberSearchV5Request"));
-    }  
+    }
     
     @Test
     public void testHttpBinding() throws Exception {
@@ -335,11 +337,8 @@ public class GenerateProxyTest {
         final String CLIENT_SERVICE_WSDL = "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
         final GenerateProxy generateProxy = new GenerateProxy();
         final String OAS = "{\r\n     \"basePath\": \"/blzservice\",\r\n     \"paths\": {\"/bank\": {\"get\": {\r\n          \"description\": \"Implements WSDL operation getBank\",\r\n          \"responses\": {\"200\": {\r\n               \"schema\": {\"$ref\": \"#/definitions/undefined\"},\r\n               \"description\": \"Successful response\"\r\n          }},\r\n          \"parameters\": [{\r\n               \"in\": \"query\",\r\n               \"name\": \"blz\",\r\n               \"description\": \"\",\r\n               \"type\": \"string\",\r\n               \"required\": false\r\n          }]\r\n     }}},\r\n     \"host\": \"www.thomas-bayer.com\",\r\n     \"produces\": [\"application/json\"],\r\n     \"schemes\": [\"http\"],\r\n     \"definitions\": {\"undefined\": {\"properties\": {\"message\": {\"type\": \"string\"}}}},\r\n     \"swagger\": \"2.0\",\r\n     \"info\": {\r\n          \"license\": {\"name\": \"Apache 2.0\"},\r\n          \"contact\": {\"name\": \"API Team\"},\r\n          \"description\": \"A OAS document generated from WSDL\",\r\n          \"termsOfService\": \"\",\r\n          \"title\": \"BLZService\",\r\n          \"version\": \"1.0.0\"\r\n     },\r\n     \"consumes\": [\"application/json\"]\r\n}";
-    	generateProxy.setOAS(true);
     	generateProxy.setOpsMap(oMap);
     	final InputStream inputStream = generateProxy.begin("Test OAS generation", CLIENT_SERVICE_WSDL);
-    	StringWriter writer = new StringWriter();
-    	IOUtils.copy(inputStream, writer, "utf-8");
     }
     
     @Test

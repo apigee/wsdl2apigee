@@ -40,6 +40,15 @@ opsmap=specify operations map
 You should see an API Proxy bundle generated in the same folder you ran the command. The bundle follows the convention of
 {soap-servicename}.zip. You can import the bundle via the Edge Admin UI or tools like [apigeetool](https://www.npmjs.com/package/apigeetool).
 
+## Open API Specification
+When a proxy bundle for SOAP->REST is generated, an attempt is made to generate an Open API specification. 
+This document is hosted at http://{proxy-url}/{basePath}/openapi.json
+
+NOTE: The Open API specification is not expected to be accurate for all WSDLs. For ex: OAS does not support xsd:choice.
+
+## WSDL
+When a proxy bundle for SOAP PassThru is generated, the WSDL is hosted at http://{proxy-url}/{basePath}?wsdl
+
 ## Appendix
 OpsMap:
 A file that maps WSDL operations to HTTP Verbs. A Sample Ops Mapping file looks like:
