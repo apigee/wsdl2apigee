@@ -343,7 +343,7 @@ public class GenerateProxyTest {
     
     @Test
     public void testReservedVariables() throws Exception {
-    	URL url = this.getClass().getResource("/test/resources/reservedVariables.wsdl");
+    	URL url = this.getClass().getResource("/reservedVariables.wsdl");
         final String CLIENT_SERVICE_WSDL = url.toString();
         final GenerateProxy generateProxy = new GenerateProxy();
     	
