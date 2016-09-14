@@ -111,7 +111,8 @@ public class OASUtils {
 
 		if (maximum == -1 || maximum > 1) {
 			complexType.put("type", "array");
-			complexType.put("maxItems", maximum);
+			//in json schemas, if the elements are unbounded, don't set maxItems
+			if (maximum != -1) complexType.put("maxItems", maximum);
 			complexType.put("minItems", minimum);
 			complexType.put("items", items);
 		} else {
@@ -168,6 +169,8 @@ public class OASUtils {
 			if (oasFormat != "") {
 				items.put("format", oasFormat);
 			}
+			if (maximum != -1) simpleType.put("maxItems", maximum);
+			simpleType.put("minItems", minimum);
 			simpleType.put("items", items);
 		} else {
 			simpleType.put("type", oasDataType);
