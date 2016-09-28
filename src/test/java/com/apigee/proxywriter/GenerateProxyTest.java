@@ -220,7 +220,6 @@ public class GenerateProxyTest {
         Assert.assertEquals(ports.size(), 2);
     }
 
-
     @Test
     public void testOpsMap1 () throws Exception {
 

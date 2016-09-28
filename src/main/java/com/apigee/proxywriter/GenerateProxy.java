@@ -90,7 +90,7 @@ public class GenerateProxy {
 	public static final String SOAP_11 = "SOAP11";
 	public static final String SOAP_12 = "SOAP12";
 
-	public static String OPSMAPPING_TEMPLATE = "src/main/resources/templates/opsmap/opsmapping.xml";
+	public static String OPSMAPPING_TEMPLATE = "/templates/opsmap/opsmapping.xml";//"src/main/resources/templates/opsmap/opsmapping.xml";
 
 	private static String SOAP2API_XSL = "";
 
