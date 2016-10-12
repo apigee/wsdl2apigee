@@ -365,5 +365,17 @@ public class GenerateProxyTest {
         final InputStream inputStream = generateProxy.begin("Test WSDL with recursive schema", CLIENT_SERVICE_WSDL);
     	
     }
+    
+    @Test
+    public void testNullOutput() throws Exception {
+    	URL url = this.getClass().getResource("/availability.wsdl");
+        final String CLIENT_SERVICE_WSDL = url.toString();
+        final GenerateProxy generateProxy = new GenerateProxy();
+    	
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
+    	
+        final InputStream inputStream = generateProxy.begin("Test Null Output", CLIENT_SERVICE_WSDL);
+    }
 
 }
