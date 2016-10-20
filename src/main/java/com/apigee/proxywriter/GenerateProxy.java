@@ -97,7 +97,8 @@ public class GenerateProxy {
 	private static final List<String> primitiveTypes = Arrays.asList(new String[] { "int", "string", "boolean",
 			"decimal", "float", "double", "duration", "dateTime", "time", "date", "long", "gYearMonth", "gYear",
 			"gMonthDay", "gDay", "gMonth", "hexBinary", "base64Binary", "anyURI", "QName", "NOTATION" });
-	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
+	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" ";
+			//" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
 
 	private final String soap12Namespace = " xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
 
@@ -1825,11 +1826,15 @@ public class GenerateProxy {
 							soapRequest = parseRPCSchema(sc, schemas, rootElement, rootNamespace, rootPrefix,
 									soapRequest);
 						}
+					} else if (typeDefinition instanceof com.predic8.schema.SimpleType) {
+						com.predic8.schema.SimpleType st = (com.predic8.schema.SimpleType)typeDefinition;
+						//TODO: 
+						//LOGGER.warning("Handle simple type");
 					} else if (typeDefinition instanceof BuiltInSchemaType) {
 						BuiltInSchemaType bst = (BuiltInSchemaType) typeDefinition;
 						soapRequest = soapRequest + bst.getRequestTemplate();
 					} else {
-						LOGGER.warning("WARNING");
+						LOGGER.warning("WARNING: unhandled type - " + typeDefinition.getClass().getName());
 					}
 				}
 			} else {
@@ -1887,6 +1892,19 @@ public class GenerateProxy {
 		} else if (sc instanceof GroupRef) {
 			// GroupRef groupRef = (GroupRef)sc;
 			LOGGER.fine("WARNING: GroupRef not handled.");
+		} else if (sc instanceof All) {
+			All all = (All) sc;
+			level++;
+			soapRequest = soapRequest + all.getRequestTemplate();
+			for (com.predic8.schema.Element e : all.getElements()) {
+				if (e.getName() == null)
+					level--;
+				if (e.getName() != null)
+					xpathElement.put(level, e.getName());
+				parseRPCElement(e, schemas, rootElement, rootNamespace, rootPrefix, soapRequest);
+			}
+			level--;
+			cleanUpXPath();
 		} else {
 			LOGGER.warning("WARNING: unhandled type " + sc.getClass().getName());
 		}

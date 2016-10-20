@@ -377,5 +377,16 @@ public class GenerateProxyTest {
     	
         final InputStream inputStream = generateProxy.begin("Test Null Output", CLIENT_SERVICE_WSDL);
     }
+    
+    @Test
+    public void testRPCAllTypeInSchea() throws Exception {
+    	final String CLIENT_SERVICE_WSDL = "http://graphical.weather.gov/xml/DWMLgen/wsdl/ndfdXML.wsdl";
+    	final GenerateProxy generateProxy = new GenerateProxy();
+    
+    	generateProxy.setOpsMap(oMap);
+    	generateProxy.setPassThru(false);
+    	
+        final InputStream inputStream = generateProxy.begin("Test WSDL with All type in RPC schema", CLIENT_SERVICE_WSDL);
+    }
 
 }
