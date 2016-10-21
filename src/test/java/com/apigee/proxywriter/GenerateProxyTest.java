@@ -379,7 +379,7 @@ public class GenerateProxyTest {
     }
     
     @Test
-    public void testRPCAllTypeInSchea() throws Exception {
+    public void testRPCAllTypeInSchema() throws Exception {
     	final String CLIENT_SERVICE_WSDL = "http://graphical.weather.gov/xml/DWMLgen/wsdl/ndfdXML.wsdl";
     	final GenerateProxy generateProxy = new GenerateProxy();
     
@@ -390,7 +390,7 @@ public class GenerateProxyTest {
     }
     
     @Test
-    public void testRPCAllTypeInSchea() throws Exception {
+    public void testInvalidOutputSchema() throws Exception {
     	final String CLIENT_SERVICE_WSDL = "https://ws.cdyne.com/delayedstockquote/delayedstockquote.asmx?WSDL";
     	final GenerateProxy generateProxy = new GenerateProxy();
     
