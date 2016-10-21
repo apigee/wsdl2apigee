@@ -2656,15 +2656,18 @@ public class GenerateProxy {
 
 				queryParams.clear();
 
-				if (op.getOutput() != null) {
-					if (op.getOutput().getMessage().getParts().size() > 0) {
-						com.predic8.schema.Element eOutput = op.getOutput().getMessage().getParts().get(0).getElement();
-						if (eOutput != null) {
-							getOASDefinitions(wsdl, eOutput);
-							System.out.println("hmm: "+eOutput.toString());
-							operationDetails.put("responses", OASUtils.getResponse(eOutput.getName()));
+				try {
+					if (op.getOutput() != null) {
+						if (op.getOutput().getMessage().getParts().size() > 0) {
+							com.predic8.schema.Element eOutput = op.getOutput().getMessage().getParts().get(0).getElement();
+							if (eOutput != null) {
+								getOASDefinitions(wsdl, eOutput);
+								operationDetails.put("responses", OASUtils.getResponse(eOutput.getName()));
+							}
 						}
 					}
+				} catch (Exception e) {
+					//Ignore any errors here. Just don't generate the OAS for this portion
 				}
 			}
 

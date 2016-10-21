@@ -388,5 +388,15 @@ public class GenerateProxyTest {
     	
         final InputStream inputStream = generateProxy.begin("Test WSDL with All type in RPC schema", CLIENT_SERVICE_WSDL);
     }
-
+    
+    @Test
+    public void testRPCAllTypeInSchea() throws Exception {
+    	final String CLIENT_SERVICE_WSDL = "https://ws.cdyne.com/delayedstockquote/delayedstockquote.asmx?WSDL";
+    	final GenerateProxy generateProxy = new GenerateProxy();
+    
+    	generateProxy.setOpsMap(oMap);
+    	generateProxy.setPassThru(false);
+    	
+        final InputStream inputStream = generateProxy.begin("Test WSDL with invalid output schema", CLIENT_SERVICE_WSDL);
+    }
 }
