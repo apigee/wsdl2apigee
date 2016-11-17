@@ -129,7 +129,7 @@ public class OpsMap {
 				opsMappingXML = xmlUtils.getXMLFromString(OPSMAPPING_TEMPLATE);
 			} catch (Exception ex) {
 				//third try to read it as a string containing json representation of xml
-				opsMappingXML = xmlUtils.getXMLFromJSONString(OPSMAPPING_TEMPLATE);
+//				opsMappingXML = xmlUtils.getXMLFromJSONString(OPSMAPPING_TEMPLATE);
 			}
 		}
 					

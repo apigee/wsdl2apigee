@@ -8,31 +8,31 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 public class OASUtils {
 	
-	public static JSONObject getResponse(String element) {
-		JSONObject success = new JSONObject();
-		JSONObject details = new JSONObject();
-		JSONObject schema = new JSONObject();
-		schema.put("$ref", "#/definitions/"+element);
-		details.put("description", "Successful response");
-		details.put("schema", schema);
-		success.put("200", details);
+	public static JsonObject getResponse(String element) {
+        JsonObject success = new JsonObject();
+		JsonObject details = new JsonObject();
+		JsonObject schema = new JsonObject();
+		schema.addProperty("$ref", "#/definitions/"+element);
+		details.addProperty("description", "Successful response");
+		details.add("schema", schema);
+		success.add("200", details);
 		return success;
 	}
 	
 
-	public static JSONObject getSuccess() {
-		JSONObject success = new JSONObject();
-		JSONObject details = new JSONObject();
-		JSONObject schema = new JSONObject();
-		schema.put("$ref", "#/definitions/undefined");
-		details.put("description", "Successful response");
-		details.put("schema", schema);
-		success.put("200", details);
+	public static JsonObject getSuccess() {
+		JsonObject success = new JsonObject();
+		JsonObject details = new JsonObject();
+		JsonObject schema = new JsonObject();
+		schema.addProperty("$ref", "#/definitions/undefined");
+		details.addProperty("description", "Successful response");
+		details.add("schema", schema);
+		success.add("200", details);
 		return success;
 	}
 
@@ -45,57 +45,57 @@ public class OASUtils {
 		}
 	}
 	
-	public static InputStream writeJSON(String oasData, String fileName) throws Exception {
+	public static InputStream writeJson(String oasData, String fileName) throws Exception {
 		final PrintWriter writer = new PrintWriter(fileName+".json");
 		writer.println(oasData);
 		writer.close();
 		return new ByteArrayInputStream(Files.readAllBytes(Paths.get(fileName+".json")));
 	}
 	
-    public static JSONArray getQueryParameters(ArrayList<String> queryParams) {
-    	JSONArray parameters = new JSONArray();
-    	JSONObject parameter = null;
+    public static JsonArray getQueryParameters(ArrayList<String> queryParams) {
+    	JsonArray parameters = new JsonArray();
+    	JsonObject parameter = null;
     	for (String queryParam : queryParams) {
-    		parameter = new JSONObject();
-    		parameter.put("name", queryParam);
-    		parameter.put("in", "query");
-    		parameter.put("required", false);
-    		parameter.put("type", "string");
-    		parameters.put(parameter);
+    		parameter = new JsonObject();
+    		parameter.addProperty("name", queryParam);
+    		parameter.addProperty("in", "query");
+    		parameter.addProperty("required", false);
+    		parameter.addProperty("type", "string");
+    		parameters.add(parameter);
     	}
     	
     	return parameters;
     }
     
-    public static JSONArray getBodyParameter(String name) {
-    	JSONArray parameters = new JSONArray();
-    	JSONObject parameter = new JSONObject();
-    	JSONObject schemaReference = new JSONObject();
+    public static JsonArray getBodyParameter(String name) {
+    	JsonArray parameters = new JsonArray();
+    	JsonObject parameter = new JsonObject();
+    	JsonObject schemaReference = new JsonObject();
     	
-    	schemaReference.put("$ref", "#/definitions/"+name);
+    	schemaReference.addProperty("$ref", "#/definitions/"+name);
     	
-    	parameter.put("name", name);
-    	parameter.put("in", "body");
-    	parameter.put("required", "true");
-    	parameter.put("schema", schemaReference);
-    	parameters.put(0, parameter);
+    	parameter.addProperty("name", name);
+    	parameter.addProperty("in", "body");
+    	parameter.addProperty("required", "true");
+    	parameter.add("schema", schemaReference);
+    	parameters.add(parameter);
     	
     	return parameters;
     }
 
-	public static void addObject(JSONObject parent, String parentName, String objectName) {
-		JSONObject properties = parent.getJSONObject("properties");
-		JSONObject object = new JSONObject();
-		object.put("$ref", "#/definitions/"+objectName);
-		properties.put(objectName, object);
+	public static void addObject(JsonObject parent, String parentName, String objectName) {
+		JsonObject properties = parent.getAsJsonObject("properties");
+		JsonObject object = new JsonObject();
+		object.addProperty("$ref", "#/definitions/"+objectName);
+		properties.add(objectName, object);
 	}
 	
-	public static JSONObject createComplexType(String name, String min, String max) {
-		JSONObject complexType = new JSONObject();
-		JSONObject properties = new JSONObject();
-		JSONObject items = new JSONObject();
+	public static JsonObject createComplexType(String name, String min, String max) {
+		JsonObject complexType = new JsonObject();
+		JsonObject properties = new JsonObject();
+		JsonObject items = new JsonObject();
 		
-		items.put("$ref", "#/definitions/"+name);
+		items.addProperty("$ref", "#/definitions/"+name);
 		
 		Integer maximum = 0;
 		
@@ -107,25 +107,25 @@ public class OASUtils {
 		
 		Integer minimum = Integer.parseInt(min);
 
-		complexType.put("properties", properties);
+		complexType.add("properties", properties);
 
 		if (maximum == -1 || maximum > 1) {
-			complexType.put("type", "array");
+			complexType.addProperty("type", "array");
 			//in json schemas, if the elements are unbounded, don't set maxItems
-			if (maximum != -1) complexType.put("maxItems", maximum);
-			complexType.put("minItems", minimum);
-			complexType.put("items", items);
+			if (maximum != -1) complexType.addProperty("maxItems", maximum);
+			complexType.addProperty("minItems", minimum);
+			complexType.add("items", items);
 		} else {
-			complexType.put("type", "object");
+			complexType.addProperty("type", "object");
 		}
 		return complexType;
 	}
 	
-	public static JSONObject createSimpleType(String type, String min, String max) {
-		JSONObject simpleType = new JSONObject();
+	public static JsonObject createSimpleType(String type, String min, String max) {
+		JsonObject simpleType = new JsonObject();
 		String oasDataType = "";
 		String oasFormat = "";
-		JSONObject items = new JSONObject();
+		JsonObject items = new JsonObject();
 		Integer maximum = 0;
 		
 		if (max.equalsIgnoreCase("unbounded")) {
@@ -164,18 +164,18 @@ public class OASUtils {
 		}
 		
 		if (maximum ==-1 || maximum > 1) {
-			simpleType.put("type", "array");
-			items.put("type", oasDataType);
+			simpleType.addProperty("type", "array");
+			items.addProperty("type", oasDataType);
 			if (oasFormat != "") {
-				items.put("format", oasFormat);
+				items.addProperty("format", oasFormat);
 			}
-			if (maximum != -1) simpleType.put("maxItems", maximum);
-			simpleType.put("minItems", minimum);
-			simpleType.put("items", items);
+			if (maximum != -1) simpleType.addProperty("maxItems", maximum);
+			simpleType.addProperty("minItems", minimum);
+			simpleType.add("items", items);
 		} else {
-			simpleType.put("type", oasDataType);
+			simpleType.addProperty("type", oasDataType);
 			if (oasFormat != "") {
-				simpleType.put("format", oasFormat);
+				simpleType.addProperty("format", oasFormat);
 			}
 		}
 		

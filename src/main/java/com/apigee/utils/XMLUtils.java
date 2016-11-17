@@ -1,49 +1,24 @@
 package com.apigee.utils;
 
+import org.w3c.dom.*;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
-import org.json.JSONObject;
-import org.json.XML;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.Stack;
+import java.io.*;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -214,10 +189,10 @@ public class XMLUtils {
 		}
 	}
 	
-	public Document getXMLFromJSONString(String jsonString) throws Exception {
-		JSONObject json = new JSONObject(jsonString);
-		return getXMLFromString(XML.toString(json));
-    }
+//	public Document getXMLFromJSONString(String jsonString) throws Exception {
+//		JsonObject json = new JsonParser().parse(jsonString).getAsJsonObject();
+//		return getXMLFromString(XML.toString(json));
+//    }
 
 	private String extractElement(String fullElementName) {
 		if (fullElementName.indexOf(":") != -1) {
@@ -257,7 +232,7 @@ public class XMLUtils {
 			throw e;
 		}
 	}
-	
+
 	public KeyValue<String, String> replacePlaceHolders(String xml) throws Exception {
 
 		LOGGER.entering(XMLUtils.class.getName(), new Object() {
@@ -299,8 +274,8 @@ public class XMLUtils {
 			String fullSoap = fullSoapWriter.getBuffer().toString().replaceAll("\n|\r", "");
 
 			transformer.transform(new DOMSource(getFirstChildElement(body)), new StreamResult(bodySoapWriter));
-			String bodySoap = bodySoapWriter.getBuffer().toString().replaceAll("\n|\r", "");
-			String bodyJson = XML.toJSONObject(bodySoap).toString();
+//			String bodySoap = bodySoapWriter.getBuffer().toString().replaceAll("\n|\r", "");
+			String bodyJson = "{\"test\": \"not null\"}";
 
 			keyValue = new KeyValue<String, String>(fullSoap, bodyJson);
 			return keyValue;
