@@ -1,9 +1,11 @@
 package com.apigee.utils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.util.HashMap;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 public class SelectedOperations {
 
@@ -15,12 +17,12 @@ public class SelectedOperations {
 	}
 	
 	public void parseSelectedOperations (String selectedOperationsJson) throws Exception {
-		JSONArray array = new JSONArray(selectedOperationsJson);
-		
-		for (int i=0; i<array.length(); i++) {
-			JSONObject json = array.getJSONObject(i);
-			SelectedOperation selectedOperation = new SelectedOperation(json.get("verb").toString(), json.get("resourcePath").toString());
-			selectedOperations.put(json.get("operationName").toString(), selectedOperation);
+        JsonArray array = (JsonArray) new JsonParser().parse(selectedOperationsJson);
+
+		for (int i=0; i<array.size(); i++) {
+			JsonObject json = array.get(i).getAsJsonObject();
+			SelectedOperation selectedOperation = new SelectedOperation(json.get("verb").getAsString(), json.get("resourcePath").getAsString());
+			selectedOperations.put(json.get("operationName").getAsString(), selectedOperation);
 		}
 	}
 	
