@@ -7,11 +7,25 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public class OASUtils {
+	
+	
+	private static final Logger LOGGER = Logger.getLogger(OASUtils.class.getName());
+
+	static {
+		LOGGER.setLevel(Level.INFO);
+		ConsoleHandler handler = new ConsoleHandler();
+		// PUBLISH this level
+		handler.setLevel(Level.INFO);
+		LOGGER.addHandler(handler);
+	}
 	
 	public static JsonObject getResponse(String element) {
         JsonObject success = new JsonObject();
@@ -161,6 +175,9 @@ public class OASUtils {
 		} else if (type.equalsIgnoreCase("base64binary")) {
 			oasDataType = "string";
 			oasFormat = "byte";			
+		} else { //set the default data type to string
+			//ex: there is no decimal data type. interpret as string.
+			oasDataType = "string";
 		}
 		
 		if (maximum ==-1 || maximum > 1) {
