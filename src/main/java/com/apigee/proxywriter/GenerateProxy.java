@@ -1417,6 +1417,29 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 	}
+	
+	/**
+	 * 
+	 * @param wsdlContent
+	 * @return
+	 * 
+	 * The predic8 "getAsString" method does not include a namespace prefix for the definitions
+	 * element. It assumes default namespace. If the WSDL didn't include a default namespace, then 
+	 * WSDL importers like SOAP UI and others fail to import the WSDL. This method looks to see if the
+	 * WSDL has a default namespace and adds it if missing
+	 */
+	private String addDefaultNamespace(String wsdlContent) {
+		
+		String containsString = "xmlns='http://schemas.xmlsoap.org/wsdl/'";
+		String replaceString = "xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/' xmlns='http://schemas.xmlsoap.org/wsdl/'";
+		String findString = "xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'";
+		
+		if (wsdlContent.indexOf(containsString) != -1) { //already has default namespace.
+			return wsdlContent;
+		} else {
+			return wsdlContent.replaceAll(findString, replaceString);
+		}
+	}
 
 	private void writeRaiseFault(Document getWsdlTemplate) throws Exception {
 		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
@@ -1425,7 +1448,7 @@ public class GenerateProxy {
 		Document getWsdlRaiseFaultPolicy = xmlUtils.cloneDocument(getWsdlTemplate);
 
 		Node payload = getWsdlRaiseFaultPolicy.getElementsByTagName("Payload").item(0);
-		payload.setTextContent(wsdlContent);
+		payload.setTextContent(addDefaultNamespace(wsdlContent));
 
 		xmlUtils.writeXML(getWsdlRaiseFaultPolicy, buildFolder + File.separator + "apiproxy" + File.separator
 				+ "policies" + File.separator + "return-wsdl.xml");

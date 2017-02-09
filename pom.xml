@@ -5,7 +5,7 @@
 	<artifactId>wsdl2apigee</artifactId>
 	<version>1.0.0</version>
 	<name>wsdl2apigee</name>
-	<description>wsdl2apigee is an open source framework to generate Apigee API Proxies from WSDLs.</description>
+	<description>wsdl2apigee is an open source framework to generate Apigee Edge API Proxies from WSDLs.</description>
 	<scm>
 		<connection>scm:git:git@github.com:apigee/wsdl2apigee.git</connection>
 	</scm>
@@ -18,14 +18,14 @@
 	<developers>
 		<developer>
 			<name>Srinandan Sridhar</name>
-			<email>ssridhar@apigee.com</email>
-			<organization>Apigee</organization>
+			<email>srinandans@google.com</email>
+			<organization>Google</organization>
 			<organizationUrl>https://apigee.com/about/</organizationUrl>
 		</developer>
 		<developer>
 			<name>Charles Overbeck</name>
-			<email>coverbeck@apigee.com</email>
-			<organization>Apigee</organization>
+			<email>coverbeck@google.com</email>
+			<organization>Google</organization>
 			<organizationUrl>https://apigee.com/about/</organizationUrl>
 		</developer>
 	</developers>

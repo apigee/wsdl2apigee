@@ -3,13 +3,11 @@ package com.apigee.proxywriter;
 import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
 import com.apigee.utils.WsdlDefinitions;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +17,9 @@ import java.util.zip.ZipInputStream;
 public class GenerateProxyTest {
 
 
-    public static final String WEATHER_WSDL = "http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
+    public static final String WEATHER_WSDL = "/Weather.asmx.wsdl";//"http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
+    public static final String BLZ_WSDL = "/BLZService.wsdl";
+    public static final String STOCK_WSDL = "/delayedstockquote.asmx.wsdl";
     public static final String oMap = "<proxywriter><get><operation><pattern>get</pattern><location>beginsWith</location></operation><operation><pattern>inq</pattern><location>beginsWith</location></operation><operation><pattern>search</pattern><location>beginsWith</location></operation><operation><pattern>list</pattern><location>beginsWith</location></operation><operation><pattern>retrieve</pattern><location>beginsWith</location></operation></get><post><operation><pattern>create</pattern><location>contains</location></operation><operation><pattern>add</pattern><location>beginsWith</location></operation><operation><pattern>process</pattern><location>beginsWith</location></operation></post><put><operation><pattern>update</pattern><location>beginsWith</location></operation><operation><pattern>change</pattern><location>beginsWith</location></operation><operation><pattern>modify</pattern><location>beginsWith</location></operation><operation><pattern>set</pattern><location>beginsWith</location></operation></put><delete><operation><pattern>delete</pattern><location>beginsWith</location></operation><operation><pattern>remove</pattern><location>beginsWith</location></operation><operation><pattern>del</pattern><location>beginsWith</location></operation></delete></proxywriter>";
 
     private void checkForFilesInBundle(List<String> filenames, InputStream inputStream) throws IOException {
@@ -73,7 +73,11 @@ public class GenerateProxyTest {
                 "apiproxy/proxies/default.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/Weather.xml");
-        final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", true, "", "/foo", "default,secure", false, false, false, false, null));
+
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
+        
+        final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", true, "", "/foo", "default,secure", false, false, false, false, null));
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/Extract-Operation-Name.xml", inputStream);
@@ -129,7 +133,11 @@ public class GenerateProxyTest {
                 "apiproxy/targets/default.xml",
                 "apiproxy/policies/return-open-api.xml",
                 "apiproxy/Weather.xml");
-        final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false, null));
+
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
+        
+        final InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false, null));
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/extract-format.xml", inputStream);
@@ -151,12 +159,15 @@ public class GenerateProxyTest {
 
     @Test
     public void testVHosts() throws Exception {
-        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false, null));
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
+    	
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", false, false, false, false, null));
         String entry = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
         Assert.assertTrue(entry.contains("<VirtualHost>default</VirtualHost"));
         Assert.assertTrue(entry.contains("<VirtualHost>secure</VirtualHost"));
 
-        inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default", false, false, false, false, null));
+        inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default", false, false, false, false, null));
         entry = readZipFileEntry("apiproxy/proxies/default.xml", inputStream);
         Assert.assertTrue(entry.contains("<VirtualHost>default</VirtualHost"));
         Assert.assertFalse(entry.contains("<VirtualHost>secure</VirtualHost"));
@@ -164,30 +175,39 @@ public class GenerateProxyTest {
 
     @Test
     public void testCors() throws Exception {
-        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+    	
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
         final String entry = readZipFileEntry("apiproxy/policies/add-cors.xml", inputStream);
         Assert.assertTrue(entry.length() > 0);
     }
 
     @Test
     public void testSoapActionHeaderNotPresentForHttpBinding() throws Exception {
-        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherHttpPost", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherHttpPost", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
         final String entry = readZipFileEntry("apiproxy/policies/GetWeatherInformation-build-soap.xml", inputStream);
         Assert.assertFalse(entry.contains("<Header name=\"SOAPAction\"/>"));
     }
 
     @Test
     public void testSoapActionHeaderPresentForSoapBinding() throws Exception {
-        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
         final String entry = readZipFileEntry("apiproxy/policies/GetWeatherInformation-build-soap.xml", inputStream);
         Assert.assertTrue(entry.contains("<Header name=\"SOAPAction\">http://ws.cdyne.com/WeatherWS/GetWeatherInformation</Header>"));
     }
 
     @Test
     public void testSelectedOperations2() throws Exception {
-        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
+        InputStream inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false, "Whatever", "/foo", "default,secure", true, false, false, false, null));
         final int countWithNoSelectedJson = entryCount(inputStream);
-        inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(WEATHER_WSDL, "WeatherSoap", false,
+        inputStream = GenerateProxy.generateProxy(new GenerateProxyOptions(CLIENT_SERVICE_WSDL, "WeatherSoap", false,
                 "Whatever", "/foo", "default,secure", true, false, false, false,
                 "[{\"operationName\": \"GetWeatherInformation\", \"verb\": \"GET\", \"resourcePath\": \"\\\\whatever\"}]"));
         Assert.assertNotEquals("Selected operations not working as expected", countWithNoSelectedJson, entryCount(inputStream));
@@ -195,7 +215,9 @@ public class GenerateProxyTest {
 
     @Test
     public void testParseWsdl() throws ErrorParsingWsdlException {
-        final WsdlDefinitions wsdlDefinitions = GenerateProxy.parseWsdl(WEATHER_WSDL);
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
+        final WsdlDefinitions wsdlDefinitions = GenerateProxy.parseWsdl(CLIENT_SERVICE_WSDL);
         Assert.assertTrue(1 == wsdlDefinitions.getServices().size());
         final WsdlDefinitions.Service service = wsdlDefinitions.getServices().get(0);
         Assert.assertEquals("Weather", service.getName());
@@ -214,7 +236,9 @@ public class GenerateProxyTest {
 
     @Test
     public void testParseWsdlDoesNotShowPortsWithoutSOAPBindings() throws ErrorParsingWsdlException {
-        final WsdlDefinitions wsdlDefinitions = GenerateProxy.parseWsdl(WEATHER_WSDL);
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
+        final WsdlDefinitions wsdlDefinitions = GenerateProxy.parseWsdl(CLIENT_SERVICE_WSDL);
         final WsdlDefinitions.Service service = wsdlDefinitions.getServices().get(0);
         final List<WsdlDefinitions.Port> ports = service.getPorts();
         Assert.assertEquals(ports.size(), 2);
@@ -222,22 +246,24 @@ public class GenerateProxyTest {
 
     @Test
     public void testOpsMap1 () throws Exception {
-
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
         GenerateProxy genProxy = new GenerateProxy();
         genProxy.setOpsMap(oMap);
         genProxy.setPassThru(false);
-        final InputStream inputStream = genProxy.begin("test case", WEATHER_WSDL);
+        final InputStream inputStream = genProxy.begin("test case", CLIENT_SERVICE_WSDL);
         inputStream.reset();
     }
 
     @Test
     public void testOpsMap2 () throws Exception {
-
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
         GenerateProxy genProxy = new GenerateProxy();
 //        String jsonOMap = "{\r\n  \"proxywriter\": {\r\n    \"get\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"get\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"inq\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"search\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"list\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"retrieve\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"post\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"create\",\r\n          \"location\": \"contains\"\r\n        },\r\n        {\r\n          \"pattern\": \"add\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"process\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"put\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"update\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"change\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"modify\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"set\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    },\r\n    \"delete\": {\r\n      \"operation\": [\r\n        {\r\n          \"pattern\": \"delete\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"remove\",\r\n          \"location\": \"beginsWith\"\r\n        },\r\n        {\r\n          \"pattern\": \"del\",\r\n          \"location\": \"beginsWith\"\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}";
         genProxy.setOpsMap(oMap);
         genProxy.setPassThru(false);
-        final InputStream inputStream = genProxy.begin("test case", WEATHER_WSDL);
+        final InputStream inputStream = genProxy.begin("test case", CLIENT_SERVICE_WSDL);
         inputStream.reset();
     }
 
@@ -303,7 +329,8 @@ public class GenerateProxyTest {
     
     @Test
     public void testHttpBinding() throws Exception {
-        final String CLIENT_SERVICE_WSDL = "http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
+        URL url = this.getClass().getResource(WEATHER_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();    	    	
         final GenerateProxy generateProxy = new GenerateProxy();
         generateProxy.setService("Weather");
         generateProxy.setPort("WeatherHttpGet");
@@ -320,7 +347,8 @@ public class GenerateProxyTest {
     
     @Test 
     public void testHttpPort() throws Exception {
-        final String CLIENT_SERVICE_WSDL = "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
+        URL url = this.getClass().getResource(BLZ_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
         final GenerateProxy generateProxy = new GenerateProxy();
         generateProxy.setService("BLZService");
         generateProxy.setPort("BLZServiceHttpport");
@@ -333,9 +361,10 @@ public class GenerateProxyTest {
 
     @Test
     public void testOASpec() throws Exception {
-        final String CLIENT_SERVICE_WSDL = "http://www.thomas-bayer.com/axis2/services/BLZService?wsdl";
+        URL url = this.getClass().getResource(BLZ_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
         final GenerateProxy generateProxy = new GenerateProxy();
-        final String OAS = "{\r\n     \"basePath\": \"/blzservice\",\r\n     \"paths\": {\"/bank\": {\"get\": {\r\n          \"description\": \"Implements WSDL operation getBank\",\r\n          \"responses\": {\"200\": {\r\n               \"schema\": {\"$ref\": \"#/definitions/undefined\"},\r\n               \"description\": \"Successful response\"\r\n          }},\r\n          \"parameters\": [{\r\n               \"in\": \"query\",\r\n               \"name\": \"blz\",\r\n               \"description\": \"\",\r\n               \"type\": \"string\",\r\n               \"required\": false\r\n          }]\r\n     }}},\r\n     \"host\": \"www.thomas-bayer.com\",\r\n     \"produces\": [\"application/json\"],\r\n     \"schemes\": [\"http\"],\r\n     \"definitions\": {\"undefined\": {\"properties\": {\"message\": {\"type\": \"string\"}}}},\r\n     \"swagger\": \"2.0\",\r\n     \"info\": {\r\n          \"license\": {\"name\": \"Apache 2.0\"},\r\n          \"contact\": {\"name\": \"API Team\"},\r\n          \"description\": \"A OAS document generated from WSDL\",\r\n          \"termsOfService\": \"\",\r\n          \"title\": \"BLZService\",\r\n          \"version\": \"1.0.0\"\r\n     },\r\n     \"consumes\": [\"application/json\"]\r\n}";
+        //final String OAS = "{\r\n     \"basePath\": \"/blzservice\",\r\n     \"paths\": {\"/bank\": {\"get\": {\r\n          \"description\": \"Implements WSDL operation getBank\",\r\n          \"responses\": {\"200\": {\r\n               \"schema\": {\"$ref\": \"#/definitions/undefined\"},\r\n               \"description\": \"Successful response\"\r\n          }},\r\n          \"parameters\": [{\r\n               \"in\": \"query\",\r\n               \"name\": \"blz\",\r\n               \"description\": \"\",\r\n               \"type\": \"string\",\r\n               \"required\": false\r\n          }]\r\n     }}},\r\n     \"host\": \"www.thomas-bayer.com\",\r\n     \"produces\": [\"application/json\"],\r\n     \"schemes\": [\"http\"],\r\n     \"definitions\": {\"undefined\": {\"properties\": {\"message\": {\"type\": \"string\"}}}},\r\n     \"swagger\": \"2.0\",\r\n     \"info\": {\r\n          \"license\": {\"name\": \"Apache 2.0\"},\r\n          \"contact\": {\"name\": \"API Team\"},\r\n          \"description\": \"A OAS document generated from WSDL\",\r\n          \"termsOfService\": \"\",\r\n          \"title\": \"BLZService\",\r\n          \"version\": \"1.0.0\"\r\n     },\r\n     \"consumes\": [\"application/json\"]\r\n}";
     	generateProxy.setOpsMap(oMap);
     	final InputStream inputStream = generateProxy.begin("Test OAS generation", CLIENT_SERVICE_WSDL);
     }
@@ -391,12 +420,28 @@ public class GenerateProxyTest {
     
     @Test
     public void testInvalidOutputSchema() throws Exception {
-    	final String CLIENT_SERVICE_WSDL = "https://ws.cdyne.com/delayedstockquote/delayedstockquote.asmx?WSDL";
+        URL url = this.getClass().getResource(STOCK_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
     	final GenerateProxy generateProxy = new GenerateProxy();
     
     	generateProxy.setOpsMap(oMap);
     	generateProxy.setPassThru(false);
     	
         final InputStream inputStream = generateProxy.begin("Test WSDL with invalid output schema", CLIENT_SERVICE_WSDL);
+    }
+        
+    @Test
+    public void testDefaultNamespace() throws Exception {
+        URL url = this.getClass().getResource(STOCK_WSDL);
+        final String CLIENT_SERVICE_WSDL = url.toString();
+    	final GenerateProxy generateProxy = new GenerateProxy();
+    
+    	generateProxy.setPassThru(true);
+    	
+        final InputStream inputStream = generateProxy.begin("Test default namespace", CLIENT_SERVICE_WSDL);
+
+        final String proxiesDefault = readZipFileEntry("apiproxy/policies/return-wsdl.xml", inputStream);
+        Assert.assertTrue(proxiesDefault.contains("xmlns='http://schemas.xmlsoap.org/wsdl/'"));
+    	
     }
 }
