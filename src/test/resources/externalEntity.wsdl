@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE foo [<!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:tns="http://www.apigee.com/apigee-edu/availability/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  name="availability" targetNamespace="http://www.apigee.com/apigee-edu/availability/">
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://www.apigee.com/apigee-edu/availability/">
+            <xsd:element name="getAvailability">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="in" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="getAvailabilityResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="out" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:complexType name="Criteria">
+                <xsd:sequence>
+                    <xsd:element name="stores" type="tns:StoreSearch"/>
+                    <xsd:element name="products" type="tns:ProductSearch"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Results">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="product" nillable="true" type="tns:Product"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="ProductSearch">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="3" minOccurs="0" name="productid" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="StoreSearch">
+                <xsd:sequence>
+                    <xsd:element maxOccurs="3" minOccurs="0" name="storeid" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+            <xsd:complexType name="Product">
+                <xsd:sequence>
+                    <xsd:element name="productid" type="xsd:string"/>
+                    <xsd:element name="qty" type="xsd:string"/>
+                    <xsd:element name="storeid" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:schema>
+    </wsdl:types>
+    <wsdl:message name="getAvailabilityRequest">
+        <wsdl:part name="Search" type="tns:Criteria"/>
+    </wsdl:message>
+    <wsdl:message name="getAvailabilityResponse">
+        <wsdl:part name="Products" type="tns:Results"/>
+    </wsdl:message>
+    <wsdl:portType name="availability">
+        <wsdl:operation name="getAvailability">
+            <wsdl:input message="tns:getAvailabilityRequest"/>
+            <wsdl:output message="tns:getAvailabilityResponse"/>
+            <wsdl:documentation>&xxe;</wsdl:documentation>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="availabilitySOAP" type="tns:availability">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="getAvailability">
+            <soap:operation soapAction="http://www.apigee.com/apigee-edu/availability/getAvailability"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="availability">
+        <wsdl:port binding="tns:availabilitySOAP" name="availabilitySOAP">
+            <soap:address location="https://edgemarket-test.apigee.net/v1/availability"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
