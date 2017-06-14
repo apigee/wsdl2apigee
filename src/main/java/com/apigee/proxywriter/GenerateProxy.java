@@ -41,6 +41,12 @@ import com.apigee.oas.OASUtils;
 import com.apigee.proxywriter.exception.*;
 import com.apigee.utils.*;
 import com.google.gson.*;
+import com.predic8.soamodel.*;
+import com.predic8.util.HTTPUtil;
+import com.predic8.wsdl.*;
+import com.predic8.wsdl.Operation;
+import com.predic8.wsi.WSIResult;
+import com.predic8.xml.util.ExternalResolver;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.w3c.dom.Document;
@@ -66,21 +72,15 @@ import com.predic8.schema.SchemaComponent;
 import com.predic8.schema.Sequence;
 import com.predic8.schema.SimpleContent;
 import com.predic8.schema.TypeDefinition;
-import com.predic8.soamodel.XMLElement;
-import com.predic8.wsdl.AbstractSOAPBinding;
-import com.predic8.wsdl.Binding;
-import com.predic8.wsdl.BindingOperation;
-import com.predic8.wsdl.Definitions;
-import com.predic8.wsdl.Operation;
-import com.predic8.wsdl.Part;
-import com.predic8.wsdl.PortType;
-import com.predic8.wsdl.Service;
-import com.predic8.wsdl.WSDLParser;
 import com.predic8.wstool.creator.RequestTemplateCreator;
 import com.predic8.wstool.creator.SOARequestCreator;
 
 import groovy.xml.MarkupBuilder;
 import groovy.xml.QName;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 public class GenerateProxy {
 
@@ -2227,7 +2227,7 @@ public class GenerateProxy {
 
 		Service service = null;
 		com.predic8.wsdl.Port port = null;
-		WSDLParser parser = new WSDLParser();
+		WSDLParser2 parser = new WSDLParser2();
 		Definitions wsdl = null;
 
 		wsdl = parser.parse(wsdlPath);
@@ -2303,7 +2303,7 @@ public class GenerateProxy {
 		List<Service> services = new ArrayList<Service>();
 
 		try {
-			WSDLParser parser = new WSDLParser();
+			WSDLParser2 parser = new WSDLParser2();
 			wsdl = parser.parse(wsdlPath);
 			if (wsdl.getServices().size() == 0) {
 				LOGGER.severe("No services were found in the WSDL");
@@ -3129,7 +3129,7 @@ public class GenerateProxy {
 	}
 
 	public static WsdlDefinitions parseWsdl(String wsdl) throws ErrorParsingWsdlException {
-		final WSDLParser wsdlParser = new WSDLParser();
+		final WSDLParser2 wsdlParser = new WSDLParser2();
 		try {
 			final Definitions definitions = wsdlParser.parse(wsdl);
 			return definitionsToWsdlDefinitions(definitions);
@@ -3160,5 +3160,99 @@ public class GenerateProxy {
 
 		return (errorMessage.toString());
 
+	}
+
+    /**
+     * Copy and modify for Java com.predic8.wsdl.WSDLParser.groovy. Then update it to protect against XSS attacks
+	 * in getToken
+     */
+	private static class WSDLParser2 {
+
+		private ExternalResolver resourceResolver = new ExternalResolver();
+
+		public Definitions parse(String input)  {
+			final WSDLParserContext wsdlParserContext = new WSDLParserContext();
+			wsdlParserContext.setInput(input);
+			try {
+				return parse(wsdlParserContext);
+			}
+			catch (XMLStreamException e) {
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+
+		protected Definitions parseLocal(XMLStreamReader token, AbstractParserContext ctx) throws XMLStreamException {
+			final String encoding = token.getCharacterEncodingScheme();
+			if( encoding == null || (!encoding.equals("UTF-8") && !encoding.equals("UTF-16"))) {
+				final WSIResult wsiResults = new WSIResult();
+				wsiResults.setRule("R4003");
+				ArrayList<WSIResult> wsiResultsList = (ArrayList<WSIResult>) ctx.getWsiResults();
+				wsiResultsList.add(wsiResults);
+			}
+			Definitions definitions = null;
+			while(token.hasNext()) {
+				if (token.isStartElement()) {
+					if(token.getName().equals(Definitions.ELEMENTNAME)) {
+						definitions = new Definitions();
+						definitions.setBaseDir(ctx.getNewBaseDir());
+						definitions.setResourceResolver(ctx.getResourceResolver());
+						definitions.setRegistry(new Registry());
+						((WSDLParserContext) ctx).getWsdlElementOrder().add(definitions);
+						definitions.parse(token, ctx);
+					}
+					else if(token.getName().getNamespaceURI().equals(Consts.WSDL20_NS)) {
+						throw new WSDLVersion2NotSupportedException("WSDL 2.0 is not supported yet.");
+					}
+					else {
+						throw new WrongGrammarException("Expected root element '{http://schemas.xmlsoap.org/wsdl/}definitions' for the WSDL document but was '${token.name}'.", token.getName(), token.getLocation());
+					}
+				}
+				if(token.hasNext()) token.next();
+			}
+			if(definitions == null) throw new RuntimeException("The parsed document ${ctx.input} is not a valid WSDL document.");
+			return definitions;
+
+		}
+
+		protected Definitions parse(AbstractParserContext ctx) throws XMLStreamException {
+			updateCtx(ctx);
+			return parseLocal(getResourceToken(ctx), ctx);
+		}
+
+		private void updateCtx(AbstractParserContext ctx) {
+			if (ctx.getBaseDir() == null) {
+				ctx.setBaseDir("");
+			}
+			ctx.setNewBaseDir(HTTPUtil.updateBaseDir(ctx.getInput(), ctx.getBaseDir()));
+			if (ctx.getResourceResolver() == null) {
+				ctx.setResourceResolver(resourceResolver);
+			}
+			if (ctx.getWsiResults() == null) {
+				ctx.setWsiResults(new ArrayList<WSIResult>());
+			}
+			if (ctx.getErrors() == null) {
+				ctx.setErrors(new ArrayList<ValidationError>());
+			}
+		}
+
+		private XMLStreamReader getResourceToken(AbstractParserContext ctx) throws XMLStreamException {
+			return getToken(resourceResolver.resolve(ctx.getInput(), ctx.getBaseDir()));
+		}
+
+		private XMLStreamReader getToken(Object res) throws XMLStreamException {
+			final XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+			// XSS Protection added here
+			xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+			xmlInputFactory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, false);
+			xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+			// End XSS Protection
+			if (res instanceof InputStream) {
+				return xmlInputFactory.createXMLStreamReader((InputStream) res);
+			}
+			else if (res instanceof Reader) {
+				return xmlInputFactory.createXMLStreamReader((Reader) res);
+			}
+			return null;
+		}
 	}
 }
