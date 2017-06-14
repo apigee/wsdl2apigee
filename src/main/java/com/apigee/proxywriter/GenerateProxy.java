@@ -3163,7 +3163,8 @@ public class GenerateProxy {
 	}
 
     /**
-     * Copy and modify com.predic8.wsdl.WSDLParser.groovy to protect against XSS attacks
+     * Copy and modify for Java com.predic8.wsdl.WSDLParser.groovy. Then update it to protect against XSS attacks
+	 * in getToken
      */
 	private static class WSDLParser2 {
 
@@ -3240,9 +3241,11 @@ public class GenerateProxy {
 
 		private XMLStreamReader getToken(Object res) throws XMLStreamException {
 			final XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+			// XSS Protection added here
 			xmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
 			xmlInputFactory.setProperty(XMLInputFactory.IS_REPLACING_ENTITY_REFERENCES, false);
 			xmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+			// End XSS Protection
 			if (res instanceof InputStream) {
 				return xmlInputFactory.createXMLStreamReader((InputStream) res);
 			}
