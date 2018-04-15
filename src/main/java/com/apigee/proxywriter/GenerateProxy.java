@@ -211,7 +211,7 @@ public class GenerateProxy {
 	// open-api feature
 	private JsonObject definitions;
 	private String oasContent;
-	// store open api query params
+	// store openapi query params
 	private ArrayList<String> queryParams;
 
 	// initialize the logger
@@ -563,7 +563,7 @@ public class GenerateProxy {
 		flow = proxyDefault.createElement("Flow");
 		((Element) flow).setAttribute("name", "GetOAS");
 		flowDescription = proxyDefault.createElement("Description");
-		flowDescription.setTextContent("Get Open API Specification");
+		flowDescription.setTextContent("Get OpenAPI Specification");
 		flow.appendChild(flowDescription);
 		request = proxyDefault.createElement("Request");
 		response = proxyDefault.createElement("Response");
@@ -2710,7 +2710,7 @@ public class GenerateProxy {
         oasContent = gson.toJson(oasObject);
 		LOGGER.fine(oasContent);
 
-		LOGGER.info("Generated Open API Spec successfully.");
+		LOGGER.info("Generated OpenAPI Spec successfully.");
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 
@@ -2795,7 +2795,7 @@ public class GenerateProxy {
 
 				getWSDLDetails(wsdlPath);
 
-				// generate Open API Specification
+				// generate OpenAPI Specification
 				generateOAS();
 				// parse the wsdl
 				parseWSDL();
