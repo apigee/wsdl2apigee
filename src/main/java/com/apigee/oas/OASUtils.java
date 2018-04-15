@@ -90,7 +90,7 @@ public class OASUtils {
     	
     	parameter.addProperty("name", name);
     	parameter.addProperty("in", "body");
-    	parameter.addProperty("required", "true");
+    	parameter.addProperty("required", true);
     	parameter.add("schema", schemaReference);
     	parameters.add(parameter);
     	
