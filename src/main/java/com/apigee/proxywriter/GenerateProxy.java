@@ -147,6 +147,7 @@ public class GenerateProxy {
 	private boolean ALLPOST;
 	// set this to true if oauth should be added to the proxy
 	private boolean OAUTH;
+
 	// set this to true if apikey should be added to the proxy
 	private boolean APIKEY;
 	// enable this flag if api key based quota is enabled
@@ -159,6 +160,8 @@ public class GenerateProxy {
 	private boolean RPCSTYLE;
 	// enable this flag if user sets desc
 	private boolean DESCSET;
+	// set this to true if allowEmptyNodes should be added to the proxy
+	private boolean ALLOW_EMPTY_NODES;		
 	// fail safe measure when schemas are heavily nested or have 100s of
 	// elements
 	private boolean TOO_MANY;
@@ -244,6 +247,7 @@ public class GenerateProxy {
 		ALLPOST = false;
 		PASSTHRU = false;
 		OAUTH = false;
+		ALLOW_EMPTY_NODES = false;
 		APIKEY = false;
 		QUOTAAPIKEY = false;
 		QUOTAOAUTH = false;
@@ -320,6 +324,10 @@ public class GenerateProxy {
 	public void setOAuth(boolean oauth) {
 		OAUTH = oauth;
 	}
+	
+	public void setAllowEmptyNodes(boolean allowEmptyNodes) {
+		ALLOW_EMPTY_NODES = allowEmptyNodes;
+	}	
 
 	public String getTargetEndpoint() {
 		return targetEndpoint;
@@ -637,15 +645,17 @@ public class GenerateProxy {
 				step2.appendChild(name2);
 				request.appendChild(step2);
 
-				if (apiMap.getJsonBody() != null) {
-					step3 = proxyDefault.createElement("Step");
-					name3 = proxyDefault.createElement("Name");
-					name3.setTextContent("remove-empty-nodes");
-					Node condition3 = proxyDefault.createElement("Condition");
-					condition3.setTextContent("(verb == \"GET\")");
-					step3.appendChild(name3);
-					step3.appendChild(condition3);
-					request.appendChild(step3);
+				if(!ALLOW_EMPTY_NODES) {
+					if (apiMap.getJsonBody() != null) {
+						step3 = proxyDefault.createElement("Step");
+						name3 = proxyDefault.createElement("Name");
+						name3.setTextContent("remove-empty-nodes");
+						Node condition3 = proxyDefault.createElement("Condition");
+						condition3.setTextContent("(verb == \"GET\")");
+						step3.appendChild(name3);
+						step3.appendChild(condition3);
+						request.appendChild(step3);
+					}
 				}
 
 				LOGGER.fine("Assign Message: " + buildSOAPPolicy);
@@ -1520,8 +1530,8 @@ public class GenerateProxy {
 					ComplexType ct = (ComplexType) typeDefinition;
 					JsonObject rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(),
 							e.getMaxOccurs());
-					OASUtils.addObject(parent, parentName, e.getName());
-					definitions.add(e.getName(), rootElement);
+					OASUtils.addObject(parent, parentName, e.getName(), true,e.getType().getLocalPart());
+					definitions.add(e.getType().getLocalPart(), rootElement);
 					parseSchema(ct.getModel(), schemas, e.getName(), rootElement);
 				}
 			}
@@ -2886,6 +2896,7 @@ public class GenerateProxy {
 		System.out.println("-basepath=specify base path");
 		System.out.println("-cors=<true|false>        default is false");
 		System.out.println("-debug=<true|false>       default is false");
+		System.out.println("-allowEmptyNodes=<true|false>    default is false; works only if it is set to true");
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Examples:");
@@ -3002,7 +3013,10 @@ public class GenerateProxy {
 		opt.getSet().addOption("oas", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add verify allowEmptyNodes policy
+		opt.getSet().addOption("allowEmptyNodes", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
+		
 		opt.check();
 
 		if (opt.getSet().isSet("wsdl")) {
@@ -3080,6 +3094,10 @@ public class GenerateProxy {
 			}
 		}
 
+		if (opt.getSet().isSet("allowEmptyNodes")) {
+			genProxy.setAllowEmptyNodes(new Boolean(opt.getSet().getOption("allowEmptyNodes").getResultValue(0)));
+		}
+		
 		if (opt.getSet().isSet("apikey")) {
 			genProxy.setAPIKey(new Boolean(opt.getSet().getOption("apikey").getResultValue(0)));
 			if (opt.getSet().isSet("quota")) {

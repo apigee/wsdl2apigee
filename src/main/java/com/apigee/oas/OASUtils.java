@@ -104,6 +104,16 @@ public class OASUtils {
 		properties.add(objectName, object);
 	}
 	
+	public static void addObject(JsonObject parent, String parentName, String objectName,boolean isChildComplexType, String qNameLocal) {
+		JsonObject properties = parent.getAsJsonObject("properties");
+		JsonObject object = new JsonObject();
+		if(isChildComplexType)
+		{
+			object.addProperty("$ref", "#/definitions/"+qNameLocal);
+		}
+		properties.add(objectName, object);
+	}
+	
 	public static JsonObject createComplexType(String name, String min, String max) {
 		JsonObject complexType = new JsonObject();
 		JsonObject properties = new JsonObject();
