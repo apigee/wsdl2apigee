@@ -144,6 +144,14 @@ public class OASUtils {
 		}
 		return complexType;
 	}
+	public static JsonObject createExtension(String baseName) {
+		JsonObject extension = new JsonObject();
+		JsonObject properties = new JsonObject();
+		extension.addProperty("type", "object");
+		extension.add("properties", properties);
+		
+		return extension;
+	}
 	
 	public static JsonObject createSimpleType(String type, String min, String max) {
 		JsonObject simpleType = new JsonObject();
