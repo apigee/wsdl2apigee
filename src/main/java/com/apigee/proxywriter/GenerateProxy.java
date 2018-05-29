@@ -1693,6 +1693,31 @@ public class GenerateProxy {
 				LOGGER.warning("unhandle conditions getRef() = null");
 			}
 		} else {
+			LOGGER.info("element name=="+e.getName() + ", element type=="+e.getType() + ",embedded type"+e.getEmbeddedType());
+			if(e.getType() != null)
+			{
+				TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
+				if(typeDefinition instanceof com.predic8.schema.SimpleType)
+				{
+					com.predic8.schema.SimpleType simpleType =  (com.predic8.schema.SimpleType )typeDefinition;
+					com.predic8.schema.restriction.BaseRestriction baseRestriction = simpleType.getRestriction();
+					if(baseRestriction != null && baseRestriction.getBase().getLocalPart().equals("string"))
+					{
+						JsonObject restriction = OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
+						JsonArray enumArray = (JsonArray)restriction.get("enum");
+				
+						for (com.predic8.schema.restriction.facet.EnumerationFacet en : baseRestriction.getEnumerationFacets()) {
+							LOGGER.info("Restriction value =="+en.getValue());
+							enumArray.add(new JsonPrimitive(en.getValue()));
+						}
+						JsonObject properties = parent.getAsJsonObject("properties");
+						properties.add(e.getName(), restriction);
+						LOGGER.info("Parent=="+parent);
+						return;
+					}
+					
+				}
+			}
 			if (e.getEmbeddedType() instanceof ComplexType) {
 				ComplexType ct = (ComplexType) e.getEmbeddedType();
 				JsonObject rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(), e.getMaxOccurs());

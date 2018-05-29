@@ -152,6 +152,12 @@ public class OASUtils {
 		
 		return extension;
 	}
+	public static JsonObject createRestriction(String type, String min, String max) {
+		JsonObject restriction = createSimpleType(type,min,max);
+		JsonArray enumArray = new JsonArray();
+		restriction.add("enum", enumArray);
+		return restriction;
+	}
 	
 	public static JsonObject createSimpleType(String type, String min, String max) {
 		JsonObject simpleType = new JsonObject();
