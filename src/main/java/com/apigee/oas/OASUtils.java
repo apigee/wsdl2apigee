@@ -155,7 +155,16 @@ public class OASUtils {
 	public static JsonObject createRestriction(String type, String min, String max) {
 		JsonObject restriction = createSimpleType(type,min,max);
 		JsonArray enumArray = new JsonArray();
-		restriction.add("enum", enumArray);
+		if(restriction.get("items") != null)
+		{
+			JsonObject items = (JsonObject)restriction.get("items");
+			items.add("enum", enumArray);
+		}
+		else
+		{
+			restriction.add("enum", enumArray);
+		}
+		
 		return restriction;
 	}
 	

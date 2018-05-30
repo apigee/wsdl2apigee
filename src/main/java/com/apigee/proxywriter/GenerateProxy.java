@@ -1699,12 +1699,17 @@ public class GenerateProxy {
 				TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
 				if(typeDefinition instanceof com.predic8.schema.SimpleType)
 				{
+					LOGGER.info("Parent1*****"+parent);
 					com.predic8.schema.SimpleType simpleType =  (com.predic8.schema.SimpleType )typeDefinition;
 					com.predic8.schema.restriction.BaseRestriction baseRestriction = simpleType.getRestriction();
 					if(baseRestriction != null && baseRestriction.getBase().getLocalPart().equals("string"))
 					{
 						JsonObject restriction = OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
-						JsonArray enumArray = (JsonArray)restriction.get("enum");
+						JsonArray enumArray = null;
+						if(restriction.get("items")==null)
+							enumArray = (JsonArray)restriction.get("enum");
+						else
+							enumArray = (JsonArray)((JsonObject)restriction.get("items")).get("enum");
 				
 						for (com.predic8.schema.restriction.facet.EnumerationFacet en : baseRestriction.getEnumerationFacets()) {
 							LOGGER.info("Restriction value =="+en.getValue());
