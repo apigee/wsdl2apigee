@@ -1693,36 +1693,6 @@ public class GenerateProxy {
 				LOGGER.warning("unhandle conditions getRef() = null");
 			}
 		} else {
-			LOGGER.info("element name=="+e.getName() + ", element type=="+e.getType() + ",embedded type"+e.getEmbeddedType());
-			if(e.getType() != null)
-			{
-				TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
-				if(typeDefinition instanceof com.predic8.schema.SimpleType)
-				{
-					LOGGER.info("Parent1*****"+parent);
-					com.predic8.schema.SimpleType simpleType =  (com.predic8.schema.SimpleType )typeDefinition;
-					com.predic8.schema.restriction.BaseRestriction baseRestriction = simpleType.getRestriction();
-					if(baseRestriction != null && baseRestriction.getBase().getLocalPart().equals("string"))
-					{
-						JsonObject restriction = OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
-						JsonArray enumArray = null;
-						if(restriction.get("items")==null)
-							enumArray = (JsonArray)restriction.get("enum");
-						else
-							enumArray = (JsonArray)((JsonObject)restriction.get("items")).get("enum");
-				
-						for (com.predic8.schema.restriction.facet.EnumerationFacet en : baseRestriction.getEnumerationFacets()) {
-							LOGGER.info("Restriction value =="+en.getValue());
-							enumArray.add(new JsonPrimitive(en.getValue()));
-						}
-						JsonObject properties = parent.getAsJsonObject("properties");
-						properties.add(e.getName(), restriction);
-						LOGGER.info("Parent=="+parent);
-						return;
-					}
-					
-				}
-			}
 			if (e.getEmbeddedType() instanceof ComplexType) {
 				ComplexType ct = (ComplexType) e.getEmbeddedType();
 				JsonObject rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(), e.getMaxOccurs());
@@ -1856,11 +1826,7 @@ public class GenerateProxy {
 		} else if (sc instanceof ComplexContent) {
 			ComplexContent complexContent = (ComplexContent) sc;
 			Derivation derivation = complexContent.getDerivation();
-			if(derivation != null && derivation.getClass().getSimpleName().equals("Extension"))
-			{
-				parseExtension(sc,schemas,rootElementName,rootElement);
-				return;
-			}
+
 			if (derivation != null) {
 				TypeDefinition typeDefinition = getTypeFromSchema(derivation.getBase(), schemas);
 				if (typeDefinition instanceof ComplexType) {
@@ -1887,37 +1853,6 @@ public class GenerateProxy {
 		} else if (sc instanceof All) {
 			All all = (All) sc;
 			for (com.predic8.schema.Element e : all.getElements()) {
-				parseElement(e, schemas, rootElement, rootElementName);
-			}
-		}
-	}
-	private void parseExtension(SchemaComponent sc,List<Schema> schemas, String rootElementName,JsonObject rootElement)
-	{
-		//TypeDefinition typeDefinition = getTypeFromSchema(((ComplexContent) sc).getDerivation().getBase(), schemas);
-		JsonObject extension = OASUtils.createExtension(((ComplexContent) sc).getDerivation().getBase().getLocalPart());
-		String name= ((com.predic8.schema.ComplexType)sc.getParent()).getName();
-		Derivation extElement = ((ComplexContent) sc).getDerivation();
-		LOGGER.info("derivation in parseExtension"+extElement.getModel().getAsString());
-		TypeDefinition typeDefinition = getTypeFromSchema(((ComplexContent) sc).getDerivation().getBase(), schemas);
-		Sequence seqBase = (Sequence) ((ComplexType) typeDefinition).getModel();
-		parseSequence(seqBase,schemas,name,extension);
-		Sequence seq = (Sequence) extElement.getModel();
-		parseSequence(seq,schemas,name,extension);
-		definitions.add(name, extension);
-		LOGGER.info("rootElementName=="+rootElementName+"JsonObject rootElement object=="+rootElement);
-	}
-	private void parseSequence(Sequence seq, List<Schema> schemas, String rootElementName,JsonObject rootElement)
-	{
-		for (com.predic8.schema.Element e : seq.getElements()) {
-			if (e.getType() != null) {
-				if (isPrimitive(e.getType().getLocalPart())) {
-					JsonObject properties = rootElement.getAsJsonObject("properties");
-					properties.add(e.getName(), OASUtils.createSimpleType(e.getType().getLocalPart(),
-							e.getMinOccurs(), e.getMaxOccurs()));
-				} else {
-					parseElement(e, schemas, rootElement, rootElementName);
-				}
-			} else {
 				parseElement(e, schemas, rootElement, rootElementName);
 			}
 		}
@@ -2922,6 +2857,9 @@ public class GenerateProxy {
 			if (selectedOperationList.size() > 0 && !selectedOperationList.containsKey(op.getName())) {
 				continue;
 			}
+
+			//added this line to resolve conflicts in adding parameters to resources. 
+			queryParams.clear();
 
 			operation = new JsonObject();
 			operationDetails = new JsonObject();
