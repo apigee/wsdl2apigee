@@ -112,7 +112,23 @@ public class OASUtils {
 			object.addProperty("$ref", "#/definitions/"+qNameLocal);
 		}
 		properties.add(objectName, object);
+		
 	}
+	
+	/*
+	 * inorder to retrieve inner properties attribute to assign output elements
+	 * 
+	 */
+	public static void addObjectOutputRes(JsonObject parent, String parentName, String objectName,boolean isChildComplexType, String qNameLocal) {
+		JsonObject properties = parent.getAsJsonObject("properties").getAsJsonObject(parentName).getAsJsonObject("properties");
+		JsonObject object = new JsonObject();
+		if(isChildComplexType)
+		{
+			object.addProperty("$ref", "#/definitions/"+qNameLocal);
+		}
+		properties.add(objectName, object);
+	}
+	
 	
 	public static JsonObject createComplexType(String name, String min, String max) {
 		JsonObject complexType = new JsonObject();
@@ -132,7 +148,7 @@ public class OASUtils {
 		Integer minimum = Integer.parseInt(min);
 
 		complexType.add("properties", properties);
-
+		
 		if (maximum == -1 || maximum > 1) {
 			complexType.addProperty("type", "array");
 			//in json schemas, if the elements are unbounded, don't set maxItems
@@ -144,6 +160,7 @@ public class OASUtils {
 		}
 		return complexType;
 	}
+	
 	public static JsonObject createExtension(String baseName) {
 		JsonObject extension = new JsonObject();
 		JsonObject properties = new JsonObject();
@@ -167,6 +184,21 @@ public class OASUtils {
 		
 		return restriction;
 	}
+	
+	/*
+	 * Method used to create inner properties for each response attribute under #definitions of OAS
+	 * 
+	 */
+	public static JsonObject createComplexTypeOP(String name, JsonObject jsonObj) {
+		JsonObject properties = jsonObj.getAsJsonObject("properties");
+		JsonObject innerProp = new JsonObject();
+		JsonObject jsoonOuterProp = new JsonObject();
+		jsoonOuterProp.add("properties", innerProp);
+		properties.add(name, jsoonOuterProp);
+		
+		return properties;
+	}
+	
 	
 	public static JsonObject createSimpleType(String type, String min, String max) {
 		JsonObject simpleType = new JsonObject();
