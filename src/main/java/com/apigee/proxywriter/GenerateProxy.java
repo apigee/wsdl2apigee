@@ -1368,6 +1368,11 @@ public class GenerateProxy {
 					+ File.separator;
 			String xslResourcePath = buildFolder + File.separator + "apiproxy" + File.separator + "resources"
 					+ File.separator + "xsl" + File.separator;
+			
+			String jsResourcePath = buildFolder + File.separator + "apiproxy"
+					+ File.separator + "resources" + File.separator + "jsc" +
+					File.separator;
+			
 			/*
 			 * String jsResourcePath = buildFolder + File.separator + "apiproxy"
 			 * + File.separator + "resources" + File.separator + "jsc" +
@@ -1435,6 +1440,16 @@ public class GenerateProxy {
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xslt"),
 						Paths.get(xslResourcePath + "remove-namespaces.xslt"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				//Added  java script policy to remove nillable attributes in response
+				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-nillable.xml"),
+						Paths.get(targetPath + "remove-nillable.xml"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+	
+				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-nillable.js"),
+						Paths.get(jsResourcePath + "remove-nillable.js"),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);				
+				
+				
 				/*
 				 * Files.copy(getClass().getResourceAsStream(sourcePath +
 				 * "root-wrapper.js"), Paths.get(jsResourcePath +
