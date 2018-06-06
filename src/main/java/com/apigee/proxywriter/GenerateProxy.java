@@ -170,7 +170,7 @@ public class GenerateProxy {
 	// set this to true if allowSoapHeaders should be added to the proxy
 	private boolean ALLOW_SOAP_HEADERS;		
 	
-	private boolean SHOW_RESP_ROOT_ELEMENT;
+	private boolean ALLOW_RESP_ROOT_ELEMENT;
 
 	// fail safe measure when schemas are heavily nested or have 100s of
 	// elements
@@ -231,7 +231,7 @@ public class GenerateProxy {
 	private String xpathNameSpace;
 	private String xpathNameSpaceURI;
 	
-	private boolean outputOASRootElement = false;
+	private boolean addRootElementToOAS = false;
 	
 	
 	
@@ -268,7 +268,7 @@ public class GenerateProxy {
 		OAUTH = false;
 		ALLOW_EMPTY_NODES = false;
 		ALLOW_SOAP_HEADERS = false;
-		SHOW_RESP_ROOT_ELEMENT = false;
+		ALLOW_RESP_ROOT_ELEMENT = false;
 		APIKEY = false;
 		QUOTAAPIKEY = false;
 		QUOTAOAUTH = false;
@@ -354,8 +354,8 @@ public class GenerateProxy {
 		ALLOW_SOAP_HEADERS = allowSoapHeaders;
 	}	
 
-	public void setShowRespRootElement(boolean showRespRootElement) {
-		SHOW_RESP_ROOT_ELEMENT = showRespRootElement;
+	public void setAllowRespRootElement(boolean allowRespRootElement) {
+		ALLOW_RESP_ROOT_ELEMENT = allowRespRootElement;
 	}	
 
 	public String getTargetEndpoint() {
@@ -1764,9 +1764,9 @@ public class GenerateProxy {
 					xpathNameSpace = e.getType().getPrefix();
 					xpathNameSpaceURI = e.getNamespaceUri();
 					
-					if(outputOASRootElement) {
+					if(addRootElementToOAS) {
 						OASUtils.addObjectOutputRes(parent, parentName, e.getName(), true,e.getType().getLocalPart());
-						outputOASRootElement = false;
+						addRootElementToOAS = false;
 					}else {
 						OASUtils.addObject(parent, parentName, e.getName(), true,e.getType().getLocalPart());
 					}
@@ -2574,7 +2574,7 @@ public class GenerateProxy {
 				JsonObject rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(), e.getMaxOccurs());
 				JsonObject tempRootElement = rootElement;
 				JsonObject rootInnerElement;
-				if(outputOASRootElement) {
+				if(addRootElementToOAS) {
 					rootInnerElement = OASUtils.createComplexTypeOP(e.getName(), rootElement);
 					tempRootElement.add("properties", rootInnerElement);
 					rootElement = 	tempRootElement;	
@@ -2993,6 +2993,11 @@ public class GenerateProxy {
 					// TODO: handle 0 parts
 				} else {
 					com.predic8.schema.Element eInput = op.getInput().getMessage().getParts().get(0).getElement();
+					if(!verb.equalsIgnoreCase("GET")) {
+						if(ALLOW_RESP_ROOT_ELEMENT) {
+							addRootElementToOAS = true;	
+						}						
+					}
 					getOASDefinitions(wsdl, eInput);
 
 					if (!verb.equalsIgnoreCase("GET")) {
@@ -3000,6 +3005,7 @@ public class GenerateProxy {
 					} else {
 						parameters = OASUtils.getQueryParameters(queryParams);
 					}
+					addRootElementToOAS = false;
 				}
 
 				queryParams.clear();
@@ -3009,13 +3015,13 @@ public class GenerateProxy {
 						if (op.getOutput().getMessage().getParts().size() > 0) {
 							com.predic8.schema.Element eOutput = op.getOutput().getMessage().getParts().get(0).getElement();
 							if (eOutput != null) {
-								if(SHOW_RESP_ROOT_ELEMENT) {
-									outputOASRootElement = true;	
+								if(ALLOW_RESP_ROOT_ELEMENT) {
+									addRootElementToOAS = true;	
 								}
 								getOASDefinitions(wsdl, eOutput);
 								operationDetails.add("responses", OASUtils.getResponse(eOutput.getName()));
 							}
-							outputOASRootElement = false;
+							addRootElementToOAS = false;
 						}
 					}
 				} catch (Exception e) {
@@ -3218,7 +3224,7 @@ public class GenerateProxy {
 		System.out.println("-debug=<true|false>       default is false");
 		System.out.println("-allowEmptyNodes=<true|false>    default is false; works only if it is set to true");
 		System.out.println("-allowSoapHeaders=<true|false>    default is false; works only if it is set to true");
-		System.out.println("-showRespRootElement=<true|false>    default is false; works only if it is set to true");
+		System.out.println("-allowRespRootElement=<true|false>    default is false; works only if it is set to true");
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Examples:");
@@ -3339,8 +3345,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("allowEmptyNodes", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// add allowSoapHeaders functionality
 		opt.getSet().addOption("allowSoapHeaders", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// add showRespRootElement to show response root elements in OAS
-		opt.getSet().addOption("showRespRootElement", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add allowRespRootElement to show response root elements in OAS
+		opt.getSet().addOption("allowRespRootElement", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
 		
 		opt.check();
@@ -3428,8 +3434,8 @@ public class GenerateProxy {
 			genProxy.setAllowSoapHeaders(new Boolean(opt.getSet().getOption("allowSoapHeaders").getResultValue(0)));
 		}
 		
-		if (opt.getSet().isSet("showRespRootElement")) {
-			genProxy.setShowRespRootElement(new Boolean(opt.getSet().getOption("showRespRootElement").getResultValue(0)));
+		if (opt.getSet().isSet("allowRespRootElement")) {
+			genProxy.setAllowRespRootElement(new Boolean(opt.getSet().getOption("allowRespRootElement").getResultValue(0)));
 		}
 
 		if (opt.getSet().isSet("apikey")) {
