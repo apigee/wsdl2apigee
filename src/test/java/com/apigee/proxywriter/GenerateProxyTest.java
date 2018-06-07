@@ -1,24 +1,18 @@
 package com.apigee.proxywriter;
 
-import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
-import com.apigee.utils.WsdlDefinitions;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
+import com.apigee.utils.WsdlDefinitions;
 
 public class GenerateProxyTest {
 
@@ -131,9 +125,11 @@ public class GenerateProxyTest {
                 "apiproxy/policies/set-target-url.xml",
                 "apiproxy/policies/unknown-resource-xml.xml",
                 "apiproxy/policies/unknown-resource.xml",
+                "apiproxy/policies/remove-nillable.xml",
                 "apiproxy/policies/xml-to-json.xml",
                 "apiproxy/proxies/default.xml",
                 "apiproxy/resources/jsc/root-wrapper.js",
+                "apiproxy/resources/jsc/remove-nillable.js",
                 "apiproxy/resources/xsl/remove-empty-nodes.xslt",
                 "apiproxy/resources/xsl/remove-namespaces.xslt",
                 "apiproxy/targets/default.xml",
@@ -309,7 +305,9 @@ public class GenerateProxyTest {
                 "apiproxy/policies/return-open-api.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/proxies/default.xml",
-                "apiproxy/PayPalAPIInterfaceService.xml");
+                "apiproxy/PayPalAPIInterfaceService.xml",
+                "apiproxy/resources/jsc/remove-nillable.js",
+                "apiproxy/policies/remove-nillable.xml");
         final String PAYPAL_WSDL = "https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl";
         String jsonSelectedOp = "[{\"operationName\": \"AddressVerify\",\"verb\": \"post\",\"resourcePath\": \"/addressverify\"},{\"operationName\": \"MassPay\",\"verb\": \"put\",\"resourcePath\": \"/massivepay\"}]";
         GenerateProxy genProxy = new GenerateProxy();
