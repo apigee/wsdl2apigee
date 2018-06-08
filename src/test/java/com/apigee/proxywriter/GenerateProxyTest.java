@@ -13,6 +13,8 @@ import org.junit.Test;
 
 import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
 import com.apigee.utils.WsdlDefinitions;
+import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.XMLUnit;
 
 public class GenerateProxyTest {
 
@@ -64,7 +66,7 @@ public class GenerateProxyTest {
         return count;
     }
 
- /*   @Test
+    @Test
     public void testGeneratePassthrough() throws Exception {
         final List<String> filenames = Arrays.asList(
                 "apiproxy/policies/Extract-Operation-Name.xml",
@@ -81,7 +83,8 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/Extract-Operation-Name.xml", inputStream);
-        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
+        
+        String extractPolicyStr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
                 "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"Extract-Operation-Name\">" + System.getProperty("line.separator") +
                 "    <DisplayName>Extract Operation Name</DisplayName>" + System.getProperty("line.separator") +
                 "    <Properties/>" + System.getProperty("line.separator") +
@@ -92,8 +95,8 @@ public class GenerateProxyTest {
                 "            <XPath>local-name(/*)</XPath>" + System.getProperty("line.separator") +
                 "        </Variable>" + System.getProperty("line.separator") +
                 "        <Variable name=\"body\" type=\"String\">" + System.getProperty("line.separator") +
-                "            <XPath>local-name(/*///*[local-name() = 'Body'])</XPath>" + System.getProperty("line.separator") +
-            /*    "        </Variable>" + System.getProperty("line.separator") +
+                "            <XPath>local-name(/*/*[local-name() = 'Body'])</XPath>" + System.getProperty("line.separator") +
+                "        </Variable>" + System.getProperty("line.separator") +
                 "        <Variable name=\"envelopeNamespace\" type=\"String\">" + System.getProperty("line.separator") +
                 "            <XPath>namespace-uri(/*)</XPath>" + System.getProperty("line.separator") +
                 "        </Variable>" + System.getProperty("line.separator") +
@@ -101,10 +104,27 @@ public class GenerateProxyTest {
                 "            <XPath>local-name(//*[local-name() = 'Body']/*[1])</XPath>" + System.getProperty("line.separator") +
                 "        </Variable>" + System.getProperty("line.separator") +
                 "    </XMLPayload>" + System.getProperty("line.separator") +
-                "</ExtractVariables>");
+                "</ExtractVariables>";
+        assertXMLEquals(extractVariablesPolicy,extractPolicyStr);
+        
+     }
+    
+    /*
+     * to validate xml strings after removing white spaces
+     * 
+     */
+    public static void assertXMLEquals(String expectedXML, String actualXML) throws Exception {
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
+
+        DetailedDiff diff = new DetailedDiff(XMLUnit.compareXML(expectedXML, actualXML));
+
+        List<?> allDifferences = diff.getAllDifferences();
+        Assert.assertEquals("Differences found: "+ diff.toString(), 0, allDifferences.size());
     }
-*/
-/*    @Test
+    
+
+    @Test
     public void testGenerateRest() throws Exception {
         final List<String> filenames = Arrays.asList(
                 "apiproxy/policies/extract-format.xml",
@@ -143,7 +163,7 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/extract-format.xml", inputStream);
-        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
+        String extractXmlStr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
                 "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"extract-format\">" + System.getProperty("line.separator") +
                 "    <DisplayName>Extract Format</DisplayName>" + System.getProperty("line.separator") +
                 "    <Properties/>" + System.getProperty("line.separator") +
@@ -156,9 +176,11 @@ public class GenerateProxyTest {
                 "    <Variable name=\"request.verb\">" + System.getProperty("line.separator") +
                 "        <Pattern>{verb}</Pattern>" + System.getProperty("line.separator") +
                 "    </Variable>" + System.getProperty("line.separator") +
-                "</ExtractVariables>");
+                "</ExtractVariables>" ;
+        
+        assertXMLEquals(extractVariablesPolicy,extractXmlStr);
     }
-*/
+
     @Test
     public void testVHosts() throws Exception {
         URL url = this.getClass().getResource(WEATHER_WSDL);
