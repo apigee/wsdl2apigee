@@ -980,11 +980,15 @@ public class GenerateProxy {
 	//	APIMap apiMap = messageTemplates.get(operationName);
 		Document operationPayload = null;
 		
-		String soapHeaderXMLFirst = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">";
+		String soapHeaderXMLStart = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">";
 		
 		String soapHeaderXMLEnd = "<soapenv:Body>{soapBodyFromXSL}</soapenv:Body></soapenv:Envelope>";
 		
-		soapHeader = soapHeaderXMLFirst+soapHeader+soapHeaderXMLEnd;
+		if(soapHeader != null && !soapHeader.equalsIgnoreCase("")) {
+			soapHeader = soapHeaderXMLStart+soapHeader+soapHeaderXMLEnd;
+		}else {
+			soapHeader = soapHeaderXMLStart+soapHeaderXMLEnd;	
+		}
 		// edgeui-654 (check for getBytes().length
 		if (xmlUtils.isValidXML(soapHeader) && soapHeader.getBytes().length < 4096) {
 			// JIRA-EDGEUI-672
@@ -2926,9 +2930,12 @@ public class GenerateProxy {
 
 	private String retrieveSoapHeaderFromEnvolope(String soapString) {
 		// TODO Auto-generated method stub
-		
-		String soapHeaderStr = soapString.substring(soapString.indexOf("<s11:Header>"),soapString.indexOf("</s11:Header>")+"<s11:Header>".length()+1);
-		soapHeaderStr = soapHeaderStr.replaceAll("s11", "soapenv");
+		String soapHeaderStr = "";
+		if(soapString != null && soapString.indexOf("<s11:Header>") > 0 ) {
+			soapHeaderStr = soapString.substring(soapString.indexOf("<s11:Header>"),soapString.indexOf("</s11:Header>")+"<s11:Header>".length()+1);
+			soapHeaderStr = soapHeaderStr.replaceAll("s11", "soapenv");
+			return soapHeaderStr;
+		}
 		return soapHeaderStr;
 	}
 	
