@@ -71,9 +71,15 @@ public class OASUtils {
     	JsonObject parameter = null;
     	for (String queryParam : queryParams) {
     		parameter = new JsonObject();
-    		parameter.addProperty("name", queryParam);
+    		String paramSplit[] = queryParam.split("_");
+    		parameter.addProperty("name", paramSplit[0]);
     		parameter.addProperty("in", "query");
-    		parameter.addProperty("required", false);
+    		if(paramSplit.length>1) {
+    			parameter.addProperty("required", Boolean.valueOf(paramSplit[1]));	
+    		}else {
+    			parameter.addProperty("required",false);
+    		}
+    		
     		parameter.addProperty("type", "string");
     		parameters.add(parameter);
     	}
@@ -332,5 +338,20 @@ public class OASUtils {
 		return simpleType;
 	}
     
+	public static String manipulateQueryParams(String name, String min, String max) {
+		
+		String queryParamStr = "";
+		String required = "false";
+		if (max.equalsIgnoreCase("unbounded")) {
+			max = "-1";
+		}
+		if(Integer.parseInt(min) ==1 && Integer.parseInt(max) ==1) {
+			required = "true";
+		}
+		
+		queryParamStr = queryParamStr.concat(name+"_"+required);
+		return queryParamStr;
+	}
+	
 	
 }
