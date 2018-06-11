@@ -96,6 +96,9 @@ public class GenerateProxy {
 	private static final List<String> primitiveTypes = Arrays.asList(new String[] { "int", "string", "boolean",
 			"decimal", "float", "double", "duration", "dateTime", "time", "date", "long", "gYearMonth", "gYear",
 			"gMonthDay", "gDay", "gMonth", "hexBinary", "base64Binary", "anyURI", "QName", "NOTATION" });
+	private static final List<String> primitiveArrayTypes = Arrays.asList(new String[] {"arrayofint","arrayoffloat","arrayofstring",
+			"arrayoflong","arrayofdouble"});
+	
 	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" ";
 			//" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
 
@@ -192,8 +195,6 @@ public class GenerateProxy {
 
 	private String wsdlContent;
 
-	private String selectedOperationsJson;
-
 	private List<String> vHosts;
 
 	private SelectedOperations selectedOperations;
@@ -233,7 +234,8 @@ public class GenerateProxy {
 	
 	private boolean addRootElementToOAS = false;
 	
-	
+	private String subArrayElement="";
+
 	
 
 	// initialize the logger
@@ -1747,6 +1749,7 @@ public class GenerateProxy {
 						}
 						JsonObject properties = parent.getAsJsonObject("properties");
 						properties.add(e.getName(), restriction);
+						definitions.add(e.getName(), restriction);
 						LOGGER.info("Parent=="+parent);
 						return;
 					}
@@ -1763,12 +1766,23 @@ public class GenerateProxy {
 				TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
 				if (typeDefinition instanceof ComplexType) {
 					ComplexType ct = (ComplexType) typeDefinition;
-					JsonObject rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(),
-							e.getMaxOccurs());
+					JsonObject rootElement;
+					if(e.getName().equalsIgnoreCase(subArrayElement)) {
+						rootElement = OASUtils.createComplexTypeRep(e.getName(), e.getMinOccurs(),
+								e.getMaxOccurs());
+						addRootElementToOAS=false;
+					}else {
+						rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(),
+								e.getMaxOccurs());
+					}
 					xpathNameSpace = e.getType().getPrefix();
 					xpathNameSpaceURI = e.getNamespaceUri();
-					
-					if(addRootElementToOAS) {
+					if(isCustomArrayType(e.getType().getLocalPart())) {
+						subArrayElement = e.getType().getLocalPart().toString().substring(e.getType().getLocalPart().toString().toLowerCase().indexOf("arrayof")+7, 
+								e.getType().getLocalPart().toString().length());
+						OASUtils.addObjectOutputArrayProp(parent, parentName, e.getName(), true,e.getType().getLocalPart(),subArrayElement);
+						OASUtils.addObjectOutputForArray(parent, parentName, e.getName(), true,e.getType().getLocalPart(),subArrayElement);
+					}else if(addRootElementToOAS) {
 						OASUtils.addObjectOutputRes(parent, parentName, e.getName(), true,e.getType().getLocalPart());
 						addRootElementToOAS = false;
 					}else {
@@ -1782,6 +1796,19 @@ public class GenerateProxy {
 		}
 	}
 
+	private boolean isCustomArrayType(String localPart) {
+		// TODO Auto-generated method stub
+	
+		if(localPart.toLowerCase().contains("arrayof")) {
+			if(primitiveArrayTypes.contains(localPart.toLowerCase())) { 
+				return false;
+			}else {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private void parseElement(com.predic8.schema.Element e, List<Schema> schemas, String rootElement,
 			String rootNamespace, String rootPrefix) {
 		if (e.getName() == null) {
@@ -1843,7 +1870,6 @@ public class GenerateProxy {
 	}
 
 	private void parseSchema(SchemaComponent sc, List<Schema> schemas, String rootElementName, JsonObject rootElement) {
-
 		// fail safe measure.
 		if (Thread.currentThread().getStackTrace().length >= 128) {
 			TOO_MANY = true;
@@ -1854,6 +1880,7 @@ public class GenerateProxy {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
 				if (e.getType() != null) {
+					LOGGER.info("e.getType().getLocalPart()= "+e.getType().getLocalPart()+" max occurs "+e.getMaxOccurs()+ " min occurs"+e.getMinOccurs());
 					if (isPrimitive(e.getType().getLocalPart())) {
 						if (rootElement == null) {
 							rootElement = OASUtils.createComplexType(e.getName(), e.getMinOccurs(), e.getMaxOccurs());
