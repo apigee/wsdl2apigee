@@ -1736,17 +1736,15 @@ public class GenerateProxy {
 					com.predic8.schema.restriction.BaseRestriction baseRestriction = simpleType.getRestriction();
 					if(baseRestriction != null && baseRestriction.getBase().getLocalPart().equals("string"))
 					{
-						JsonObject restriction = OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
-						JsonArray enumArray = null;
-						if(restriction.get("items")==null)
-							enumArray = (JsonArray)restriction.get("enum");
-						else
-							enumArray = (JsonArray)((JsonObject)restriction.get("items")).get("enum");
-				
+						JsonObject restriction = new  JsonObject(); 
+						//OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
+						JsonArray enumArray = new JsonArray();
 						for (com.predic8.schema.restriction.facet.EnumerationFacet en : baseRestriction.getEnumerationFacets()) {
 							LOGGER.info("Restriction value =="+en.getValue());
 							enumArray.add(new JsonPrimitive(en.getValue()));
 						}
+						restriction.add("enum", enumArray);
+						restriction.addProperty("type", "string");
 						JsonObject properties = parent.getAsJsonObject("properties");
 						properties.add(e.getName(), restriction);
 						definitions.add(e.getName(), restriction);
