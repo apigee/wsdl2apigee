@@ -97,7 +97,7 @@ public class GenerateProxy {
 			"decimal", "float", "double", "duration", "dateTime", "time", "date", "long", "gYearMonth", "gYear",
 			"gMonthDay", "gDay", "gMonth", "hexBinary", "base64Binary", "anyURI", "QName", "NOTATION" });
 	private static final List<String> primitiveArrayTypes = Arrays.asList(new String[] {"arrayofint","arrayoffloat","arrayofstring",
-			"arrayoflong","arrayofdouble"});
+			"arrayoflong","arrayofdouble","arrayofinteger"});
 	
 	private final String soap11Namespace = " xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" ";
 			//" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ";
@@ -1736,8 +1736,7 @@ public class GenerateProxy {
 					com.predic8.schema.restriction.BaseRestriction baseRestriction = simpleType.getRestriction();
 					if(baseRestriction != null && baseRestriction.getBase().getLocalPart().equals("string"))
 					{
-						JsonObject restriction = new  JsonObject(); 
-						//OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
+						JsonObject restriction = new  JsonObject(); //OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
 						JsonArray enumArray = new JsonArray();
 						for (com.predic8.schema.restriction.facet.EnumerationFacet en : baseRestriction.getEnumerationFacets()) {
 							LOGGER.info("Restriction value =="+en.getValue());
@@ -1877,6 +1876,7 @@ public class GenerateProxy {
 		else if (sc instanceof Sequence) {
 			Sequence seq = (Sequence) sc;
 			for (com.predic8.schema.Element e : seq.getElements()) {
+				
 				if (e.getType() != null) {
 					LOGGER.info("e.getType().getLocalPart()= "+e.getType().getLocalPart()+" max occurs "+e.getMaxOccurs()+ " min occurs"+e.getMinOccurs());
 					if (isPrimitive(e.getType().getLocalPart())) {
@@ -1888,7 +1888,8 @@ public class GenerateProxy {
 						JsonObject properties = rootElement.getAsJsonObject("properties");
 						properties.add(e.getName(), OASUtils.createSimpleType(e.getType().getLocalPart(),
 								e.getMinOccurs(), e.getMaxOccurs()));
-						queryParams.add(e.getName());
+						
+						queryParams.add(OASUtils.manipulateQueryParams(e.getName(),e.getMinOccurs(), e.getMaxOccurs()));
 					} else {
 						parseElement(e, schemas, rootElement, rootElementName);
 					}
@@ -1909,7 +1910,7 @@ public class GenerateProxy {
 						JsonObject properties = rootElement.getAsJsonObject("properties");
 						properties.add(e.getName(), OASUtils.createSimpleType(e.getType().getLocalPart(),
 								e.getMinOccurs(), e.getMaxOccurs()));
-						queryParams.add(e.getName());
+						queryParams.add(OASUtils.manipulateQueryParams(e.getName(),e.getMinOccurs(), e.getMaxOccurs()));
 					}
 				} else {
 					parseElement(e, schemas, rootElement, rootElementName);
@@ -1969,6 +1970,7 @@ public class GenerateProxy {
 		definitions.add(name, extension);
 		LOGGER.info("rootElementName=="+rootElementName+"JsonObject rootElement object=="+rootElement);
 	}
+
 	private void parseSequence(Sequence seq, List<Schema> schemas, String rootElementName,JsonObject rootElement)
 	{
 		for (com.predic8.schema.Element e : seq.getElements()) {
@@ -2117,7 +2119,7 @@ public class GenerateProxy {
 				JsonObject properties = rootElement.getAsJsonObject("properties");
 				properties.add(part.getName(),
 						OASUtils.createSimpleType(part.getType().getQname().getLocalPart(), "0", "1"));
-				queryParams.add(part.getName());
+				queryParams.add(OASUtils.manipulateQueryParams(part.getName(),"0", "1"));
 			} else {
 				TypeDefinition typeDefinition = part.getType();
 				if (typeDefinition instanceof ComplexType) {
