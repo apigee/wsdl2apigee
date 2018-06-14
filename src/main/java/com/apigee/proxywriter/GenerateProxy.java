@@ -113,6 +113,7 @@ public class GenerateProxy {
 
 	private static final String SOAP2API_APIPROXY_TEMPLATE = "/templates/soap2api/apiProxyTemplate.xml";
 	private static final String SOAP2API_PROXY_TEMPLATE = "/templates/soap2api/proxyDefault.xml";
+	
 	private static final String SOAP2API_TARGET_TEMPLATE = "/templates/soap2api/targetDefault.xml";
 	private static final String SOAP2API_EXTRACT_TEMPLATE = "/templates/soap2api/ExtractPolicy.xml";
 	
@@ -135,6 +136,8 @@ public class GenerateProxy {
 	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
 	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/return-wsdl.xml";
+	
+	private static final String SOAP2API_XML_TO_JSON_TREAT_AS_ARRAY = "/templates/soap2api/xml-to-json.xml";
 
 	private static final String OAS_TEMPLATE = "/templates/oas/oastemplate.json";
 
@@ -174,6 +177,8 @@ public class GenerateProxy {
 	private boolean ALLOW_SOAP_HEADERS;		
 	
 	private boolean ALLOW_RESP_ROOT_ELEMENT;
+	
+	private boolean ALLOW_TREAT_AS_ARRAY;
 
 	// fail safe measure when schemas are heavily nested or have 100s of
 	// elements
@@ -236,6 +241,11 @@ public class GenerateProxy {
 	
 	private String subArrayElement="";
 
+	private StringBuffer treatAsArrayStr= new StringBuffer();
+	
+	private boolean treatAsArrayForOutput = false;
+	
+	private List<String> treatAsArrayList = new ArrayList<String>();
 	
 
 	// initialize the logger
@@ -271,6 +281,7 @@ public class GenerateProxy {
 		ALLOW_EMPTY_NODES = false;
 		ALLOW_SOAP_HEADERS = false;
 		ALLOW_RESP_ROOT_ELEMENT = false;
+		ALLOW_TREAT_AS_ARRAY = false;
 		APIKEY = false;
 		QUOTAAPIKEY = false;
 		QUOTAOAUTH = false;
@@ -358,6 +369,10 @@ public class GenerateProxy {
 
 	public void setAllowRespRootElement(boolean allowRespRootElement) {
 		ALLOW_RESP_ROOT_ELEMENT = allowRespRootElement;
+	}	
+
+	public void setAllowTreatAsArray(boolean allowTreatAsArray) {
+		ALLOW_TREAT_AS_ARRAY = allowTreatAsArray;
 	}	
 
 	public String getTargetEndpoint() {
@@ -1401,9 +1416,13 @@ public class GenerateProxy {
 				 * java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				 */
 			} else {
+				
+				
+				
 				sourcePath += "soap2api/";
-				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
-						Paths.get(targetPath + "xml-to-json.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+				if(!ALLOW_TREAT_AS_ARRAY)
+					Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
+							Paths.get(targetPath + "xml-to-json.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
@@ -1503,6 +1522,36 @@ public class GenerateProxy {
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+	}
+
+	private void modifyXMLtoJSONForTreatASArray(List<String> treatAsArrayList2) throws Exception {
+		// TODO Auto-generated method stub
+		
+		Document xmltoJsonDoc;
+		XMLUtils xmlUtils = new XMLUtils();
+		xmltoJsonDoc = xmlUtils.readXML(SOAP2API_XML_TO_JSON_TREAT_AS_ARRAY);
+		
+		Node optionsNode = xmltoJsonDoc.getElementsByTagName("Options").item(0);
+	
+		Element treatAsArray = xmltoJsonDoc.createElement("TreatAsArray");
+		if(treatAsArrayList2 != null && treatAsArrayList2.size() > 0) {
+			for(String arrayStr : treatAsArrayList2) {
+				Element Path = xmltoJsonDoc.createElement("Path");
+				Path.setAttribute("unwrap", "true");
+				Path.setTextContent("Envelope/Body/"+arrayStr);
+				treatAsArray.appendChild(Path);
+			}
+			
+		}
+		optionsNode.appendChild(treatAsArray);
+		
+		xmlUtils.writeXML(xmltoJsonDoc, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
+				+ File.separator + "xml-tojson" + ".xml");
+		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
+
+
+		
 	}
 
 	private void writeSOAPPassThruProxyEndpointConditions(String proxyDescription) throws Exception {
@@ -1736,6 +1785,7 @@ public class GenerateProxy {
 					com.predic8.schema.restriction.BaseRestriction baseRestriction = simpleType.getRestriction();
 					if(baseRestriction != null && baseRestriction.getBase().getLocalPart().equals("string"))
 					{
+				
 						JsonObject restriction = new  JsonObject(); //OASUtils.createRestriction(baseRestriction.getBase().getLocalPart(), e.getMinOccurs(), e.getMaxOccurs());
 						JsonArray enumArray = new JsonArray();
 						for (com.predic8.schema.restriction.facet.EnumerationFacet en : baseRestriction.getEnumerationFacets()) {
@@ -1748,6 +1798,10 @@ public class GenerateProxy {
 						properties.add(e.getName(), restriction);
 						definitions.add(e.getName(), restriction);
 						LOGGER.info("Parent=="+parent);
+
+						if(ALLOW_TREAT_AS_ARRAY)
+							manipulateTreatAsArrayEnums(treatAsArrayForOutput,enumArray,e.getName());
+
 						return;
 					}
 					
@@ -1761,9 +1815,14 @@ public class GenerateProxy {
 				parseSchema(ct.getModel(), schemas, e.getName(), rootElement);
 			} else if (e.getType() != null) {
 				TypeDefinition typeDefinition = getTypeFromSchema(e.getType(), schemas);
+				
 				if (typeDefinition instanceof ComplexType) {
 					ComplexType ct = (ComplexType) typeDefinition;
 					JsonObject rootElement;
+					if(ALLOW_TREAT_AS_ARRAY && treatAsArrayForOutput) {
+						treatAsArrayStr.append("/"+e.getName());
+					}
+					
 					if(e.getName().equalsIgnoreCase(subArrayElement)) {
 						rootElement = OASUtils.createComplexTypeRep(e.getName(), e.getMinOccurs(),
 								e.getMaxOccurs());
@@ -1775,7 +1834,8 @@ public class GenerateProxy {
 					xpathNameSpace = e.getType().getPrefix();
 					xpathNameSpaceURI = e.getNamespaceUri();
 					if(isCustomArrayType(e.getType().getLocalPart())) {
-						subArrayElement = e.getType().getLocalPart().toString().substring(e.getType().getLocalPart().toString().toLowerCase().indexOf("arrayof")+7, 
+						subArrayElement = e.getType().getLocalPart().toString().
+								substring(e.getType().getLocalPart().toString().toLowerCase().indexOf("arrayof")+7, 
 								e.getType().getLocalPart().toString().length());
 						OASUtils.addObjectOutputArrayProp(parent, parentName, e.getName(), true,e.getType().getLocalPart(),subArrayElement);
 						OASUtils.addObjectOutputForArray(parent, parentName, e.getName(), true,e.getType().getLocalPart(),subArrayElement);
@@ -1792,6 +1852,50 @@ public class GenerateProxy {
 			}
 		}
 	}
+
+	private void manipulateTreatAsArrayEnums(boolean treatAsArrayForOutput2, JsonArray enumArray, String name) {
+		// TODO Auto-generated method stub
+		StringBuffer tempStr = new StringBuffer();
+		if(treatAsArrayForOutput2 && enumArray.getAsJsonArray().size() > 0) {
+			
+			String str[] = treatAsArrayStr.toString().split("/");
+			for(int i=0;i<str.length-1;i++) {
+				tempStr.append(str[i]+"/");
+			}
+
+			treatAsArrayStr.append("/"+name);
+			treatAsArrayList.add(treatAsArrayStr.toString());
+
+			treatAsArrayStr = new StringBuffer();
+			String temp = "";
+			if(tempStr != null && tempStr.length() > 0)
+				temp = tempStr.toString().substring(0, tempStr.length()-1);
+			treatAsArrayStr.append(temp);		
+
+		}
+		
+	}
+	
+	private void manipulateTreatAsArrayList(boolean treatAsArrayForOutput2, String name) {
+		// TODO Auto-generated method stub
+		if(treatAsArrayForOutput2) {
+			StringBuffer tempStr = new StringBuffer();
+			String str[] = treatAsArrayStr.toString().split("/");
+			for(int i=0;i<str.length-1;i++) {
+				tempStr.append(str[i]+"/");
+			}
+			treatAsArrayStr.append("/"+name);
+			treatAsArrayList.add(treatAsArrayStr.toString());
+			treatAsArrayStr = new StringBuffer();
+			String temp = "";
+			if(tempStr != null && tempStr.length() > 0)
+				temp = tempStr.toString().substring(0, tempStr.length()-1);
+			treatAsArrayStr.append(temp);		
+
+		}
+		
+	}
+	
 
 	private boolean isCustomArrayType(String localPart) {
 		// TODO Auto-generated method stub
@@ -1888,8 +1992,10 @@ public class GenerateProxy {
 						JsonObject properties = rootElement.getAsJsonObject("properties");
 						properties.add(e.getName(), OASUtils.createSimpleType(e.getType().getLocalPart(),
 								e.getMinOccurs(), e.getMaxOccurs()));
-						
 						queryParams.add(OASUtils.manipulateQueryParams(e.getName(),e.getMinOccurs(), e.getMaxOccurs()));
+						if(ALLOW_TREAT_AS_ARRAY && treatAsArrayForOutput && e.getMaxOccurs().toLowerCase().equalsIgnoreCase("unbounded")) {
+							manipulateTreatAsArrayList(treatAsArrayForOutput, e.getName());
+						}
 					} else {
 						parseElement(e, schemas, rootElement, rootElementName);
 					}
@@ -2609,8 +2715,17 @@ public class GenerateProxy {
 					rootInnerElement = OASUtils.createComplexTypeOP(e.getName(), rootElement);
 					tempRootElement.add("properties", rootInnerElement);
 					rootElement = 	tempRootElement;	
+					
 				}
 				
+				if(treatAsArrayForOutput) {
+					treatAsArrayStr.append(e.getName());
+				}
+/*				boolean test = false;
+				if(treatAsArrayStr.toString().contains("GetRepListResponse")) {
+					test = true;
+				}
+*/				
 				definitions.add(e.getName(), rootElement);
 				parseSchema(ct.getModel(), wsdl.getSchemas(), e.getName(), rootElement);
 			}
@@ -2993,8 +3108,11 @@ public class GenerateProxy {
 		PortType portType = binding.getPortType();
 		HashMap<String, SelectedOperation> selectedOperationList = selectedOperations.getSelectedOperations();
 
+		
+		
 		for (Operation op : portType.getOperations()) {
 			// the current operations is not in the list; skip.
+			
 			if (selectedOperationList.size() > 0 && !selectedOperationList.containsKey(op.getName())) {
 				continue;
 			}
@@ -3032,8 +3150,8 @@ public class GenerateProxy {
 							addRootElementToOAS = true;	
 						}						
 					}
+					
 					getOASDefinitions(wsdl, eInput);
-
 					if (!verb.equalsIgnoreCase("GET")) {
 						parameters = OASUtils.getBodyParameter(eInput.getName());
 					} else {
@@ -3052,6 +3170,11 @@ public class GenerateProxy {
 								if(ALLOW_RESP_ROOT_ELEMENT) {
 									addRootElementToOAS = true;	
 								}
+								if(ALLOW_TREAT_AS_ARRAY) {
+									treatAsArrayStr = new StringBuffer();
+									treatAsArrayForOutput = true;
+								}
+								
 								getOASDefinitions(wsdl, eOutput);
 								operationDetails.add("responses", OASUtils.getResponse(eOutput.getName()));
 							}
@@ -3062,7 +3185,7 @@ public class GenerateProxy {
 					//Ignore any errors here. Just don't generate the OAS for this portion
 				}
 			}
-
+			treatAsArrayForOutput = false;
 			operationDetails.addProperty("description", "Implements WSDL operation " + op.getName());
 			operationDetails.add("parameters", parameters);
 
@@ -3186,12 +3309,17 @@ public class GenerateProxy {
 				if (!PASSTHRU) {
 					LOGGER.info("Generated SOAP Message Templates.");
 					writeSOAP2APIProxyEndpoint(proxyDescription);
+					if(ALLOW_TREAT_AS_ARRAY) {
+						LOGGER.info("Generate XML tOJSON Policy SOAP Message Templates.");
+						modifyXMLtoJSONForTreatASArray(treatAsArrayList);
+					}
 					LOGGER.info("Generated proxies XML.");
 					writeStdPolicies();
 					LOGGER.info("Copied standard policies.");
 					writeTargetEndpoint();
 					LOGGER.info("Generated target XML.");
 				} else {
+
 					writeStdPolicies();
 					LOGGER.info("Copied standard policies.");
 					writeTargetEndpoint();
@@ -3259,6 +3387,7 @@ public class GenerateProxy {
 		System.out.println("-allowEmptyNodes=<true|false>    default is false; works only if it is set to true");
 		System.out.println("-allowSoapHeaders=<true|false>    default is false; works only if it is set to true");
 		System.out.println("-allowRespRootElement=<true|false>    default is false; works only if it is set to true");
+		System.out.println("-allowTreatAsArray=<true|false>    default is false; works only if it is set to true");
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Examples:");
@@ -3381,6 +3510,8 @@ public class GenerateProxy {
 		opt.getSet().addOption("allowSoapHeaders", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// add allowRespRootElement to show response root elements in OAS
 		opt.getSet().addOption("allowRespRootElement", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add allowTreatAsArray to show Path for attributes that are eligible as Array in xml-to-json policy
+		opt.getSet().addOption("allowTreatAsArray", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
 		
 		opt.check();
@@ -3470,6 +3601,10 @@ public class GenerateProxy {
 		
 		if (opt.getSet().isSet("allowRespRootElement")) {
 			genProxy.setAllowRespRootElement(new Boolean(opt.getSet().getOption("allowRespRootElement").getResultValue(0)));
+		}
+
+		if (opt.getSet().isSet("allowTreatAsArray")) {
+			genProxy.setAllowTreatAsArray(new Boolean(opt.getSet().getOption("allowTreatAsArray").getResultValue(0)));
 		}
 
 		if (opt.getSet().isSet("apikey")) {
