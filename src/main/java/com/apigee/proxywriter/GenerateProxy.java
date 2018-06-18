@@ -170,15 +170,15 @@ public class GenerateProxy {
 	private boolean RPCSTYLE;
 	// enable this flag if user sets desc
 	private boolean DESCSET;
-	// set this to true if allowEmptyNodes should be added to the proxy
-	private boolean ALLOW_EMPTY_NODES;		
+	// set this to true if enableEmptyNodes should be added to the proxy
+	private boolean ENABLE_EMPTY_NODES;		
 	
-	// set this to true if allowSoapHeaders should be added to the proxy
-	private boolean ALLOW_SOAP_HEADERS;		
+	// set this to true if enableSoapHeaders should be added to the proxy
+	private boolean ENABLE_SOAP_HEADERS;		
 	
-	private boolean ALLOW_RESP_ROOT_ELEMENT;
+	private boolean ENABLE_RESP_ROOT_ELEMENT;
 	
-	private boolean ALLOW_TREAT_AS_ARRAY;
+	private boolean PRESERVE_ARRAY;
 
 	// fail safe measure when schemas are heavily nested or have 100s of
 	// elements
@@ -278,10 +278,10 @@ public class GenerateProxy {
 		ALLPOST = false;
 		PASSTHRU = false;
 		OAUTH = false;
-		ALLOW_EMPTY_NODES = false;
-		ALLOW_SOAP_HEADERS = false;
-		ALLOW_RESP_ROOT_ELEMENT = false;
-		ALLOW_TREAT_AS_ARRAY = false;
+		ENABLE_EMPTY_NODES = false;
+		ENABLE_SOAP_HEADERS = false;
+		ENABLE_RESP_ROOT_ELEMENT = false;
+		PRESERVE_ARRAY = false;
 		APIKEY = false;
 		QUOTAAPIKEY = false;
 		QUOTAOAUTH = false;
@@ -359,20 +359,20 @@ public class GenerateProxy {
 		OAUTH = oauth;
 	}
 	
-	public void setAllowEmptyNodes(boolean allowEmptyNodes) {
-		ALLOW_EMPTY_NODES = allowEmptyNodes;
+	public void setEnableEmptyNodes(boolean enableEmptyNodes) {
+		ENABLE_EMPTY_NODES = enableEmptyNodes;
 	}	
 
-	public void setAllowSoapHeaders(boolean allowSoapHeaders) {
-		ALLOW_SOAP_HEADERS = allowSoapHeaders;
+	public void setEnableSoapHeaders(boolean enableSoapHeaders) {
+		ENABLE_SOAP_HEADERS = enableSoapHeaders;
 	}	
 
-	public void setAllowRespRootElement(boolean allowRespRootElement) {
-		ALLOW_RESP_ROOT_ELEMENT = allowRespRootElement;
+	public void setEnableRespRootElement(boolean enableRespRootElement) {
+		ENABLE_RESP_ROOT_ELEMENT = enableRespRootElement;
 	}	
 
-	public void setAllowTreatAsArray(boolean allowTreatAsArray) {
-		ALLOW_TREAT_AS_ARRAY = allowTreatAsArray;
+	public void setPreserveArray(boolean preserveArray) {
+		PRESERVE_ARRAY = preserveArray;
 	}	
 
 	public String getTargetEndpoint() {
@@ -694,7 +694,7 @@ public class GenerateProxy {
 				step2.appendChild(name2);
 				request.appendChild(step2);
 
-				if(!ALLOW_EMPTY_NODES) {
+				if(!ENABLE_EMPTY_NODES) {
 					if (apiMap.getJsonBody() != null) {
 						step3 = proxyDefault.createElement("Step");
 						name3 = proxyDefault.createElement("Name");
@@ -729,7 +729,7 @@ public class GenerateProxy {
 					request.appendChild(step3);
 				}
 
-				if(ALLOW_SOAP_HEADERS) {
+				if(ENABLE_SOAP_HEADERS) {
 					step4 = proxyDefault.createElement("Step");
 					name4 = proxyDefault.createElement("Name");
 					name4.setTextContent(operationName+"-extract-from-xpath");
@@ -740,7 +740,7 @@ public class GenerateProxy {
 				// for soap 1.1 add soap action
 				if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 					
-					if(!ALLOW_SOAP_HEADERS) {
+					if(!ENABLE_SOAP_HEADERS) {
 						step5 = proxyDefault.createElement("Step");
 						name5 = proxyDefault.createElement("Name");
 						name5.setTextContent(addSoapAction);
@@ -813,7 +813,7 @@ public class GenerateProxy {
 					writeAddNamespace(addNamespaceTemplate, operationName, false);
 				}
 				
-				if(ALLOW_SOAP_HEADERS) {
+				if(ENABLE_SOAP_HEADERS) {
 					Node policy4 = apiTemplateDocument.createElement("Policy");
 					policy4.setTextContent(operationName+"Extract-from-xpath");
 					policies.appendChild(policy4);
@@ -825,7 +825,7 @@ public class GenerateProxy {
 				if (soapVersion.equalsIgnoreCase(SOAP_11)) {
 					// Add policy to proxy.xml
 
-					if(!ALLOW_SOAP_HEADERS) {
+					if(!ENABLE_SOAP_HEADERS) {
 						Node policy5 = apiTemplateDocument.createElement("Policy");
 						policy5.setTextContent(addSoapAction);
 						policies.appendChild(policy5);						
@@ -1420,7 +1420,7 @@ public class GenerateProxy {
 				
 				
 				sourcePath += "soap2api/";
-				if(!ALLOW_TREAT_AS_ARRAY)
+				if(!PRESERVE_ARRAY)
 					Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
 							Paths.get(targetPath + "xml-to-json.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
@@ -1526,6 +1526,8 @@ public class GenerateProxy {
 
 	private void modifyXMLtoJSONForTreatASArray(List<String> treatAsArrayList2) throws Exception {
 		// TODO Auto-generated method stub
+		LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+		}.getClass().getEnclosingMethod().getName());
 		
 		Document xmltoJsonDoc;
 		XMLUtils xmlUtils = new XMLUtils();
@@ -1799,7 +1801,7 @@ public class GenerateProxy {
 						definitions.add(e.getName(), restriction);
 						LOGGER.info("Parent=="+parent);
 
-						if(ALLOW_TREAT_AS_ARRAY)
+						if(PRESERVE_ARRAY)
 							manipulateTreatAsArrayEnums(treatAsArrayForOutput,enumArray,e.getName());
 
 						return;
@@ -1819,7 +1821,7 @@ public class GenerateProxy {
 				if (typeDefinition instanceof ComplexType) {
 					ComplexType ct = (ComplexType) typeDefinition;
 					JsonObject rootElement;
-					if(ALLOW_TREAT_AS_ARRAY && treatAsArrayForOutput) {
+					if(PRESERVE_ARRAY && treatAsArrayForOutput) {
 						treatAsArrayStr.append("/"+e.getName());
 					}
 					
@@ -1993,7 +1995,7 @@ public class GenerateProxy {
 						properties.add(e.getName(), OASUtils.createSimpleType(e.getType().getLocalPart(),
 								e.getMinOccurs(), e.getMaxOccurs()));
 						queryParams.add(OASUtils.manipulateQueryParams(e.getName(),e.getMinOccurs(), e.getMaxOccurs()));
-						if(ALLOW_TREAT_AS_ARRAY && treatAsArrayForOutput && e.getMaxOccurs().toLowerCase().equalsIgnoreCase("unbounded")) {
+						if(PRESERVE_ARRAY && treatAsArrayForOutput && e.getMaxOccurs().toLowerCase().equalsIgnoreCase("unbounded")) {
 							manipulateTreatAsArrayList(treatAsArrayForOutput, e.getName());
 						}
 					} else {
@@ -2069,8 +2071,13 @@ public class GenerateProxy {
 		Derivation extElement = ((ComplexContent) sc).getDerivation();
 		LOGGER.info("derivation in parseExtension"+extElement.getModel().getAsString());
 		TypeDefinition typeDefinition = getTypeFromSchema(((ComplexContent) sc).getDerivation().getBase(), schemas);
-		Sequence seqBase = (Sequence) ((ComplexType) typeDefinition).getModel();
-		parseSequence(seqBase,schemas,name,extension);
+		
+		
+		if(!(((ComplexType) typeDefinition).getModel() instanceof ComplexContent)) {	
+			Sequence seqBase = (Sequence) ((ComplexType) typeDefinition).getModel();
+			parseSequence(seqBase,schemas,name,extension);
+		}
+		
 		Sequence seq = (Sequence) extElement.getModel();
 		parseSequence(seq,schemas,name,extension);
 		definitions.add(name, extension);
@@ -2968,7 +2975,7 @@ public class GenerateProxy {
 
 									TypeDefinition typeDefinition = null;
 									KeyValue<String, String> kv = null;
-									if(ALLOW_SOAP_HEADERS) {
+									if(ENABLE_SOAP_HEADERS) {
 										creator.setCreator(new RequestTemplateCreator());
 										creator.createRequest(port.getName(), op.getName(), binding.getName());
 										
@@ -3007,7 +3014,7 @@ public class GenerateProxy {
 											xmlUtils.generateOtherNamespacesXSLT(SOAP2API_XSL, op.getName(),
 													rs.getTransform(soapVersion), namespace);
 											ruleList.clear();
-											if(!ALLOW_SOAP_HEADERS) {
+											if(!ENABLE_SOAP_HEADERS) {
 												apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(),
 														true);
 											}else {
@@ -3015,7 +3022,7 @@ public class GenerateProxy {
 													requestElement.getName(), false);	
 											}
 										} else {
-											if(!ALLOW_SOAP_HEADERS) {
+											if(!ENABLE_SOAP_HEADERS) {
 												apiMap = new APIMap("", "", resourcePath, verb, requestElement.getName(),
 														false);
 											}else {
@@ -3146,7 +3153,7 @@ public class GenerateProxy {
 				} else {
 					com.predic8.schema.Element eInput = op.getInput().getMessage().getParts().get(0).getElement();
 					if(!verb.equalsIgnoreCase("GET")) {
-						if(ALLOW_RESP_ROOT_ELEMENT) {
+						if(ENABLE_RESP_ROOT_ELEMENT) {
 							addRootElementToOAS = true;	
 						}						
 					}
@@ -3167,10 +3174,10 @@ public class GenerateProxy {
 						if (op.getOutput().getMessage().getParts().size() > 0) {
 							com.predic8.schema.Element eOutput = op.getOutput().getMessage().getParts().get(0).getElement();
 							if (eOutput != null) {
-								if(ALLOW_RESP_ROOT_ELEMENT) {
+								if(ENABLE_RESP_ROOT_ELEMENT) {
 									addRootElementToOAS = true;	
 								}
-								if(ALLOW_TREAT_AS_ARRAY) {
+								if(PRESERVE_ARRAY) {
 									treatAsArrayStr = new StringBuffer();
 									treatAsArrayForOutput = true;
 								}
@@ -3309,7 +3316,7 @@ public class GenerateProxy {
 				if (!PASSTHRU) {
 					LOGGER.info("Generated SOAP Message Templates.");
 					writeSOAP2APIProxyEndpoint(proxyDescription);
-					if(ALLOW_TREAT_AS_ARRAY) {
+					if(PRESERVE_ARRAY) {
 						LOGGER.info("Generate XML tOJSON Policy SOAP Message Templates.");
 						modifyXMLtoJSONForTreatASArray(treatAsArrayList);
 					}
@@ -3384,10 +3391,10 @@ public class GenerateProxy {
 		System.out.println("-basepath=specify base path");
 		System.out.println("-cors=<true|false>        default is false");
 		System.out.println("-debug=<true|false>       default is false");
-		System.out.println("-allowEmptyNodes=<true|false>    default is false; works only if it is set to true");
-		System.out.println("-allowSoapHeaders=<true|false>    default is false; works only if it is set to true");
-		System.out.println("-allowRespRootElement=<true|false>    default is false; works only if it is set to true");
-		System.out.println("-allowTreatAsArray=<true|false>    default is false; works only if it is set to true");
+		System.out.println("-enableEmptyNodes=<true|false>    default is false; works only if it is set to true");
+		System.out.println("-enableSoapHeaders=<true|false>    default is false; works only if it is set to true");
+		System.out.println("-enableRespRootElement=<true|false>    default is false; works only if it is set to true");
+		System.out.println("-preserveArray=<true|false>    default is false; works only if it is set to true");
 		System.out.println("");
 		System.out.println("");
 		System.out.println("Examples:");
@@ -3504,14 +3511,14 @@ public class GenerateProxy {
 		opt.getSet().addOption("oas", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set this flag to enable debug
 		opt.getSet().addOption("debug", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// add verify allowEmptyNodes policy
-		opt.getSet().addOption("allowEmptyNodes", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// add allowSoapHeaders functionality
-		opt.getSet().addOption("allowSoapHeaders", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// add allowRespRootElement to show response root elements in OAS
-		opt.getSet().addOption("allowRespRootElement", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
-		// add allowTreatAsArray to show Path for attributes that are eligible as Array in xml-to-json policy
-		opt.getSet().addOption("allowTreatAsArray", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add verify enableEmptyNodes policy
+		opt.getSet().addOption("enableEmptyNodes", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add enableSoapHeaders functionality
+		opt.getSet().addOption("enableSoapHeaders", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add enableRespRootElement to show response root elements in OAS
+		opt.getSet().addOption("enableRespRootElement", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+		// add enableTreatAsArray to show Path for attributes that are eligible as Array in xml-to-json policy
+		opt.getSet().addOption("preserveArray", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 
 		
 		opt.check();
@@ -3591,20 +3598,20 @@ public class GenerateProxy {
 			}
 		}
 
-		if (opt.getSet().isSet("allowEmptyNodes")) {
-			genProxy.setAllowEmptyNodes(new Boolean(opt.getSet().getOption("allowEmptyNodes").getResultValue(0)));
+		if (opt.getSet().isSet("enableEmptyNodes")) {
+			genProxy.setEnableEmptyNodes(new Boolean(opt.getSet().getOption("enableEmptyNodes").getResultValue(0)));
 		}
 
-		if (opt.getSet().isSet("allowSoapHeaders")) {
-			genProxy.setAllowSoapHeaders(new Boolean(opt.getSet().getOption("allowSoapHeaders").getResultValue(0)));
+		if (opt.getSet().isSet("enableSoapHeaders")) {
+			genProxy.setEnableSoapHeaders(new Boolean(opt.getSet().getOption("enableSoapHeaders").getResultValue(0)));
 		}
 		
-		if (opt.getSet().isSet("allowRespRootElement")) {
-			genProxy.setAllowRespRootElement(new Boolean(opt.getSet().getOption("allowRespRootElement").getResultValue(0)));
+		if (opt.getSet().isSet("enableRespRootElement")) {
+			genProxy.setEnableRespRootElement(new Boolean(opt.getSet().getOption("enableRespRootElement").getResultValue(0)));
 		}
 
-		if (opt.getSet().isSet("allowTreatAsArray")) {
-			genProxy.setAllowTreatAsArray(new Boolean(opt.getSet().getOption("allowTreatAsArray").getResultValue(0)));
+		if (opt.getSet().isSet("preserveArray")) {
+			genProxy.setPreserveArray(new Boolean(opt.getSet().getOption("preserveArray").getResultValue(0)));
 		}
 
 		if (opt.getSet().isSet("apikey")) {
