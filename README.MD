@@ -34,6 +34,10 @@ quota=false               Works only if apikey or oauth is set
 basepath=Uses the basepath from the wsdl
 cors=false                Don't enable CORS; Works only for SOAP to REST
 build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
+enableEmptyNodes=<true|false>    default is false; works only if it is set to true
+enableSoapHeaders=<true|false>    default is false; works only if it is set to true
+enableRespRootElement=<true|false>    default is false; works only if it is set to true
+preserveArray=<true|false>    default is false; works only if it is set to true
 opsmap=specify operations map
 ``` 
 ## Output
