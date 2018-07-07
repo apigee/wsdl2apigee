@@ -19,7 +19,7 @@ java -jar wsdl2apigee-1.0.0-jar-with-dependencies.jar -wsdl=<wsdl URL or Path>
 
 ### Other Options
 ```
-java -jar wsdl2apigee-1.0.0-jar-with-dependencies.jar -wsdl=<wsdl URL or Path> -passthru=<true|false> -desc=<description> -allpost=<true|false> -opsmap=<opsmapping.xml> -service=<service name> -port=<port name> -debug=<true|false> -oauth=<true|false> -vhosts=comma separated values for virtuals hosts> -build=<build folder name> -cors=<true|false> -apikey=<true|false> -quota=<true|false> -basepath=<specify base path>
+java -jar wsdl2apigee-1.0.0-jar-with-dependencies.jar -wsdl=<wsdl URL or Path> -passthru=<true|false> -desc=<description> -allpost=<true|false> -opsmap=<opsmapping.xml> -service=<service name> -port=<port name> -debug=<true|false> -oauth=<true|false> -vhosts=comma separated values for virtuals hosts> -build=<build folder name> -cors=<true|false> -apikey=<true|false> -quota=<true|false> -basepath=<specify base path> -enableEmptyNodes=<true|false> -enableSoapHeaders=<true|false> -enableRespRootElement=<true|false> -preserveArray=<true|false> 
 
 Defaults:
 passthru=false            Do not convert to API/JSON. Treat as SOAP
@@ -34,10 +34,10 @@ quota=false               Works only if apikey or oauth is set
 basepath=Uses the basepath from the wsdl
 cors=false                Don't enable CORS; Works only for SOAP to REST
 build=specify build folder   default is temp folder; ensure user has access to read/write to temp folder
-enableEmptyNodes=<true|false>    default is false; works only if it is set to true
-enableSoapHeaders=<true|false>    default is false; works only if it is set to true
-enableRespRootElement=<true|false>    default is false; works only if it is set to true
-preserveArray=<true|false>    default is false; works only if it is set to true
+enableEmptyNodes=<true|false>    default is false; Set to true if empty root element needs to be passed to target service as SOAP operation. 
+enableSoapHeaders=<true|false>    default is false; Set to true if SOAP headers need to be passed to target service.
+enableRespRootElement=<true|false>    default is false; Set to true if XML root element from backend service needs to be mapped and sent as part of the JSON response.
+preserveArray=<true|false>    default is false; Set to true if XML arrays in the WSDL needs to be mapped as JSON arrays in the response and OAS specification. This will set "TreatAsArray" option for the array Xpath in XML to JSON policy within the proxy. 
 opsmap=specify operations map
 ``` 
 ## Output
