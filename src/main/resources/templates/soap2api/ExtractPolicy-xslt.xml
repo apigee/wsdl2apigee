@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtractVariables async="false" continueOnError="true" enabled="true" name="Extract-1">
+   <DisplayName>Extract 1</DisplayName>
+   <Source>request</Source>
+   <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+   <XMLPayload stopPayloadProcessing="false" />
+</ExtractVariables>

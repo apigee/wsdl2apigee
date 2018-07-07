@@ -1,24 +1,20 @@
 package com.apigee.proxywriter;
 
-import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
-import com.apigee.utils.WsdlDefinitions;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
+import com.apigee.utils.WsdlDefinitions;
+import org.custommonkey.xmlunit.DetailedDiff;
+import org.custommonkey.xmlunit.XMLUnit;
 
 public class GenerateProxyTest {
 
@@ -87,7 +83,8 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/Extract-Operation-Name.xml", inputStream);
-        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
+        
+        String extractPolicyStr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
                 "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"Extract-Operation-Name\">" + System.getProperty("line.separator") +
                 "    <DisplayName>Extract Operation Name</DisplayName>" + System.getProperty("line.separator") +
                 "    <Properties/>" + System.getProperty("line.separator") +
@@ -107,8 +104,25 @@ public class GenerateProxyTest {
                 "            <XPath>local-name(//*[local-name() = 'Body']/*[1])</XPath>" + System.getProperty("line.separator") +
                 "        </Variable>" + System.getProperty("line.separator") +
                 "    </XMLPayload>" + System.getProperty("line.separator") +
-                "</ExtractVariables>");
+                "</ExtractVariables>";
+        assertXMLEquals(extractVariablesPolicy,extractPolicyStr);
+        
+     }
+    
+    /*
+     * to validate xml strings after removing white spaces
+     * 
+     */
+    public static void assertXMLEquals(String expectedXML, String actualXML) throws Exception {
+        XMLUnit.setIgnoreWhitespace(true);
+        XMLUnit.setIgnoreAttributeOrder(true);
+
+        DetailedDiff diff = new DetailedDiff(XMLUnit.compareXML(expectedXML, actualXML));
+
+        List<?> allDifferences = diff.getAllDifferences();
+        Assert.assertEquals("Differences found: "+ diff.toString(), 0, allDifferences.size());
     }
+    
 
     @Test
     public void testGenerateRest() throws Exception {
@@ -131,9 +145,11 @@ public class GenerateProxyTest {
                 "apiproxy/policies/set-target-url.xml",
                 "apiproxy/policies/unknown-resource-xml.xml",
                 "apiproxy/policies/unknown-resource.xml",
+                "apiproxy/policies/remove-nillable.xml",
                 "apiproxy/policies/xml-to-json.xml",
                 "apiproxy/proxies/default.xml",
                 "apiproxy/resources/jsc/root-wrapper.js",
+                "apiproxy/resources/jsc/remove-nillable.js",
                 "apiproxy/resources/xsl/remove-empty-nodes.xslt",
                 "apiproxy/resources/xsl/remove-namespaces.xslt",
                 "apiproxy/targets/default.xml",
@@ -147,7 +163,7 @@ public class GenerateProxyTest {
         checkForFilesInBundle(filenames, inputStream);
         inputStream.reset();
         final String extractVariablesPolicy = readZipFileEntry("apiproxy/policies/extract-format.xml", inputStream);
-        Assert.assertEquals(extractVariablesPolicy, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
+        String extractXmlStr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" + System.getProperty("line.separator") +
                 "<ExtractVariables async=\"false\" continueOnError=\"false\" enabled=\"true\" name=\"extract-format\">" + System.getProperty("line.separator") +
                 "    <DisplayName>Extract Format</DisplayName>" + System.getProperty("line.separator") +
                 "    <Properties/>" + System.getProperty("line.separator") +
@@ -160,7 +176,9 @@ public class GenerateProxyTest {
                 "    <Variable name=\"request.verb\">" + System.getProperty("line.separator") +
                 "        <Pattern>{verb}</Pattern>" + System.getProperty("line.separator") +
                 "    </Variable>" + System.getProperty("line.separator") +
-                "</ExtractVariables>");
+                "</ExtractVariables>" ;
+        
+        assertXMLEquals(extractVariablesPolicy,extractXmlStr);
     }
 
     @Test
@@ -309,7 +327,9 @@ public class GenerateProxyTest {
                 "apiproxy/policies/return-open-api.xml",
                 "apiproxy/targets/default.xml",
                 "apiproxy/proxies/default.xml",
-                "apiproxy/PayPalAPIInterfaceService.xml");
+                "apiproxy/PayPalAPIInterfaceService.xml",
+                "apiproxy/resources/jsc/remove-nillable.js",
+                "apiproxy/policies/remove-nillable.xml");
         final String PAYPAL_WSDL = "https://www.paypalobjects.com/wsdl/PayPalSvc.wsdl";
         String jsonSelectedOp = "[{\"operationName\": \"AddressVerify\",\"verb\": \"post\",\"resourcePath\": \"/addressverify\"},{\"operationName\": \"MassPay\",\"verb\": \"put\",\"resourcePath\": \"/massivepay\"}]";
         GenerateProxy genProxy = new GenerateProxy();

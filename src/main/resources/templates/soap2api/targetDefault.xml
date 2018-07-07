@@ -17,6 +17,9 @@
                 <Condition>(verb != "GET" AND contentformat == "application/json") OR (verb == "GET" AND acceptformat !~ "*/xml")</Condition>
             </Step>
             <Step>
+                <Name>remove-nillable</Name>
+            </Step>
+            <Step>
                 <Name>get-response-soap-body</Name>
                 <Condition>(verb != "GET" AND contentformat == "application/json") OR (verb == "GET" AND acceptformat !~ "*/xml")</Condition>
             </Step>

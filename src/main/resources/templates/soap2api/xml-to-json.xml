@@ -5,7 +5,6 @@
         <RecognizeNumber>true</RecognizeNumber>
         <RecognizeBoolean>true</RecognizeBoolean>
         <RecognizeNull>true</RecognizeNull>
-        <NullValue>NULL</NullValue>
         <TextNodeName>TEXT</TextNodeName>
         <AttributePrefix>@</AttributePrefix>
     </Options>

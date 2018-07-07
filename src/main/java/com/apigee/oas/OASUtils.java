@@ -71,9 +71,15 @@ public class OASUtils {
     	JsonObject parameter = null;
     	for (String queryParam : queryParams) {
     		parameter = new JsonObject();
-    		parameter.addProperty("name", queryParam);
+    		String paramSplit[] = queryParam.split("_");
+    		parameter.addProperty("name", paramSplit[0]);
     		parameter.addProperty("in", "query");
-    		parameter.addProperty("required", false);
+    		if(paramSplit.length>1) {
+    			parameter.addProperty("required", Boolean.valueOf(paramSplit[1]));	
+    		}else {
+    			parameter.addProperty("required",false);
+    		}
+    		
     		parameter.addProperty("type", "string");
     		parameters.add(parameter);
     	}
@@ -104,6 +110,90 @@ public class OASUtils {
 		properties.add(objectName, object);
 	}
 	
+	public static void addObject(JsonObject parent, String parentName, String objectName,boolean isChildComplexType, String qNameLocal) {
+		JsonObject properties = parent.getAsJsonObject("properties");
+		JsonObject object = new JsonObject();
+		if(isChildComplexType)
+		{
+			object.addProperty("$ref", "#/definitions/"+qNameLocal);
+		}
+		properties.add(objectName, object);
+		
+	}
+	
+	/*
+	 * inorder to retrieve inner properties attribute to assign output elements
+	 * 
+	 */
+	public static void addObjectOutputRes(JsonObject parent, String parentName, String objectName,boolean isChildComplexType, String qNameLocal) {
+		JsonObject properties = parent.getAsJsonObject("properties").getAsJsonObject(parentName).getAsJsonObject("properties");
+		JsonObject object = new JsonObject();
+		if(isChildComplexType)
+		{
+			object.addProperty("$ref", "#/definitions/"+qNameLocal);
+		}
+		properties.add(objectName, object);
+		
+		
+	}
+	
+	/*
+	 * inorder to retrieve inner properties attribute to assign output elements
+	 * 
+	 */
+	public static void addObjectOutputArrayProp(JsonObject parent, String parentName, String objectName,
+			boolean isChildComplexType, String qNameLocal, String subArrayElement) {
+		
+		if(null != parent.getAsJsonObject("properties").getAsJsonObject(parentName)) {
+			
+			JsonObject properties = parent.getAsJsonObject("properties").getAsJsonObject(parentName).getAsJsonObject("properties");
+			JsonObject innerProp = new JsonObject();
+			JsonObject subArrayJson = new JsonObject();
+			innerProp.add(subArrayElement, subArrayJson);
+			
+			JsonObject jsoonOuterProp = new JsonObject();
+			jsoonOuterProp.add("properties", innerProp);
+			jsoonOuterProp.addProperty("type", "object");
+			properties.add(objectName, jsoonOuterProp);
+		}else {
+			JsonObject properties = parent.getAsJsonObject("properties");
+			JsonObject innerProp = new JsonObject();
+			JsonObject subArrayJson = new JsonObject();
+			innerProp.add(subArrayElement, subArrayJson);
+			
+			JsonObject jsoonOuterProp = new JsonObject();
+			jsoonOuterProp.add("properties", innerProp);
+			jsoonOuterProp.addProperty("type", "object");
+			properties.add(objectName, jsoonOuterProp);
+		}
+	}
+
+	/*
+	 * inorder to retrieve inner properties attribute to assign output elements
+	 * 
+	 */
+	public static void addObjectOutputForArray(JsonObject parent, String parentName, String objectName,
+			boolean isChildComplexType, String qNameLocal, String subArrayElement) {
+		
+		if(null != parent.getAsJsonObject("properties").getAsJsonObject(parentName)) {
+			JsonObject rep = parent.getAsJsonObject("properties").getAsJsonObject(parentName).getAsJsonObject("properties").
+					getAsJsonObject(objectName).getAsJsonObject("properties").getAsJsonObject(subArrayElement);
+			JsonObject items = new JsonObject();
+
+			items.addProperty("$ref", "#/definitions/"+subArrayElement);
+			rep.add("items", items);
+			rep.addProperty("type", "array");
+		}else {
+			JsonObject rep = parent.getAsJsonObject("properties").getAsJsonObject(objectName).getAsJsonObject("properties").
+					getAsJsonObject(subArrayElement);
+			JsonObject items = new JsonObject();
+
+			items.addProperty("$ref", "#/definitions/"+subArrayElement);
+			rep.add("items", items);
+			rep.addProperty("type", "array");
+		}
+	}
+	
 	public static JsonObject createComplexType(String name, String min, String max) {
 		JsonObject complexType = new JsonObject();
 		JsonObject properties = new JsonObject();
@@ -122,7 +212,7 @@ public class OASUtils {
 		Integer minimum = Integer.parseInt(min);
 
 		complexType.add("properties", properties);
-
+		
 		if (maximum == -1 || maximum > 1) {
 			complexType.addProperty("type", "array");
 			//in json schemas, if the elements are unbounded, don't set maxItems
@@ -134,6 +224,55 @@ public class OASUtils {
 		}
 		return complexType;
 	}
+
+	public static JsonObject createComplexTypeRep(String name, String min, String max) {
+		JsonObject complexType = new JsonObject();
+		JsonObject properties = new JsonObject();
+		complexType.add("properties", properties);
+		
+		complexType.addProperty("type", "object");
+		return complexType;
+	}
+
+	
+	public static JsonObject createExtension(String baseName) {
+		JsonObject extension = new JsonObject();
+		JsonObject properties = new JsonObject();
+		extension.addProperty("type", "object");
+		extension.add("properties", properties);
+		
+		return extension;
+	}
+	public static JsonObject createRestriction(String type, String min, String max) {
+		JsonObject restriction = createSimpleType(type,min,max);
+		JsonArray enumArray = new JsonArray();
+		if(restriction.get("items") != null)
+		{
+			JsonObject items = (JsonObject)restriction.get("items");
+			items.add("enum", enumArray);
+		}
+		else
+		{
+			restriction.add("enum", enumArray);
+		}
+		
+		return restriction;
+	}
+	
+	/*
+	 * Method used to create inner properties for each response attribute under #definitions of OAS
+	 * 
+	 */
+	public static JsonObject createComplexTypeOP(String name, JsonObject jsonObj) {
+		JsonObject properties = jsonObj.getAsJsonObject("properties");
+		JsonObject innerProp = new JsonObject();
+		JsonObject jsoonOuterProp = new JsonObject();
+		jsoonOuterProp.add("properties", innerProp);
+		properties.add(name, jsoonOuterProp);
+		
+		return properties;
+	}
+	
 	
 	public static JsonObject createSimpleType(String type, String min, String max) {
 		JsonObject simpleType = new JsonObject();
@@ -199,5 +338,20 @@ public class OASUtils {
 		return simpleType;
 	}
     
+	public static String manipulateQueryParams(String name, String min, String max) {
+		
+		String queryParamStr = "";
+		String required = "false";
+		if (max.equalsIgnoreCase("unbounded")) {
+			max = "-1";
+		}
+		if(Integer.parseInt(min) ==1 && Integer.parseInt(max) ==1) {
+			required = "true";
+		}
+		
+		queryParamStr = queryParamStr.concat(name+"_"+required);
+		return queryParamStr;
+	}
+	
 	
 }

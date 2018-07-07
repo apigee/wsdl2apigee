@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Javascript async="false" continueOnError="false" enabled="true" timeLimit="200" name="remove-nillable">
+    <DisplayName>remove-nillable</DisplayName>
+    <Properties/>
+    <ResourceURL>jsc://remove-nillable.js</ResourceURL>
+</Javascript>
