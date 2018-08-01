@@ -35,8 +35,8 @@ public class GenerateProxyTest {
     public static final String STOCK_WSDL = "/delayedstockquote.asmx.wsdl";
     public static final String oMap = "<proxywriter><get><operation><pattern>get</pattern><location>beginsWith</location></operation><operation><pattern>inq</pattern><location>beginsWith</location></operation><operation><pattern>search</pattern><location>beginsWith</location></operation><operation><pattern>list</pattern><location>beginsWith</location></operation><operation><pattern>retrieve</pattern><location>beginsWith</location></operation></get><post><operation><pattern>create</pattern><location>contains</location></operation><operation><pattern>add</pattern><location>beginsWith</location></operation><operation><pattern>process</pattern><location>beginsWith</location></operation></post><put><operation><pattern>update</pattern><location>beginsWith</location></operation><operation><pattern>change</pattern><location>beginsWith</location></operation><operation><pattern>modify</pattern><location>beginsWith</location></operation><operation><pattern>set</pattern><location>beginsWith</location></operation></put><delete><operation><pattern>delete</pattern><location>beginsWith</location></operation><operation><pattern>remove</pattern><location>beginsWith</location></operation><operation><pattern>del</pattern><location>beginsWith</location></operation></delete></proxywriter>";
 
-    public static final String B_69550284_WSDL_PATH = "/B_69550284.wsdl";
-    public static final String B_69550284_OAS_PATH = "/B_69550284_oas.json";
+    public static final String B_69550284_WSDL_PATH = "/spec-conversion/B_69550284.wsdl";
+    public static final String B_69550284_OAS_PATH = "/spec-conversion/B_69550284_oas.json";
 
     // Generate a proxy bundle for the given wsdl and extract the converted OpenApi spec.
     private String getOasConversionFromWsdl(String wsdlPath, String portName) throws Exception {
