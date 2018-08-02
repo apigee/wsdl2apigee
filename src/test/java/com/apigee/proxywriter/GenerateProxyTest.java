@@ -522,14 +522,8 @@ public class GenerateProxyTest {
         assertSpecConversion(wsdlPath, portName, oasPath);
     }
 
-    // Disabled because we need to work on this some more.
-    //@Test
+    @Test
     public void testSpecConversion_b69550284() throws Exception {
-        // TODO:
-        //  1) Pare this wsdl down to just one example of each thing that is broken. Remove commented stuff.
-        //  2) Rename files to something more descriptive.
-        //  3) Hand-fix the golden file to highlight what needs to be fixed?
-        //  how do we handle the situation where we want to check in a test but it's failing? Can we just comment annotation?
         final String wsdlPath = "/spec-conversion/B_69550284_wsdl.xml";
         final String oasPath = "/spec-conversion/B_69550284_oas.json";
         final String portName = "CustomerManagementSoap";
