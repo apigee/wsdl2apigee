@@ -2,10 +2,17 @@ package com.apigee.proxywriter;
 
 import com.apigee.proxywriter.exception.ErrorParsingWsdlException;
 import com.apigee.utils.WsdlDefinitions;
+import com.apigee.utils.XMLUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import org.w3c.dom.*;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +34,41 @@ public class GenerateProxyTest {
     public static final String BLZ_WSDL = "/BLZService.wsdl";
     public static final String STOCK_WSDL = "/delayedstockquote.asmx.wsdl";
     public static final String oMap = "<proxywriter><get><operation><pattern>get</pattern><location>beginsWith</location></operation><operation><pattern>inq</pattern><location>beginsWith</location></operation><operation><pattern>search</pattern><location>beginsWith</location></operation><operation><pattern>list</pattern><location>beginsWith</location></operation><operation><pattern>retrieve</pattern><location>beginsWith</location></operation></get><post><operation><pattern>create</pattern><location>contains</location></operation><operation><pattern>add</pattern><location>beginsWith</location></operation><operation><pattern>process</pattern><location>beginsWith</location></operation></post><put><operation><pattern>update</pattern><location>beginsWith</location></operation><operation><pattern>change</pattern><location>beginsWith</location></operation><operation><pattern>modify</pattern><location>beginsWith</location></operation><operation><pattern>set</pattern><location>beginsWith</location></operation></put><delete><operation><pattern>delete</pattern><location>beginsWith</location></operation><operation><pattern>remove</pattern><location>beginsWith</location></operation><operation><pattern>del</pattern><location>beginsWith</location></operation></delete></proxywriter>";
+
+    // Generate a proxy bundle for the given wsdl and extract the converted OpenApi spec.
+    private String getOasConversionFromWsdl(String wsdlPath, String portName) throws Exception {
+        final String wsdlContent = this.getClass().getResource(wsdlPath).toString();
+        final InputStream bundleStream = GenerateProxy.generateProxy(
+                new GenerateProxyOptions(wsdlContent, portName, false, "description", "/basepath",
+                        "default,secure", false, false, false, false, null));
+        final String partName = "apiproxy/policies/return-open-api.xml";
+        final String partContents = readZipFileEntry(partName, bundleStream);
+        final Document doc = new XMLUtils().getXMLFromString(partContents);
+        final NodeList payloadList = doc.getElementsByTagName("Payload");
+        if (payloadList.getLength() != 1) {
+            throw new Exception("Unexpected payload count");
+        }
+        return payloadList.item(0).getTextContent();
+    }
+
+    private String readResourceContent(String path) throws Exception {
+        InputStream fileStream = this.getClass().getResourceAsStream(path);
+        BufferedInputStream bis = new BufferedInputStream(fileStream);
+        ByteArrayOutputStream buf = new ByteArrayOutputStream();
+        int result = bis.read();
+        while(result != -1) {
+            buf.write((byte) result);
+            result = bis.read();
+        }
+        return buf.toString("UTF-8");
+    }
+
+    // Convert the given wsdl to OAS and compare it against the given golden OAS.
+    private void assertSpecConversion(String wsdlPath, String portName, String goldenOasPath) throws Exception {
+        final String convertedOasContent = getOasConversionFromWsdl(wsdlPath, portName);
+        final String goldenOasContent = readResourceContent(goldenOasPath);
+        JSONAssert.assertEquals(convertedOasContent, goldenOasContent, JSONCompareMode.STRICT);
+    }
 
     private void checkForFilesInBundle(List<String> filenames, InputStream inputStream) throws IOException {
         final ZipInputStream zipInputStream = new ZipInputStream(inputStream);
@@ -467,5 +509,15 @@ public class GenerateProxyTest {
         InputStream inputStream = generateProxy.begin("Test", EXTERNAL_ENTITY_WSDL);
         String wsdlEntry = readZipFileEntry("apiproxy/policies/return-wsdl.xml", inputStream);
         Assert.assertTrue("documentation should be empty", wsdlEntry.contains("&lt;documentation&gt;&lt;/documentation&gt;"));
+    }
+
+    @Test
+    public void testSpecConversion_sanity() throws Exception {
+        // TODO(gideong): this output already looks wrong (missing parameter details).
+        // After merging in test code, fix converter so that the golden looks correct.
+        final String wsdlPath = "/spec-conversion/sanity_wsdl.xml";
+        final String oasPath = "/spec-conversion/sanity_oas.json";
+        final String portName = "sanityPort";
+        assertSpecConversion(wsdlPath, portName, oasPath);
     }
 }
