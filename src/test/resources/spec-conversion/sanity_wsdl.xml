@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="ConversionTest" targetNamespace="http://apigee.com/conversion-test"
+                  xmlns:this="http://apigee.com/conversion-test"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+  </wsdl:types>
+
+  <wsdl:message name="restOperationRequest">
+    <wsdl:part name="testValue" type="xs:string" />
+  </wsdl:message>
+  <wsdl:message name="restOperationResponse">
+    <wsdl:part name="testValue" type="xs:string" />
+  </wsdl:message>
+
+  <wsdl:portType name="sanityPortType">
+    <wsdl:operation name="sanityOperation">
+      <wsdl:input message="this:restOperationRequest" />
+      <wsdl:output message="this:restOperationResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="sanityBinding" type="this:sanityPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="sanityOperation">
+      <soap:operation soapAction="http://apigee.com/conversion-test" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="sanityService">
+    <wsdl:port name="sanityPort" binding="this:sanityBinding">
+      <soap:address location="http://apigee.com/conversion-test"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>
