@@ -67,7 +67,7 @@ public class GenerateProxyTest {
     private void assertSpecConversion(String wsdlPath, String portName, String goldenOasPath) throws Exception {
         final String convertedOasContent = getOasConversionFromWsdl(wsdlPath, portName);
         final String goldenOasContent = readResourceContent(goldenOasPath);
-        JSONAssert.assertEquals(convertedOasContent, goldenOasContent, JSONCompareMode.STRICT);
+        JSONAssert.assertEquals(goldenOasContent, convertedOasContent, JSONCompareMode.STRICT);
     }
 
     private void checkForFilesInBundle(List<String> filenames, InputStream inputStream) throws IOException {
@@ -520,4 +520,41 @@ public class GenerateProxyTest {
         final String portName = "sanityPort";
         assertSpecConversion(wsdlPath, portName, oasPath);
     }
+
+    // TODO(b/112275181): re-enable once corresponding bug is fixed
+    //@Test
+    public void testSpecConversion_b_112275181() throws Exception {
+        final String wsdlPath = "/spec-conversion/b-112275181_wsdl.xml";
+        final String oasPath = "/spec-conversion/b-112275181_oas.json";
+        final String portName = "testPort";
+        assertSpecConversion(wsdlPath, portName, oasPath);
+    }
+
+    // TODO(b/112274526): re-enable once corresponding bug is fixed
+    //@Test
+    public void testSpecConversion_b_112274526() throws Exception {
+        final String wsdlPath = "/spec-conversion/b-112274526_wsdl.xml";
+        final String oasPath = "/spec-conversion/b-112274526_oas.json";
+        final String portName = "testPort";
+        assertSpecConversion(wsdlPath, portName, oasPath);
+    }
+
+    // TODO(b/112274566): re-enable once corresponding bug is fixed
+    //@Test
+    public void testSpecConversion_b_112274566() throws Exception {
+        final String wsdlPath = "/spec-conversion/b-112274566_wsdl.xml";
+        final String oasPath = "/spec-conversion/b-112274566_oas.json";
+        final String portName = "testPort";
+        assertSpecConversion(wsdlPath, portName, oasPath);
+    }
+
+    // TODO(b/112274847): re-enable once corresponding bug is fixed
+    //@Test
+    public void testSpecConversion_b_112274847() throws Exception {
+        final String wsdlPath = "/spec-conversion/b-112274847_wsdl.xml";
+        final String oasPath = "/spec-conversion/b-112274847_oas.json";
+        final String portName = "testPort";
+        assertSpecConversion(wsdlPath, portName, oasPath);
+    }
+
 }

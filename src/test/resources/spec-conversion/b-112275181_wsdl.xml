@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="ConversionTest" targetNamespace="http://apigee.com/conversion-test"
+                  xmlns:this="http://apigee.com/conversion-test"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://apigee.com/conversion-test">
+
+      <xs:element name="testEnum">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="valueOne" />
+            <xs:enumeration value="valueTwo" />
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+
+      <xs:complexType name="baseType">
+        <xs:sequence>
+          <xs:element name="baseElement1" type="xs:string" />
+          <xs:element name="baseElement2" type="xs:string" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="testExtension">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="this:baseType">
+              <xs:attribute name="extendedAttribute">
+                <xs:element type="xs:string" />
+              </xs:attribute>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+
+    </xs:schema>
+  </wsdl:types>
+
+  <wsdl:message name="testOperationRequest">
+    <wsdl:part name="testValue" element="this:testEnum" />
+  </wsdl:message>
+  <wsdl:message name="testOperationResponse">
+    <wsdl:part name="testValue" element="this:testExtension" />
+  </wsdl:message>
+
+  <wsdl:portType name="testPortType">
+    <wsdl:operation name="testOperation">
+      <wsdl:input message="this:testOperationRequest" />
+      <wsdl:output message="this:testOperationResponse" />
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="testBinding" type="this:testPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="testOperation">
+      <soap:operation soapAction="http://apigee.com/conversion-test" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="testService">
+    <wsdl:port name="testPort" binding="this:testBinding">
+      <soap:address location="http://apigee.com/conversion-test"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>
