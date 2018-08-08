@@ -1,0 +1,66 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "testService",
+    "description": "An OAS document generated from WSDL",
+    "termsOfService": "",
+    "contact": {
+      "name": "API Team"
+    },
+    "license": {
+      "name": "Apache 2.0"
+    }
+  },
+  "host": "@request.header.host#",
+  "basePath": "/basepath",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/testoperation2": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/leakyItem"
+            }
+          }
+        },
+        "description": "Implements WSDL operation testOperation2",
+        "parameters": []
+      }
+    },
+    "/testoperation1": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/genericItem"
+            }
+          }
+        },
+        "description": "Implements WSDL operation testOperation1",
+        "parameters": []
+      }
+    }
+  },
+  "definitions": {
+    "leakyItem": {
+      "properties": {
+        "leakyField": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "testService",
+    "description": "An OAS document generated from WSDL",
+    "termsOfService": "",
+    "contact": {
+      "name": "API Team"
+    },
+    "license": {
+      "name": "Apache 2.0"
+    }
+  },
+  "host": "@request.header.host#",
+  "basePath": "/basepath",
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/testoperation": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/testResponse"
+            }
+          }
+        },
+        "description": "Implements WSDL operation testOperation",
+        "parameters": []
+      }
+    }
+  },
+  "definitions": {
+    "testResponse": {
+        "properties": {
+            "field3": {
+                "type": "int"
+            },
+            "field4": {
+                "type": "string"
+            },
+            "nestedField": {
+                "type": "object",
+                "properties": {
+                    "field1": {
+                        "type": "int"
+                    },
+                    "field2": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+      "type": "object"
+    }
+  }
+}
