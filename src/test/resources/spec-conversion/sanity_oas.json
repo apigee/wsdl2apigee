@@ -3,7 +3,7 @@
   "info": {
     "version": "1.0.0",
     "title": "sanityService",
-    "description": "A OAS document generated from WSDL",
+    "description": "An OAS document generated from WSDL",
     "termsOfService": "",
     "contact": {
       "name": "API Team"
