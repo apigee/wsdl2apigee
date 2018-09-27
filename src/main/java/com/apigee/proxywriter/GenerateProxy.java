@@ -2442,9 +2442,11 @@ public class GenerateProxy {
 					if (RPCSTYLE) {
 						apiMap = new APIMap(null, null, null, "POST", op.getName(), false);
 					} else {
-						// get root element
-						com.predic8.schema.Element requestElement = op.getInput().getMessage().getParts().get(0)
-								.getElement();
+						com.predic8.schema.Element requestElement = null;
+						if (op.getInput().getMessage().getParts().size() > 0) {
+							// get root element
+							requestElement = op.getInput().getMessage().getParts().get(0).getElement();
+						}
 						if (requestElement != null) {
 							apiMap = new APIMap(null, null, null, "POST", requestElement.getName(), false);
 						} else {
