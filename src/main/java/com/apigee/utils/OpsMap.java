@@ -15,130 +15,123 @@ import org.w3c.dom.NodeList;
 
 public class OpsMap {
 
-	private static final Logger LOGGER = Logger.getLogger(OpsMap.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(OpsMap.class.getName());
 
-	static {
-		LOGGER.setLevel(Level.INFO);
-		ConsoleHandler handler = new ConsoleHandler();
-		// PUBLISH this level
-		handler.setLevel(Level.INFO);
-		LOGGER.addHandler(handler);
+    static {
+	LOGGER.setLevel(Level.INFO);
+	ConsoleHandler handler = new ConsoleHandler();
+	// PUBLISH this level
+	handler.setLevel(Level.INFO);
+	LOGGER.addHandler(handler);
+    }
+
+    private List<Operation> opsMap;
+
+    public OpsMap() {
+	opsMap = new ArrayList<Operation>();
+    }
+
+    public OpsMap(String OPSMAPPING_TEMPLATE) throws Exception{
+	opsMap = new ArrayList<Operation>();
+	readOperationsMap(OPSMAPPING_TEMPLATE);
+    }
+
+    private void addOps (String operationName, String location, String verb) {
+	Operation o = new Operation(operationName, location, verb);
+	opsMap.add(o);
+    }
+
+    public String getVerb(String operationName, HashMap<String, SelectedOperation> selectedOperations) {
+	String lcOperationName = operationName.toLowerCase();
+
+	if (selectedOperations != null) {
+	    if (selectedOperations.containsKey(operationName)) {
+		return selectedOperations.get(operationName).getVerb();
+	    }
 	}
 
-	private List<Operation> opsMap;
-	
-	public OpsMap() {
-		opsMap = new ArrayList<Operation>();
-	}
-	
-	public OpsMap(String OPSMAPPING_TEMPLATE) throws Exception{
-		opsMap = new ArrayList<Operation>();
-		readOperationsMap(OPSMAPPING_TEMPLATE);
-	}
-
-	private void addOps (String operationName, String location, String verb) {
-		Operation o = new Operation(operationName, location, verb);
-		opsMap.add(o);
-	}
-	
-	public String getVerb(String operationName, HashMap<String, SelectedOperation> selectedOperations) {
-		String lcOperationName = operationName.toLowerCase();
-		
-		if (selectedOperations != null) {
-			if (selectedOperations.containsKey(operationName)) {
-				return selectedOperations.get(operationName).getVerb();
-			}
+	for (Operation o : opsMap) {
+	    //found key in the operation name
+	    if (lcOperationName.contains(o.getPattern())) {
+		if (o.getLocation().equalsIgnoreCase("beginsWith")) {
+		    if (lcOperationName.startsWith(o.getPattern())) {
+			return o.getVerb();
+		    }
+		} else if (o.getLocation().equalsIgnoreCase("endsWith")) {
+		    if (lcOperationName.startsWith(o.getPattern())) {
+			return o.getVerb();
+		    }
+		} else { //assume contains
+		    return o.getVerb();
 		}
-		
-		for (Operation o : opsMap) {
-			//found key in the operation name
-			if (lcOperationName.contains(o.getPattern())) {
-				if (o.getLocation().equalsIgnoreCase("beginsWith")) {
-					if (lcOperationName.startsWith(o.getPattern())) {
-						return o.getVerb();
-					}
-				} else if (o.getLocation().equalsIgnoreCase("endsWith")) {
-					if (lcOperationName.startsWith(o.getPattern())) {
-						return o.getVerb();
-					}
-				} else { //assume contains
-					return o.getVerb();
-				}
-			}
-		}
-		return "GET";
+	    }
 	}
-	
-	public String getResourcePath (String operationName, HashMap<String, SelectedOperation> selectedOperations) {
+	return "GET";
+    }
 
-		String resourcePath = operationName;
-		
-		if (selectedOperations != null) {
-			if (selectedOperations.containsKey(operationName)) {
-				return selectedOperations.get(operationName).getResourcePath();
-			}
-		}		
-		
-		for (Operation o : opsMap) {
-			if (operationName.toLowerCase().startsWith(o.getPattern()) && !operationName.toLowerCase().startsWith("address") 
-					&& !operationName.equalsIgnoreCase(o.getPattern())) { //don't replace the entire resource
-				resourcePath = operationName.toLowerCase().replaceFirst(o.getPattern(), "");
-				LOGGER.fine("Replacing " + operationName + " with " + resourcePath.toLowerCase());
-				return "/" + resourcePath.toLowerCase();
-			}
-		}
+    public String getResourcePath (String operationName, HashMap<String, SelectedOperation> selectedOperations) {
+
+	String resourcePath = operationName;
+
+	if (selectedOperations != null) {
+	    if (selectedOperations.containsKey(operationName)) {
+		return selectedOperations.get(operationName).getResourcePath();
+	    }
+	}
+
+	for (Operation o : opsMap) {
+	    if (operationName.toLowerCase().startsWith(o.getPattern()) && !operationName.toLowerCase().startsWith("address")
+		&& !operationName.equalsIgnoreCase(o.getPattern())) { //don't replace the entire resource
+		resourcePath = operationName.toLowerCase().replaceFirst(o.getPattern(), "");
+		LOGGER.fine("Replacing " + operationName + " with " + resourcePath.toLowerCase());
 		return "/" + resourcePath.toLowerCase();
+	    }
 	}
-	
-	private void readOperation (String verb, Document opsMappingXML) throws Exception {
-		LOGGER.entering(OpsMap.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
+	return "/" + resourcePath.toLowerCase();
+    }
 
-		Node verbNode = opsMappingXML.getElementsByTagName(verb).item(0);
-		if (verbNode != null) {
-			NodeList getOpsList = verbNode.getChildNodes();
-			for (int i = 0; i < getOpsList.getLength(); i++) {
-				if (getOpsList.item(i).getNodeType() == Node.ELEMENT_NODE) {
-					Element operation = (Element)getOpsList.item(i);
-					String name = operation.getElementsByTagName("pattern").item(0).getTextContent();
-					String location = operation.getElementsByTagName("pattern").item(0).getTextContent();
-					addOps (name, location, verb.toUpperCase());
-				}
-			}
+    private void readOperation (String verb, Document opsMappingXML) throws Exception {
+	LOGGER.entering(OpsMap.class.getName(), new Object() { }.getClass().getEnclosingMethod().getName());
+
+	Node verbNode = opsMappingXML.getElementsByTagName(verb).item(0);
+	if (verbNode != null) {
+	    NodeList getOpsList = verbNode.getChildNodes();
+	    for (int i = 0; i < getOpsList.getLength(); i++) {
+		if (getOpsList.item(i).getNodeType() == Node.ELEMENT_NODE) {
+		    Element operation = (Element)getOpsList.item(i);
+		    String name = operation.getElementsByTagName("pattern").item(0).getTextContent();
+		    String location = operation.getElementsByTagName("pattern").item(0).getTextContent();
+		    addOps (name, location, verb.toUpperCase());
 		}
-		LOGGER.exiting(OpsMap.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
+	    }
 	}
-	
-	public void readOperationsMap(String OPSMAPPING_TEMPLATE) throws Exception {
-		
-		LOGGER.entering(OpsMap.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
+	LOGGER.exiting(OpsMap.class.getName(), new Object() {}.getClass().getEnclosingMethod().getName());
+    }
 
-		XMLUtils xmlUtils = new XMLUtils();
-		Document opsMappingXML = null; 
-		String[] verbs = {"get", "post", "put", "delete"};
-		
-		try {
-			//first try to read it as a file containing xml
-			opsMappingXML = xmlUtils.readXML(OPSMAPPING_TEMPLATE);
-		} catch (Exception e) {
-			//second try to read it as a string containing xml
-			try {
-				opsMappingXML = xmlUtils.getXMLFromString(OPSMAPPING_TEMPLATE);
-			} catch (Exception ex) {
-				//third try to read it as a string containing json representation of xml
-//				opsMappingXML = xmlUtils.getXMLFromJSONString(OPSMAPPING_TEMPLATE);
-			}
-		}
-					
-		for (String v : verbs) {
-			readOperation(v, opsMappingXML);
-		}
 
-		LOGGER.exiting(OpsMap.class.getName(), new Object() {
-		}.getClass().getEnclosingMethod().getName());
 
+    public void readOperationsMap(String OPSMAPPING_TEMPLATE) throws Exception {
+
+	LOGGER.entering(OpsMap.class.getName(), new Object(){}.getClass().getEnclosingMethod().getName());
+
+	XMLUtils xmlUtils = new XMLUtils();
+	Document opsMappingXML = null;
+	String[] verbs = {"get", "post", "put", "delete"};
+
+	try {
+	    //first try to read it as a file containing xml
+	    opsMappingXML = xmlUtils.readXML(OPSMAPPING_TEMPLATE);
+	} catch (Exception e) {
+            LOGGER.severe(e.getMessage());
+	    e.printStackTrace();
 	}
-	
+
+	for (String v : verbs) {
+	    readOperation(v, opsMappingXML);
+	}
+
+	LOGGER.exiting(OpsMap.class.getName(), new Object() { }.getClass().getEnclosingMethod().getName());
+
+    }
+
 }

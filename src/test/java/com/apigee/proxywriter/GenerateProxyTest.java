@@ -29,7 +29,15 @@ import java.util.zip.ZipInputStream;
 
 public class GenerateProxyTest {
 
+    static {
+        try {
+            InputStream stream = GenerateProxy.class.getClassLoader().
+                getResourceAsStream("java-util-logging.properties");
+            java.util.logging.LogManager.getLogManager().readConfiguration(stream);
+        } catch (Exception e) {
+        }
 
+    }
     public static final String WEATHER_WSDL = "/Weather.asmx.wsdl";//"http://wsf.cdyne.com/WeatherWS/Weather.asmx?WSDL";
     public static final String BLZ_WSDL = "/BLZService.wsdl";
     public static final String STOCK_WSDL = "/delayedstockquote.asmx.wsdl";
@@ -413,13 +421,13 @@ public class GenerateProxyTest {
         final String CLIENT_SERVICE_WSDL = url.toString();
         final GenerateProxy generateProxy = new GenerateProxy();
         //final String OAS = "{\r\n     \"basePath\": \"/blzservice\",\r\n     \"paths\": {\"/bank\": {\"get\": {\r\n          \"description\": \"Implements WSDL operation getBank\",\r\n          \"responses\": {\"200\": {\r\n               \"schema\": {\"$ref\": \"#/definitions/undefined\"},\r\n               \"description\": \"Successful response\"\r\n          }},\r\n          \"parameters\": [{\r\n               \"in\": \"query\",\r\n               \"name\": \"blz\",\r\n               \"description\": \"\",\r\n               \"type\": \"string\",\r\n               \"required\": false\r\n          }]\r\n     }}},\r\n     \"host\": \"www.thomas-bayer.com\",\r\n     \"produces\": [\"application/json\"],\r\n     \"schemes\": [\"http\"],\r\n     \"definitions\": {\"undefined\": {\"properties\": {\"message\": {\"type\": \"string\"}}}},\r\n     \"swagger\": \"2.0\",\r\n     \"info\": {\r\n          \"license\": {\"name\": \"Apache 2.0\"},\r\n          \"contact\": {\"name\": \"API Team\"},\r\n          \"description\": \"A OAS document generated from WSDL\",\r\n          \"termsOfService\": \"\",\r\n          \"title\": \"BLZService\",\r\n          \"version\": \"1.0.0\"\r\n     },\r\n     \"consumes\": [\"application/json\"]\r\n}";
-    	generateProxy.setOpsMap(oMap);
-    	final InputStream inputStream = generateProxy.begin("Test OAS generation", CLIENT_SERVICE_WSDL);
+        generateProxy.setOpsMap(oMap);
+        final InputStream inputStream = generateProxy.begin("Test OAS generation", CLIENT_SERVICE_WSDL);
     }
 
     @Test
     public void testReservedVariables() throws Exception {
-    	URL url = this.getClass().getResource("/reservedVariables.wsdl");
+        URL url = this.getClass().getResource("/reservedVariables.wsdl");
         final String CLIENT_SERVICE_WSDL = url.toString();
         final GenerateProxy generateProxy = new GenerateProxy();
 
@@ -433,11 +441,11 @@ public class GenerateProxyTest {
 
     @Test
     public void testRecursiveWSDL() throws Exception {
-    	final String CLIENT_SERVICE_WSDL = "https://webservice.s7.exacttarget.com/etframework.wsdl";
-    	final GenerateProxy generateProxy = new GenerateProxy();
+        final String CLIENT_SERVICE_WSDL = "https://webservice.s7.exacttarget.com/etframework.wsdl";
+        final GenerateProxy generateProxy = new GenerateProxy();
 
-    	generateProxy.setOpsMap(oMap);
-    	generateProxy.setPassThru(false);
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
 
         final InputStream inputStream = generateProxy.begin("Test WSDL with recursive schema", CLIENT_SERVICE_WSDL);
 
@@ -445,7 +453,7 @@ public class GenerateProxyTest {
 
     @Test
     public void testNullOutput() throws Exception {
-    	URL url = this.getClass().getResource("/availability.wsdl");
+        URL url = this.getClass().getResource("/availability.wsdl");
         final String CLIENT_SERVICE_WSDL = url.toString();
         final GenerateProxy generateProxy = new GenerateProxy();
 
@@ -456,12 +464,24 @@ public class GenerateProxyTest {
     }
 
     @Test
-    public void testRPCAllTypeInSchema() throws Exception {
-    	final String CLIENT_SERVICE_WSDL = "http://graphical.weather.gov/xml/DWMLgen/wsdl/ndfdXML.wsdl";
-    	final GenerateProxy generateProxy = new GenerateProxy();
+    public void testEmptyTargetNamespace() throws Exception {
+        URL url = this.getClass().getResource("/empty_target_namespace.wsdl");
+        final String CLIENT_SERVICE_WSDL = url.toString();
+        final GenerateProxy generateProxy = new GenerateProxy();
 
-    	generateProxy.setOpsMap(oMap);
-    	generateProxy.setPassThru(false);
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
+
+        final InputStream inputStream = generateProxy.begin("Empty Target Namespace", CLIENT_SERVICE_WSDL);
+    }
+
+    @Test
+    public void testRPCAllTypeInSchema() throws Exception {
+        final String CLIENT_SERVICE_WSDL = "http://graphical.weather.gov/xml/DWMLgen/wsdl/ndfdXML.wsdl";
+        final GenerateProxy generateProxy = new GenerateProxy();
+
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
 
         final InputStream inputStream = generateProxy.begin("Test WSDL with All type in RPC schema", CLIENT_SERVICE_WSDL);
     }
@@ -470,10 +490,10 @@ public class GenerateProxyTest {
     public void testInvalidOutputSchema() throws Exception {
         URL url = this.getClass().getResource(STOCK_WSDL);
         final String CLIENT_SERVICE_WSDL = url.toString();
-    	final GenerateProxy generateProxy = new GenerateProxy();
+        final GenerateProxy generateProxy = new GenerateProxy();
 
-    	generateProxy.setOpsMap(oMap);
-    	generateProxy.setPassThru(false);
+        generateProxy.setOpsMap(oMap);
+        generateProxy.setPassThru(false);
 
         final InputStream inputStream = generateProxy.begin("Test WSDL with invalid output schema", CLIENT_SERVICE_WSDL);
     }
@@ -482,9 +502,9 @@ public class GenerateProxyTest {
     public void testDefaultNamespace() throws Exception {
         URL url = this.getClass().getResource(STOCK_WSDL);
         final String CLIENT_SERVICE_WSDL = url.toString();
-    	final GenerateProxy generateProxy = new GenerateProxy();
+        final GenerateProxy generateProxy = new GenerateProxy();
 
-    	generateProxy.setPassThru(true);
+        generateProxy.setPassThru(true);
 
         final InputStream inputStream = generateProxy.begin("Test default namespace", CLIENT_SERVICE_WSDL);
 
