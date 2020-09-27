@@ -37,7 +37,7 @@ public class XMLUtils {
 
 	private DocumentBuilder builder;
 
-	private static final Set<String> blacklist = new HashSet<String>(
+	private static final Set<String> skiplist = new HashSet<String>(
 			Arrays.asList(new String[] { "http://schemas.xmlsoap.org/wsdl/soap/", "http://schemas.xmlsoap.org/wsdl/",
 					"http://schemas.xmlsoap.org/ws/2003/05/partner-link/", "http://www.w3.org/2001/XMLSchema",
 					"http://schemas.xmlsoap.org/soap/encoding/" }));
@@ -156,7 +156,7 @@ public class XMLUtils {
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
-			if (!blacklist.contains(value)) {
+			if (!skiplist.contains(value)) {
 				if (key.length() == 0) {
 					((Element) stylesheet).setAttribute("xmlns:ns", value);
 				} else {
@@ -352,7 +352,7 @@ public class XMLUtils {
 		for (Map.Entry<String, String> entry : namespace.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
-			if (!blacklist.contains(value)) {
+			if (!skiplist.contains(value)) {
 				if (key.length() == 0) {
 					((Element) stylesheet).setAttribute("xmlns:ns", value);
 				} else {
