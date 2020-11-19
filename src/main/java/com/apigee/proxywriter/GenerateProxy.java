@@ -2594,10 +2594,11 @@ public class GenerateProxy {
 							continue;
 						}
 						if (bnd.getBinding() instanceof AbstractSOAPBinding) {
+							String soapAction = getOperationSOAPAction(bop);
 							LOGGER.fine("Found Operation Name: " + bop.getName() + " SOAPAction: "
-									+ bop.getOperation().getSoapAction());
+									+ soapAction);
 							APIMap apiM = messageTemplates.get(bop.getName());
-							apiM.setSoapAction(bop.getOperation().getSoapAction());
+							apiM.setSoapAction(soapAction);
 							messageTemplates.put(bop.getName(), apiM);
 						}
 					}
@@ -2606,6 +2607,15 @@ public class GenerateProxy {
 		}
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
+	}
+
+	private String getOperationSOAPAction(BindingOperation bop) {
+		ExtensibilityOperation op = bop.getOperation();
+		if (op == null) {
+			return null;
+		}
+
+		return op.getSoapAction();
 	}
 
 	private String generateOAS() throws Exception {
