@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <RaiseFault async="false" continueOnError="false" enabled="true" name="Return-WSDL">
-    <DisplayName>Return WSDL</DisplayName>
+    <DisplayName>Return-WSDL</DisplayName>
     <Properties/>
     <FaultResponse>
         <Set>
