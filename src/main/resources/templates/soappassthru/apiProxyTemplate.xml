@@ -10,7 +10,7 @@
     <Policies>
         <Policy>Extract-Operation-Name</Policy>
         <Policy>Invalid-SOAP</Policy>
-        <Policy>return-wsdl</Policy>
+        <Policy>Return-WSDL</Policy>
     </Policies>
     <ProxyEndpoints>
         <ProxyEndpoint>default</ProxyEndpoint>

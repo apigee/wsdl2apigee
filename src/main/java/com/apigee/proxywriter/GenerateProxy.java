@@ -127,7 +127,7 @@ public class GenerateProxy {
 	private static final String SOAPPASSTHRU_APIPROXY_TEMPLATE = "/templates/soappassthru/apiProxyTemplate.xml";
 	private static final String SOAPPASSTHRU_PROXY_TEMPLATE = "/templates/soappassthru/proxyDefault.xml";
 	private static final String SOAPPASSTHRU_TARGET_TEMPLATE = "/templates/soappassthru/targetDefault.xml";
-	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/return-wsdl.xml";
+	private static final String SOAPPASSTHRU_GETWSDL_TEMPLATE = "/templates/soappassthru/Return-WSDL.xml";
 
 	private static final String OAS_TEMPLATE = "/templates/oas/oastemplate.json";
 
@@ -1189,8 +1189,8 @@ public class GenerateProxy {
 						Paths.get(targetPath + "Invalid-SOAP.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				/*
 				 * Files.copy(getClass().getResourceAsStream(sourcePath +
-				 * "return-wsdl.xml"), Paths.get(targetPath +
-				 * "return-wsdl.xml"),
+				 * "Return-WSDL.xml"), Paths.get(targetPath +
+				 * "Return-WSDL.xml"),
 				 * java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 				 */
 			} else {
@@ -1451,7 +1451,7 @@ public class GenerateProxy {
 		payload.setTextContent(addDefaultNamespace(wsdlContent));
 
 		xmlUtils.writeXML(getWsdlRaiseFaultPolicy, buildFolder + File.separator + "apiproxy" + File.separator
-				+ "policies" + File.separator + "return-wsdl.xml");
+				+ "policies" + File.separator + "Return-WSDL.xml");
 
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
