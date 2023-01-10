@@ -1,9 +1,9 @@
 package com.apigee.proxywriter;
 /**
- * 
+ *
  * The GenerateProxy program generates a Apigee API Proxy from a WSDL Document. The generated proxy can be
  * passthru or converted to an API (REST/JSON over HTTP).
- * 
+ *
  * How does it work?
  * At a high level, here is the logic implemented for SOAP-to-API:
  * Step 1: Parse the WSDL
@@ -13,20 +13,21 @@ package com.apigee.proxywriter;
  * Step 3: Create the API Proxy folder structure
  * Step 4: Copy policies from the standard template
  * Step 5: Create the Extract Variables and Assign Message Policies
- * 	Step 5a: If the operation is interpreted as a POST (create), then obtain JSON Paths from JSON request template 
+ * 	Step 5a: If the operation is interpreted as a POST (create), then obtain JSON Paths from JSON request template
  * 	Step 5b: Use JSONPaths in the Extract Variables
- * 
+ *
  * At a high level, here is the logic implemented for SOAP-passthru:
  * Step 1: Parse the WSDL
  * Step 2: Copy policies from the standard template
- *  
- * 
+ *
+ *
  * @author  Nandan Sridhar
  * @version 0.1
- * @since   2016-05-20 
+ * @since   2016-05-20
 */
 
 import java.io.*;
+import java.net.URL;
 import java.nio.file.*;
 
 import java.nio.file.attribute.BasicFileAttributes;
@@ -36,17 +37,22 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.apigee.oas.OASUtils;
 import com.apigee.proxywriter.exception.*;
 import com.apigee.utils.*;
 import com.google.gson.*;
+import com.predic8.schema.*;
 import com.predic8.soamodel.*;
 import com.predic8.util.HTTPUtil;
 import com.predic8.wsdl.*;
 import com.predic8.wsdl.Operation;
 import com.predic8.wsi.WSIResult;
 import com.predic8.xml.util.ExternalResolver;
+import com.predic8.xml.util.ResourceDownloadException;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.w3c.dom.Document;
@@ -58,20 +64,6 @@ import com.apigee.utils.Options.Multiplicity;
 import com.apigee.utils.Options.Separator;
 import com.apigee.xsltgen.Rule;
 import com.apigee.xsltgen.RuleSet;
-import com.predic8.schema.All;
-import com.predic8.schema.Attribute;
-import com.predic8.schema.BuiltInSchemaType;
-import com.predic8.schema.Choice;
-import com.predic8.schema.ComplexContent;
-import com.predic8.schema.ComplexType;
-import com.predic8.schema.Derivation;
-import com.predic8.schema.GroupRef;
-import com.predic8.schema.ModelGroup;
-import com.predic8.schema.Schema;
-import com.predic8.schema.SchemaComponent;
-import com.predic8.schema.Sequence;
-import com.predic8.schema.SimpleContent;
-import com.predic8.schema.TypeDefinition;
 import com.predic8.wstool.creator.RequestTemplateCreator;
 import com.predic8.wstool.creator.SOARequestCreator;
 
@@ -173,11 +165,14 @@ public class GenerateProxy {
 
 	private String basePath;
 
+    private String backendUrl;
 	private String proxyName;
 
 	private String opsMap;
 
 	private String wsdlContent;
+
+    private Boolean backendUrlValidation;
 
 	private String selectedOperationsJson;
 
@@ -204,7 +199,7 @@ public class GenerateProxy {
 
 	private Definitions wsdl = null;
 
-	private com.predic8.wsdl.Port port = null;
+	private Port port = null;
 
 	public Map<String, String> namespace = new LinkedHashMap<String, String>();
 
@@ -252,6 +247,7 @@ public class GenerateProxy {
 		DESCSET = false;
 		basePath = null;
 		TOO_MANY = false;
+        backendUrlValidation = true;
 		level = 0;
 	}
 
@@ -354,10 +350,10 @@ public class GenerateProxy {
 		LOGGER.fine("Set proxy description: " + proxyDescription);
 
 		Node createdAt = apiTemplateDocument.getElementsByTagName("CreatedAt").item(0);
-		createdAt.setTextContent(Long.toString(java.lang.System.currentTimeMillis()));
+		createdAt.setTextContent(Long.toString(System.currentTimeMillis()));
 
 		Node LastModifiedAt = apiTemplateDocument.getElementsByTagName("LastModifiedAt").item(0);
-		LastModifiedAt.setTextContent(Long.toString(java.lang.System.currentTimeMillis()));
+		LastModifiedAt.setTextContent(Long.toString(System.currentTimeMillis()));
 
 		xmlUtils.writeXML(apiTemplateDocument,
 				buildFolder + File.separator + "apiproxy" + File.separator + proxyName + ".xml");
@@ -1151,7 +1147,7 @@ public class GenerateProxy {
 		 * Node objectRootElement =
 		 * jsonxmlPolicyXML.getElementsByTagName("ObjectRootElementName").item(0
 		 * ); objectRootElement.setTextContent(rootElement);
-		 * 
+		 *
 		 * Node arrayRootElement =
 		 * jsonxmlPolicyXML.getElementsByTagName("ArrayRootElementName").item(0)
 		 * ; arrayRootElement.setTextContent(rootElement);
@@ -1184,9 +1180,22 @@ public class GenerateProxy {
 				sourcePath += "soappassthru/";
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Extract-Operation-Name.xml"),
 						Paths.get(targetPath + "Extract-Operation-Name.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "Invalid-SOAP.xml"),
-						Paths.get(targetPath + "Invalid-SOAP.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						Paths.get(targetPath + "Invalid-SOAP.xml"), StandardCopyOption.REPLACE_EXISTING);
+                if (OAUTH) {
+                    Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
+                        Paths.get(targetPath + "verify-oauth-v2-access-token.xml"),
+                        StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(getClass().getResourceAsStream(sourcePath + "remove-header-authorization.xml"),
+                        Paths.get(targetPath + "remove-header-authorization.xml"),
+                        StandardCopyOption.REPLACE_EXISTING);
+                    if (QUOTAOAUTH) {
+                        Files.copy(getClass().getResourceAsStream(sourcePath + "impose-quota-oauth.xml"),
+                            Paths.get(targetPath + "impose-quota-oauth.xml"),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
 				/*
 				 * Files.copy(getClass().getResourceAsStream(sourcePath +
 				 * "Return-WSDL.xml"), Paths.get(targetPath +
@@ -1196,49 +1205,49 @@ public class GenerateProxy {
 			} else {
 				sourcePath += "soap2api/";
 				Files.copy(getClass().getResourceAsStream(sourcePath + "xml-to-json.xml"),
-						Paths.get(targetPath + "xml-to-json.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						Paths.get(targetPath + "xml-to-json.xml"), StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body.xml"),
 						Paths.get(targetPath + "set-response-soap-body.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-response-soap-body-accept.xml"),
 						Paths.get(targetPath + "set-response-soap-body-accept.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "get-response-soap-body.xml"),
 						Paths.get(targetPath + "get-response-soap-body.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "get-response-soap-body-xml.xml"),
 						Paths.get(targetPath + "get-response-soap-body-xml.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "set-target-url.xml"),
 						Paths.get(targetPath + "set-target-url.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "extract-format.xml"),
 						Paths.get(targetPath + "extract-format.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource.xml"),
 						Paths.get(targetPath + "unknown-resource.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "unknown-resource-xml.xml"),
 						Paths.get(targetPath + "unknown-resource-xml.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-empty-nodes.xml"),
 						Paths.get(targetPath + "remove-empty-nodes.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-empty-nodes.xslt"),
 						Paths.get(xslResourcePath + "remove-empty-nodes.xslt"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "return-generic-error.xml"),
 						Paths.get(targetPath + "return-generic-error.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "return-generic-error-accept.xml"),
 						Paths.get(targetPath + "return-generic-error-accept.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xml"),
 						Paths.get(targetPath + "remove-namespaces.xml"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				Files.copy(getClass().getResourceAsStream(sourcePath + "remove-namespaces.xslt"),
 						Paths.get(xslResourcePath + "remove-namespaces.xslt"),
-						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+						StandardCopyOption.REPLACE_EXISTING);
 				/*
 				 * Files.copy(getClass().getResourceAsStream(sourcePath +
 				 * "root-wrapper.js"), Paths.get(jsResourcePath +
@@ -1249,34 +1258,34 @@ public class GenerateProxy {
 				if (OAUTH) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-oauth-v2-access-token.xml"),
 							Paths.get(targetPath + "verify-oauth-v2-access-token.xml"),
-							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+							StandardCopyOption.REPLACE_EXISTING);
 					Files.copy(getClass().getResourceAsStream(sourcePath + "remove-header-authorization.xml"),
 							Paths.get(targetPath + "remove-header-authorization.xml"),
-							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+							StandardCopyOption.REPLACE_EXISTING);
 					if (QUOTAOAUTH) {
 						Files.copy(getClass().getResourceAsStream(sourcePath + "impose-quota-oauth.xml"),
 								Paths.get(targetPath + "impose-quota-oauth.xml"),
-								java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+								StandardCopyOption.REPLACE_EXISTING);
 					}
 				}
 
 				if (APIKEY) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "verify-api-key.xml"),
 							Paths.get(targetPath + "verify-api-key.xml"),
-							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+							StandardCopyOption.REPLACE_EXISTING);
 					Files.copy(getClass().getResourceAsStream(sourcePath + "remove-query-param-apikey.xml"),
 							Paths.get(targetPath + "remove-query-param-apikey.xml"),
-							java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+							StandardCopyOption.REPLACE_EXISTING);
 					if (QUOTAAPIKEY) {
 						Files.copy(getClass().getResourceAsStream(sourcePath + "impose-quota-apikey.xml"),
 								Paths.get(targetPath + "impose-quota-apikey.xml"),
-								java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+								StandardCopyOption.REPLACE_EXISTING);
 					}
 				}
 
 				if (CORS) {
 					Files.copy(getClass().getResourceAsStream(sourcePath + "add-cors.xml"),
-							Paths.get(targetPath + "add-cors.xml"), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+							Paths.get(targetPath + "add-cors.xml"), StandardCopyOption.REPLACE_EXISTING);
 				}
 			}
 		} catch (Exception e) {
@@ -1303,6 +1312,41 @@ public class GenerateProxy {
 		if (basePath != null && basePath.equalsIgnoreCase("") != true) {
 			basePathNode.setTextContent(basePath);
 		}
+
+        // add oauth policies if set
+        if (OAUTH) {
+
+            Node policies = proxyDefault.getElementsByTagName("Policies").item(0);
+
+            String oauthPolicy = "verify-oauth-v2-access-token";
+            String remoOAuthPolicy = "remove-header-authorization";
+            String quota = "impose-quota-oauth";
+
+            Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
+
+            Node step1 = proxyDefault.createElement("Step");
+            Node name1 = proxyDefault.createElement("Name");
+            name1.setTextContent(oauthPolicy);
+            step1.appendChild(name1);
+
+            Node step2 = proxyDefault.createElement("Step");
+            Node name2 = proxyDefault.createElement("Name");
+            name2.setTextContent(remoOAuthPolicy);
+            step2.appendChild(name2);
+
+            preFlowRequest.insertBefore(step1, preFlowRequest.getFirstChild());
+            preFlowRequest.appendChild(step2);
+
+            if (QUOTAOAUTH) {
+                Node policy3 = proxyDefault.createElement("Policy");
+                policies.appendChild(policy3);
+                Node step3 = proxyDefault.createElement("Step");
+                Node name3 = proxyDefault.createElement("Name");
+                name3.setTextContent(quota);
+                step3.appendChild(name3);
+                preFlowRequest.appendChild(step3);
+            }
+        }
 
 		Node httpProxyConnection = proxyDefault.getElementsByTagName("HTTPProxyConnection").item(0);
 		Node virtualHost = null;
@@ -1417,23 +1461,23 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param wsdlContent
 	 * @return
-	 * 
+	 *
 	 * The predic8 "getAsString" method does not include a namespace prefix for the definitions
-	 * element. It assumes default namespace. If the WSDL didn't include a default namespace, then 
+	 * element. It assumes default namespace. If the WSDL didn't include a default namespace, then
 	 * WSDL importers like SOAP UI and others fail to import the WSDL. This method looks to see if the
 	 * WSDL has a default namespace and adds it if missing
 	 */
 	private String addDefaultNamespace(String wsdlContent) {
-		
+
 		String containsString = "xmlns='http://schemas.xmlsoap.org/wsdl/'";
 		String replaceString = "xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/' xmlns='http://schemas.xmlsoap.org/wsdl/'";
 		String findString = "xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'";
-		
+
 		if (wsdlContent.indexOf(containsString) != -1) { //already has default namespace.
 			return wsdlContent;
 		} else {
@@ -1848,9 +1892,9 @@ public class GenerateProxy {
 							soapRequest = parseRPCSchema(sc, schemas, rootElement, rootNamespace, rootPrefix,
 									soapRequest);
 						}
-					} else if (typeDefinition instanceof com.predic8.schema.SimpleType) {
-						com.predic8.schema.SimpleType st = (com.predic8.schema.SimpleType)typeDefinition;
-						//TODO: 
+					} else if (typeDefinition instanceof SimpleType) {
+						SimpleType st = (SimpleType)typeDefinition;
+						//TODO:
 						//LOGGER.warning("Handle simple type");
 					} else if (typeDefinition instanceof BuiltInSchemaType) {
 						BuiltInSchemaType bst = (BuiltInSchemaType) typeDefinition;
@@ -2226,7 +2270,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 		Service service = null;
-		com.predic8.wsdl.Port port = null;
+		Port port = null;
 		WSDLParser2 parser = new WSDLParser2();
 		Definitions wsdl = null;
 
@@ -2252,7 +2296,7 @@ public class GenerateProxy {
 		}
 
 		if (portName != null) {
-			for (com.predic8.wsdl.Port prt : service.getPorts()) {
+			for (Port prt : service.getPorts()) {
 				if (prt.getName().equalsIgnoreCase(portName)) {
 					port = prt;
 				}
@@ -2299,7 +2343,7 @@ public class GenerateProxy {
 		}.getClass().getEnclosingMethod().getName());
 
 		Service service = null;
-		List<com.predic8.wsdl.Port> ports = new ArrayList<com.predic8.wsdl.Port>();
+		List<Port> ports = new ArrayList<Port>();
 		List<Service> services = new ArrayList<Service>();
 
 		try {
@@ -2347,7 +2391,7 @@ public class GenerateProxy {
 		}
 
 		if (portName != null) {
-			for (com.predic8.wsdl.Port prt : service.getPorts()) {
+			for (Port prt : service.getPorts()) {
 				if (prt.getName().equalsIgnoreCase(portName)) {
 					port = prt;
 				}
@@ -2392,13 +2436,19 @@ public class GenerateProxy {
 		services.add(service);
 		wsdlContent = wsdl.getAsString();
 		// end feature
+        flatWsdlWithExternalXsdImport(wsdlPath);
 
-		LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
+
+        LOGGER.info("Retrieved WSDL endpoint: " + targetEndpoint);
 
 		String[] schemes = { "http", "https" };
 		UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
 
-		if (!urlValidator.isValid(targetEndpoint)) {
+        if (backendUrl != null && !backendUrl.equalsIgnoreCase("") ) {
+            targetEndpoint = backendUrl;
+        }
+
+		if (backendUrlValidation && !urlValidator.isValid(targetEndpoint)) {
 			LOGGER.warning("Target endpoint is not http/https URL. Assigning a default value");
 			targetEndpoint = "http://localhost:8080/soap";
 		}
@@ -2406,6 +2456,43 @@ public class GenerateProxy {
 		LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
 		}.getClass().getEnclosingMethod().getName());
 	}
+
+    private void flatWsdlWithExternalXsdImport(String wsdlPath) {
+        Pattern patt = Pattern.compile("<xs[d]?:import[^<>]+schemaLocation='([^\\']+)'[^<>]+>", Pattern.DOTALL);
+        Matcher myMatch = patt.matcher(wsdlContent);
+        HashMap<String,String> respMaps = new HashMap<String,String>();
+        while(myMatch.find()){
+            String url = myMatch.group(1);
+            if(!respMaps.containsKey(url)){
+                respMaps.put(url, getExternalFile(url, wsdlPath));
+                String replaceWith=respMaps.get(url).replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "")
+                    .replace("<?xml version=\"1.0\" encoding=\"utf-8\"?>", "")
+                    .replaceAll("<[/]?wsdl:definitions[^<>]*>","");
+                wsdlContent=myMatch.replaceFirst(Matcher.quoteReplacement(replaceWith));
+            }else{
+                wsdlContent=myMatch.replaceFirst("");
+            }
+
+            myMatch = patt.matcher(wsdlContent);
+        }
+    }
+
+    private static String getExternalFile(String url, String wsdlPath){
+
+        try{
+            if(!org.apache.commons.lang3.StringUtils.contains("http",wsdlPath) && !org.apache.commons.lang3.StringUtils.contains("https",wsdlPath)){
+                final String basePath = org.apache.commons.lang3.StringUtils.substringBeforeLast(wsdlPath, "/");
+                url = basePath +"/"+url;
+                return new BufferedReader(new FileReader(url)).lines().parallel().collect(Collectors.joining("\n"));
+            }else{
+                URL wsdlurl = new URL(url);
+                return new BufferedReader(new InputStreamReader(wsdlurl.openStream())).lines().parallel().collect(Collectors.joining("\n"));
+            }
+        }catch(Exception ex) {
+            LOGGER.severe("Exception getting external file:" +ex);
+            throw new RuntimeException(ex);
+        }
+    }
 
 	@SuppressWarnings("unchecked")
 	private void parseWSDL() throws Exception {
@@ -2917,10 +3004,10 @@ public class GenerateProxy {
 				"$ java -jar wsdl2apigee.jar -wsdl=\"http://www.thomas-bayer.com/axis2/services/BLZService?wsdl\" -oas=true");
 	}
 
-	private static List<WsdlDefinitions.Port> convertPorts(List<com.predic8.wsdl.Port> ports,
+	private static List<WsdlDefinitions.Port> convertPorts(List<Port> ports,
 			List<PortType> portTypes) {
 		List<WsdlDefinitions.Port> list = new ArrayList<>(ports.size());
-		for (com.predic8.wsdl.Port port : ports) {
+		for (Port port : ports) {
 			final Object protocol = port.getBinding().getProtocol();
 			if (protocol != null) {
 				final String protocolStr = protocol.toString();
@@ -3006,6 +3093,10 @@ public class GenerateProxy {
 		opt.getSet().addOption("quota", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// set basepath
 		opt.getSet().addOption("basepath", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+        // set target backend url
+		opt.getSet().addOption("backendurl", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+        // set backend url validation (default true)
+		opt.getSet().addOption("backendurlvalidation", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// add enable cors conditions
 		opt.getSet().addOption("cors", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
 		// generate OAS spec
@@ -3079,6 +3170,10 @@ public class GenerateProxy {
 			genProxy.setBasePath(opt.getSet().getOption("basepath").getResultValue(0));
 		}
 
+        if (opt.getSet().isSet("backendurl")) {
+            genProxy.setBackendUrl(opt.getSet().getOption("backendurl").getResultValue(0));
+        }
+
 		if (opt.getSet().isSet("cors")) {
 			genProxy.setCORS(new Boolean(opt.getSet().getOption("cors").getResultValue(0)));
 		}
@@ -3089,7 +3184,9 @@ public class GenerateProxy {
 				genProxy.setQuotaOAuth(new Boolean(opt.getSet().getOption("quota").getResultValue(0)));
 			}
 		}
-
+        if (opt.getSet().isSet("backendurlvalidation")) {
+            genProxy.setBackendUrlValidation(new Boolean(opt.getSet().getOption("backendurlvalidation").getResultValue(0)));
+        }
 		if (opt.getSet().isSet("apikey")) {
 			genProxy.setAPIKey(new Boolean(opt.getSet().getOption("apikey").getResultValue(0)));
 			if (opt.getSet().isSet("quota")) {
@@ -3143,7 +3240,7 @@ public class GenerateProxy {
 		try {
 			final Definitions definitions = wsdlParser.parse(wsdl);
 			return definitionsToWsdlDefinitions(definitions);
-		} catch (com.predic8.xml.util.ResourceDownloadException e) {
+		} catch (ResourceDownloadException e) {
 			String message = formatResourceError(e);
 			throw new ErrorParsingWsdlException(message, e);
 		} catch (Throwable t) {
@@ -3158,7 +3255,7 @@ public class GenerateProxy {
 		}
 	}
 
-	private static String formatResourceError(com.predic8.xml.util.ResourceDownloadException e) {
+	private static String formatResourceError(ResourceDownloadException e) {
 		StringBuffer errorMessage = new StringBuffer("Could not download resource.");
 		String rootCause = e.getRootCause().getLocalizedMessage();
 		if (!rootCause.isEmpty()) {
@@ -3171,6 +3268,23 @@ public class GenerateProxy {
 		return (errorMessage.toString());
 
 	}
+
+    public void setBackendUrl(String backendUrl) {
+        this.backendUrl = backendUrl;
+    }
+
+    public String getBackendUrl() {
+        return backendUrl;
+    }
+
+    public Boolean getBackendUrlValidation() {
+        return backendUrlValidation;
+    }
+
+    public GenerateProxy setBackendUrlValidation(Boolean backendUrlValidation) {
+        this.backendUrlValidation = backendUrlValidation;
+        return this;
+    }
 
     /**
      * Copy and modify for Java com.predic8.wsdl.WSDLParser.groovy. Then update it to protect against XSS attacks

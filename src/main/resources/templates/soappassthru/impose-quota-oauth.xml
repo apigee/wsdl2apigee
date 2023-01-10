@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Quota async="false" continueOnError="false" enabled="true" name="impose-quota-oauth">
+    <DisplayName>Impose Quota</DisplayName>
+    <Allow countRef="apiproduct.developer.quota.limit" count="2000"/>
+    <Interval ref="apiproduct.developer.quota.interval">1</Interval>
+    <Distributed>true</Distributed>
+    <Synchronous>true</Synchronous>
+    <TimeUnit ref="apiproduct.developer.quota.timeunit">month</TimeUnit>
+</Quota>
