@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="callService" targetNamespace="http://com.company.appname" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:tns="http://com.company.appname" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://com.company.appname" schemaLocation="externalXsd.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="getOutputBeanSchema">
+    <part name="parameters" element="tns:getOutputBeanSchema">
+    </part>
+  </message>
+  <message name="call">
+    <part name="parameters" element="tns:call">
+    </part>
+  </message>
+  <message name="getOutputBeanSchemaResponse">
+    <part name="parameters" element="tns:getOutputBeanSchemaResponse">
+    </part>
+  </message>
+  <message name="getInputBeanSchemaResponse">
+    <part name="parameters" element="tns:getInputBeanSchemaResponse">
+    </part>
+  </message>
+  <message name="callResponse">
+    <part name="parameters" element="tns:callResponse">
+    </part>
+  </message>
+  <message name="getInputBeanSchema">
+    <part name="parameters" element="tns:getInputBeanSchema">
+    </part>
+  </message>
+  <portType name="call">
+    <operation name="call">
+      <input message="tns:call" wsam:Action="uri:call">
+    </input>
+      <output message="tns:callResponse" wsam:Action="http://com.company.appname/call/callResponse">
+    </output>
+    </operation>
+    <operation name="getOutputBeanSchema">
+      <input message="tns:getOutputBeanSchema" wsam:Action="uri:outputSchema">
+    </input>
+      <output message="tns:getOutputBeanSchemaResponse" wsam:Action="http://com.company.appname/call/getOutputBeanSchemaResponse">
+    </output>
+    </operation>
+    <operation name="getInputBeanSchema">
+      <input message="tns:getInputBeanSchema" wsam:Action="uri:inputSchema">
+    </input>
+      <output message="tns:getInputBeanSchemaResponse" wsam:Action="http://com.company.appname/call/getInputBeanSchemaResponse">
+    </output>
+    </operation>
+  </portType>
+  <binding name="callPortBinding" type="tns:call">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="call">
+      <soap:operation soapAction="uri:call"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="getOutputBeanSchema">
+      <soap:operation soapAction="uri:outputSchema"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="getInputBeanSchema">
+      <soap:operation soapAction="uri:inputSchema"/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="callService">
+    <port name="callPort" binding="tns:callPortBinding">
+      <soap:address location="https://app-name-env.gcp.companyname.companylocation.loc/serviceName/callService"/>
+    </port>
+  </service>
+</definitions>
