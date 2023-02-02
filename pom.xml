@@ -48,7 +48,7 @@
 	      <testResource>
 	        <directory>src/test/resources</directory>
 	      </testResource>
-	    </testResources>		
+	    </testResources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -113,9 +113,9 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.5.13</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.codehaus.groovy</groupId> <artifactId>groovy-all</artifactId> 
-			If possible, its better if this matches 2.1.8 in the plugin definition but 
-			2.2.1 worked fine here and allowed me to keep the original pom definition 
+		<!-- <dependency> <groupId>org.codehaus.groovy</groupId> <artifactId>groovy-all</artifactId>
+			If possible, its better if this matches 2.1.8 in the plugin definition but
+			2.2.1 worked fine here and allowed me to keep the original pom definition
 			<version>2.4.6</version> </dependency> -->
 		<dependency>
 			<groupId>commons-cli</groupId>

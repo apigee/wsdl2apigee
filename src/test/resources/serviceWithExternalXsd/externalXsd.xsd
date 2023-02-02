@@ -1,0 +1,154 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://com.company.appname" version="1.0" targetNamespace="http://com.company.appname">
+
+  <xs:element name="CallRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="serviceHeader" type="tns:ServiceHeader" />
+        <xs:element name="xmlMessage" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CallResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="responseCode" type="xs:string" />
+        <xs:element name="xmlMessageResponse" type="xs:string" />
+        <xs:element name="responseMessage" type="xs:string" minOccurs="0" />
+        <xs:element name="serviceName" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="StringWrapper">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="value" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="call" type="tns:call" />
+
+  <xs:element name="callResponse" type="tns:callResponse" />
+
+  <xs:element name="getInputBeanSchema" type="tns:getInputBeanSchema" />
+
+  <xs:element name="getInputBeanSchemaResponse" type="tns:getInputBeanSchemaResponse" />
+
+  <xs:element name="getOutputBeanSchema" type="tns:getOutputBeanSchema" />
+
+  <xs:element name="getOutputBeanSchemaResponse" type="tns:getOutputBeanSchemaResponse" />
+
+  <xs:element name="xsdInputRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="value" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="xsdOutputRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="value" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="getOutputBeanSchema">
+    <xs:sequence>
+      <xs:element name="arg0" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="getOutputBeanSchemaResponse">
+    <xs:sequence>
+      <xs:element name="return" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="call">
+    <xs:sequence>
+      <xs:element name="arg0" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="serviceHeader" type="tns:ServiceHeader" />
+            <xs:element name="xmlMessage" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ServiceHeader">
+    <xs:sequence>
+      <xs:element name="serviceName" type="xs:string" />
+      <xs:element name="messageId" type="xs:string" />
+      <xs:element name="paramList" type="tns:params" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="params">
+    <xs:sequence>
+      <xs:element name="param" type="tns:param" nillable="true" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="param">
+    <xs:sequence />
+    <xs:attribute name="name" type="xs:string" />
+    <xs:attribute name="value" type="xs:string" />
+  </xs:complexType>
+
+  <xs:complexType name="callResponse">
+    <xs:sequence>
+      <xs:element name="return" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="responseCode" type="xs:string" />
+            <xs:element name="xmlMessageResponse" type="xs:string" />
+            <xs:element name="responseMessage" type="xs:string" minOccurs="0" />
+            <xs:element name="serviceName" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="getInputBeanSchema">
+    <xs:sequence>
+      <xs:element name="arg0" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="getInputBeanSchemaResponse">
+    <xs:sequence>
+      <xs:element name="return" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="value" type="xs:string" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
