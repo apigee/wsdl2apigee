@@ -109,6 +109,7 @@ public class GenerateProxy {
     private static final String SOAP2API_XSLT12_TEMPLATE = "/templates/soap2api/add-namespace12.xslt";
     private static final String SOAP2API_JSON_TO_XML_TEMPLATE = "/templates/soap2api/json-to-xml.xml";
     private static final String SOAP2API_ADD_SOAPACTION_TEMPLATE = "/templates/soap2api/add-soapaction.xml";
+    private static final String SOAP2API_GET_KVM_ENTRY_TEMPLATE = "/templates/soap2api/get-kvm-entry.xml";
     // open-api feature
     private static final String SOAP2API_RETURN_OPENAPI_TEMPLATE = "/templates/soap2api/return-open-api.xml";
     // private static final String SOAP2API_JSPOLICY_TEMPLATE =
@@ -164,6 +165,11 @@ public class GenerateProxy {
     private String basePath;
 
     private String backendUrl;
+
+    private String kvm;
+
+    private String apiName;
+
     private String proxyName;
 
     private String opsMap;
@@ -462,6 +468,23 @@ public class GenerateProxy {
                 step3.appendChild(name3);
                 preFlowRequest.appendChild(step3);
             }
+        }
+
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(kvm)) {
+            String kvmEntryPolicyName = "getKvmEntry";
+
+            // Add policy to proxy.xml
+            Node policy1 = apiTemplateDocument.createElement("Policy");
+            policy1.setTextContent(kvmEntryPolicyName);
+
+            Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
+
+            step1 = proxyDefault.createElement("Step");
+            name1 = proxyDefault.createElement("Name");
+            name1.setTextContent(kvmEntryPolicyName);
+            step1.appendChild(name1);
+
+            preFlowRequest.appendChild(step1);
         }
 
         if (APIKEY) {
@@ -941,6 +964,39 @@ public class GenerateProxy {
         }.getClass().getEnclosingMethod().getName());
     }
 
+    private void writeGetKvmEntryPolicy() throws Exception {
+        LOGGER.entering(GenerateProxy.class.getName(), new Object() {
+        }.getClass().getEnclosingMethod().getName());
+        XMLUtils xmlUtils = new XMLUtils();
+
+        Document getKvmEntryDocument =  xmlUtils.readXML(SOAP2API_GET_KVM_ENTRY_TEMPLATE);
+
+        Document getKvmEntryXML = xmlUtils.cloneDocument(getKvmEntryDocument);
+
+        Node rootElement = getKvmEntryXML.getFirstChild();
+        NamedNodeMap attr = rootElement.getAttributes();
+        Node nodeAttrName = attr.getNamedItem("name");
+        nodeAttrName.setNodeValue("getKvmEntry");
+        Node nodeAttrMapIdentifier = attr.getNamedItem("mapIdentifier");
+        nodeAttrMapIdentifier.setNodeValue(kvm);
+
+        String apigeeVarName = org.apache.commons.lang3.StringUtils.isNotBlank(apiName) ? apiName : serviceName;
+
+
+        Node get = getKvmEntryXML.getElementsByTagName("Get").item(0);
+        attr = get.getAttributes();
+        Node nodeAttrAssignedTo = attr.getNamedItem("assignTo");
+        nodeAttrAssignedTo.setNodeValue(apigeeVarName);
+
+        Node parameter = getKvmEntryXML.getElementsByTagName("Parameter").item(0);
+        parameter.setTextContent(apigeeVarName);
+
+        xmlUtils.writeXML(getKvmEntryXML, buildFolder + File.separator + "apiproxy" + File.separator + "policies"
+                + File.separator + "getKvmEntry" + ".xml");
+        LOGGER.exiting(GenerateProxy.class.getName(), new Object() {
+        }.getClass().getEnclosingMethod().getName());
+    }
+
     private void writeSOAP2APIExtractPolicy(Document extractTemplate, String operationName, String policyName)
         throws Exception {
 
@@ -1109,8 +1165,14 @@ public class GenerateProxy {
 
         Node urlNode = targetDefault.getElementsByTagName("URL").item(0);
 
-        if (targetEndpoint != null && targetEndpoint.equalsIgnoreCase("") != true) {
-            urlNode.setTextContent(targetEndpoint);
+
+        if (targetEndpoint != null && !targetEndpoint.equalsIgnoreCase("")) {
+            if (org.apache.commons.lang3.StringUtils.isNotBlank(kvm)) {
+                String url = org.apache.commons.lang3.StringUtils.isNotBlank(apiName) ? apiName : serviceName;
+                urlNode.setTextContent("{" + url + "}");
+            } else {
+                urlNode.setTextContent(targetEndpoint);
+            }
         } else {
             LOGGER.warning("No target URL set");
         }
@@ -1311,6 +1373,18 @@ public class GenerateProxy {
             basePathNode.setTextContent(basePath);
         }
 
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(kvm)) {
+            String kvmEntryPolicyName = "getKvmEntry";
+
+            Node preFlowRequest = proxyDefault.getElementsByTagName("PreFlow").item(0).getChildNodes().item(1);
+
+            Node step1 = proxyDefault.createElement("Step");
+            Node name1 = proxyDefault.createElement("Name");
+            name1.setTextContent(kvmEntryPolicyName);
+            step1.appendChild(name1);
+
+            preFlowRequest.appendChild(step1);
+        }
         // add oauth policies if set
         if (OAUTH) {
 
@@ -2440,7 +2514,10 @@ public class GenerateProxy {
         String[] schemes = {"http", "https"};
         UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
 
-        if (backendUrl != null && !backendUrl.equalsIgnoreCase("")) {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(kvm)) {
+            String url = org.apache.commons.lang3.StringUtils.isNotBlank(apiName) ? apiName : serviceName;
+            targetEndpoint = "{" + url + "}";
+        } else if (backendUrl != null && !backendUrl.equalsIgnoreCase("")) {
             targetEndpoint = backendUrl;
         }
 
@@ -2906,6 +2983,9 @@ public class GenerateProxy {
                 writeAPIProxy(proxyDescription);
                 LOGGER.info("Generated Apigee proxy file.");
 
+                if (org.apache.commons.lang3.StringUtils.isNotBlank(kvm)) {
+                    writeGetKvmEntryPolicy();
+                }
                 if (!PASSTHRU) {
                     LOGGER.info("Generated SOAP Message Templates.");
                     writeSOAP2APIProxyEndpoint(proxyDescription);
@@ -2921,6 +3001,7 @@ public class GenerateProxy {
                     LOGGER.info("Generated target XML.");
                     writeSOAPPassThruProxyEndpointConditions(proxyDescription);
                 }
+
 
                 File file = generateBundle.build(zipFolder, proxyName);
                 LOGGER.info("Generated Apigee Edge API Bundle file: " + proxyName + ".zip");
@@ -3093,6 +3174,10 @@ public class GenerateProxy {
         opt.getSet().addOption("backendurl", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
         // set backend url validation (default true)
         opt.getSet().addOption("backendurlvalidation", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+        // set kvm name to use to retrive target backend url
+        opt.getSet().addOption("kvm", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
+        // set api name
+        opt.getSet().addOption("apiname", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
         // add enable cors conditions
         opt.getSet().addOption("cors", Separator.EQUALS, Multiplicity.ZERO_OR_ONE);
         // generate OAS spec
@@ -3182,6 +3267,12 @@ public class GenerateProxy {
         }
         if (opt.getSet().isSet("backendurlvalidation")) {
             genProxy.setBackendUrlValidation(new Boolean(opt.getSet().getOption("backendurlvalidation").getResultValue(0)));
+        }
+        if (opt.getSet().isSet("kvm")) {
+            genProxy.setKvm(opt.getSet().getOption("kvm").getResultValue(0));
+        }
+        if (opt.getSet().isSet("apiname")) {
+            genProxy.setApiName(opt.getSet().getOption("apiname").getResultValue(0));
         }
         if (opt.getSet().isSet("apikey")) {
             genProxy.setAPIKey(new Boolean(opt.getSet().getOption("apikey").getResultValue(0)));
@@ -3280,6 +3371,23 @@ public class GenerateProxy {
     public GenerateProxy setBackendUrlValidation(Boolean backendUrlValidation) {
         this.backendUrlValidation = backendUrlValidation;
         return this;
+    }
+
+    public String getKvm() {
+        return kvm;
+    }
+
+    public GenerateProxy setKvm(String kvm) {
+        this.kvm = kvm;
+        return this;
+    }
+
+    public String getApiName() {
+        return apiName;
+    }
+
+    public void setApiName(String apiName) {
+        this.apiName = apiName;
     }
 
     /**

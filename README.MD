@@ -37,6 +37,7 @@ build=specify build folder   default is temp folder; ensure user has access to r
 opsmap=specify operations map
 backendurl = Specify the target backend url
 backendurlvalidation=false    Specify to disable the backendurl validation
+kvm = Specify a KVM from where get the target endpoint url as entry
 ```
 ## Output
 You should see an API Proxy bundle generated in the same folder you ran the command. The bundle follows the convention of
