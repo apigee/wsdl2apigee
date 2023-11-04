@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<KeyValueMapOperations async="false" continueOnError="false" enabled="true" name="getKvmEntry" mapIdentifier="kvm">
+	<DisplayName>Get Target Endpoint</DisplayName>
+	<ExclusiveCache>false</ExclusiveCache>
+	<ExpiryTimeInSecs>300</ExpiryTimeInSecs>
+	<Get assignTo="key" index="1">
+		<Key>
+			<Parameter>key</Parameter>
+		</Key>
+	</Get>
+	<Scope>environment</Scope>
+</KeyValueMapOperations>
